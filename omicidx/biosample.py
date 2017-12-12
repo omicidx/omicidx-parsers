@@ -30,26 +30,33 @@ class BioSampleParser(object):
     def __iter__(self):
         return(self)
 
-    def __next__(self):
+    def next(self):
         for event, elem in self.context:
             if event == "end" and elem.tag == "BioSample":
                 bios = BioSample()
                 for k,v in elem.items():
                     bios[k] = v
+                bios['id_recs'] = []
                 bios['ids'] = []
                 for id in elem.iterfind('.//Id'):
                     idrec = {'db': id.get('db'), 'label': id.get('db_label'), 'id':id.text}
-                bios['ids'].append(idrec)
+                    bios['ids'].append(idrec['id'])
+                    bios['id_recs'].append(idrec)
                 bios['title'] = elem.findtext('.//Description/Title')
                 bios['description'] = elem.findtext('.//Description/Comment/Paragraph')
                 organism = elem.find('.//Organism')
                 bios['taxonomy_name'] = organism.get('taxonomy_name')
                 bios['taxonomy_id'] = organism.get('taxonomy_id')
+                bios['attribute_recs'] = []
                 bios['attributes'] = []
                 for attribute in elem.findall('.//Attribute'):
                     attrec = attribute.attrib
                     attrec['value'] = attribute.text
-                    bios['attributes'].append(attrec)
+                    bios['attribute_recs'].append(attrec)
+                    try:
+                        bios['attributes'].append(attrec['harmonized_name'])
+                    except:
+                        bios['attributes'].append(attrec['attribute_name'])
                 bios['model'] = elem.findtext('.//Model')
                 #print(json.dumps(bios))
                 #res = es.index(index="bioes", doc_type='biosample', id=bios['id'], body=bios)

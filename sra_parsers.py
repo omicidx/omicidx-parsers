@@ -23,8 +23,6 @@ def study_parser(fname):
             yield(d)
         if(elem.tag == 'STUDY' and event == 'start'):
             d = {}
-            d['attributes'] = []
-            d['tags'] = []
         if(elem.tag == 'PRIMARY_ID' and event == 'end'):
             d['accession'] = elem.text
         if(elem.tag == 'EXTERNAL_ID' and event == 'end'):
@@ -46,11 +44,17 @@ def study_parser(fname):
         if(elem.tag == 'STUDY_ATTRIBUTE' and event == 'end'):
             tag = elem.find('./TAG')
             value = elem.find('./VALUE')
-            if(value is None):
+            if('tags' not in d):
+                d['tags'] = []
+            d['tags'].append(tag.text)
+            if(value is not None):
+                if('attributes' not in d):
+                    d['attributes'] = []
+                    d['values'] = []                
                 d['tags'].append(tag.text)
-            else:
-                d['attributes'].append({elem.find('./TAG').text:
-                                        elem.find('./VALUE').text})
+                d['values'].append(value.text)
+                d['attributes'].append({ "tag": tag.text,
+                                         "value": value.text})
 
 
 def run_parser(fname):
@@ -175,15 +179,17 @@ def sample_parser(fname):
         if(elem.tag == 'SAMPLE_ATTRIBUTE' and event == 'end'):
             tag = elem.find('./TAG')
             value = elem.find('./VALUE')
-            if(value is None):
-                if('tag' not in d):
-                    d['tags'] = []
-                d['tags'].append(tag.text)
-            else:
+            if('tag' not in d):
+                d['tags'] = []
+            d['tags'].append(tag.text)
+            if(value is not None):
                 if('attributes' not in d):
                     d['attributes'] = []
-                d['attributes'].append({elem.find('./TAG').text:
-                                        elem.find('./VALUE').text})
+                    d['values'] = []
+                d['tags'].append(tag.text)
+                d['values'].append(value.text)
+                d['attributes'].append({ "tag": tag.text,
+                                         "value": value.text})
         
         if(elem.tag == 'DESCRIPTION' and event == 'end'):
             d['description'] = elem.text

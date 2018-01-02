@@ -25,6 +25,30 @@ import datetime
 import os
 import json
 
+def _safe_add_text_element(d, key, elem):
+    """Add text from an xml element to a dict
+    
+    Because not all elements have text elements despite 
+    their existence in the xml tree, this little 
+    function checks for text existence and then
+    adds the text conditionally. If no text is present,
+    the key is not created. 
+
+    Parameters
+    ----------
+    d : dict
+        Add the text element to this dict
+    key : str
+        The key to which to add the text element
+    elem : lxml.etree.Element
+        From where to extract the text
+    """
+    txt = elem.text
+    if(txt is not None):
+        d[key] = txt.strip()
+    
+    
+
 def study_parser(fname):
     """Parse an SRA study XML file
 
@@ -64,6 +88,8 @@ def study_parser(fname):
             d['external_id']['namespace'] = elem.attrib['namespace']
             if(d['external_id']['namespace'] == 'BioProject'):
                 d['BioProject'] = elem.text
+            if(d['external_id']['namespace'] == 'dbGaP'):
+                d['dbGaP'] = elem.text
         if(elem.tag == 'SUBMITTER_ID' and event == 'end'):
             d['submitter_id'] = {}
             d['submitter_id']['id'] = elem.text
@@ -84,7 +110,6 @@ def study_parser(fname):
                 if('attributes' not in d):
                     d['attributes'] = []
                     d['values'] = []                
-                d['tags'].append(tag.text)
                 d['values'].append(value.text)
                 d['attributes'].append({ "tag": tag.text,
                                          "value": value.text})
@@ -133,6 +158,19 @@ def run_parser(fname):
             d['title'] = elem.text
         if(elem.tag =='RUN' and event == 'end'):
             d = {}
+        if(elem.tag == 'RUN_ATTRIBUTE' and event == 'end'):
+            tag = elem.find('./TAG')
+            value = elem.find('./VALUE')
+            if('tags' not in d):
+                d['tags'] = []
+            d['tags'].append(tag.text)
+            if(value is not None):
+                if('attributes' not in d):
+                    d['attributes'] = []
+                    d['values'] = []                
+                d['values'].append(value.text)
+                d['attributes'].append({ "tag": tag.text,
+                                         "value": value.text})
 
 def experiment_parser(fname):
     """Parse an SRA experiment XML file
@@ -170,22 +208,29 @@ def experiment_parser(fname):
             yield(d)
         if(elem.tag == 'STUDY_REF' and event == 'end'):
             d['study_accession'] = elem.attrib['accession']
+        if(elem.tag == 'SUBMITTER_ID' and event == 'end'):
+            db = elem.attrib['namespace'].lower()
+            if(db == 'geo'):
+                d[db + '_xref'] = elem.text
         if(elem.tag == 'TITLE' and event == 'end'):
             d['title'] = elem.text
         if(elem.tag =='EXPERIMENT' and event == 'start'):
             d = {}
         if(elem.tag == "DESIGN_DESCRIPTION" and event == 'end'):
-            d['design_description'] = elem.text.strip()
+            _safe_add_text_element(d, 'design_description', elem)
         if(elem.tag == "SAMPLE_DESCRIPTOR" and event == 'end'):
-            d['sample_accession'] = elem.attrib['accession']
+            try:
+                d['sample_accession'] = elem.attrib['accession']
+            except:
+                pass
         if(elem.tag == "LIBRARY_NAME" and event == 'end'):
-            d['library_name'] = elem.text
+            _safe_add_text_element(d, 'library_name', elem)
         if(elem.tag == "LIBRARY_STRATEGY" and event == 'end'):
-            d['library_name'] = elem.text
+            _safe_add_text_element(d, 'library_strategy', elem)
         if(elem.tag == "LIBRARY_SOURCE" and event == 'end'):
-            d['library_name'] = elem.text
+            _safe_add_text_element(d, 'library_source', elem)
         if(elem.tag == "LIBRARY_SELECTION" and event == 'end'):
-            d['library_name'] = elem.text
+            _safe_add_text_element(d, 'library_selection', elem)
         if(elem.tag == "PAIRED" and event == 'end'):
             d['paired'] = True
         if(elem.tag == "SINGLE" and event == 'end'):
@@ -193,8 +238,21 @@ def experiment_parser(fname):
         if(elem.tag == "SPOT_LENGTH" and event == 'end'):
             d['spot_length'] = int(elem.text)
         if(elem.tag == "PLATFORM" and event == 'end'):
-            d['platform'] = elem.getchildren()[0].tag
+            d['platform'] = elem.find('.//INSTRUMENT_MODEL/..').tag
             d['instrument_model'] = elem.find('.//INSTRUMENT_MODEL').text
+        if(elem.tag == 'EXPERIMENT_ATTRIBUTE' and event == 'end'):
+            tag = elem.find('./TAG')
+            value = elem.find('./VALUE')
+            if('tags' not in d):
+                d['tags'] = []
+            d['tags'].append(tag.text)
+            if(value is not None):
+                if('attributes' not in d):
+                    d['attributes'] = []
+                    d['values'] = []
+                d['values'].append(value.text)
+                d['attributes'].append({ "tag": tag.text,
+                                         "value": value.text})
 
 def sample_parser(fname):
     """Parse an SRA sample XML file
@@ -252,14 +310,13 @@ def sample_parser(fname):
         if(elem.tag == 'SAMPLE_ATTRIBUTE' and event == 'end'):
             tag = elem.find('./TAG')
             value = elem.find('./VALUE')
-            if('tag' not in d):
+            if('tags' not in d):
                 d['tags'] = []
             d['tags'].append(tag.text)
             if(value is not None):
                 if('attributes' not in d):
                     d['attributes'] = []
                     d['values'] = []
-                d['tags'].append(tag.text)
                 d['values'].append(value.text)
                 d['attributes'].append({ "tag": tag.text,
                                          "value": value.text})

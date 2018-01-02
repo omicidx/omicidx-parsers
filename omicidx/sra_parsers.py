@@ -1,3 +1,23 @@
+"""SRA parsers including:
+
+- study
+- sample
+- experiment
+- run
+
+These parsers each parse XML format files of the format
+available from here:
+
+http://ftp.ncbi.nlm.nih.gov/sra/reports/Mirroring/
+
+Note that the FULL directories are "complete" while the 
+others are incrementals. However, the format is the same, 
+so these parsers should work on any of these.
+
+The parsers all use SAX-like parsing, so parsing uses very
+little memory (and is reasonably fast). 
+"""
+
 from lxml import etree as ET
 import gzip
 import bz2
@@ -6,6 +26,19 @@ import os
 import json
 
 def study_parser(fname):
+    """Parse an SRA study XML file
+
+    Parameters
+    ----------
+    fname : str
+        The filename (optionally gzipped) for parsing
+    
+    Returns
+    -------
+    generator of dict objects
+        A generator that returns a simple dict for each
+        record.
+    """
     if(fname.endswith('.gz')):
         f = gzip.open(fname,'r')
         xml_iter = ET.iterparse(f, ['start', 'end'])
@@ -58,6 +91,19 @@ def study_parser(fname):
 
 
 def run_parser(fname):
+    """Parse an SRA run XML file
+
+    Parameters
+    ----------
+    fname : str
+        The filename (optionally gzipped) for parsing
+    
+    Returns
+    -------
+    generator of dict objects
+        A generator that returns a simple dict for each
+        record.
+    """
     if(fname.endswith('.gz')):
         f = gzip.open(fname,'r')
         xml_iter = ET.iterparse(f, ['start', 'end'])
@@ -89,6 +135,19 @@ def run_parser(fname):
             d = {}
 
 def experiment_parser(fname):
+    """Parse an SRA experiment XML file
+
+    Parameters
+    ----------
+    fname : str
+        The filename (optionally gzipped) for parsing
+    
+    Returns
+    -------
+    generator of dict objects
+        A generator that returns a simple dict for each
+        record.
+    """
     if(fname.endswith('.gz')):
         f = gzip.open(fname,'r')
         xml_iter = ET.iterparse(f, ['start', 'end'])
@@ -138,6 +197,20 @@ def experiment_parser(fname):
             d['instrument_model'] = elem.find('.//INSTRUMENT_MODEL').text
 
 def sample_parser(fname):
+    """Parse an SRA sample XML file
+        
+    Parameters
+    ----------
+    fname : str
+        The filename (optionally gzipped) for parsing
+    
+    Returns
+    -------
+    generator of dict objects
+        A generator that returns a simple dict for each
+        record.
+    """
+
     if(fname.endswith('.gz')):
         f = gzip.open(fname,'r')
         xml_iter = ET.iterparse(f, ['start', 'end'])

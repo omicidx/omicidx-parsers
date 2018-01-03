@@ -24,6 +24,8 @@ import bz2
 import datetime
 import os
 import json
+import csv
+from omicidx.utils import open_file
 
 def _safe_add_text_element(d, key, elem):
     """Add text from an xml element to a dict
@@ -46,7 +48,6 @@ def _safe_add_text_element(d, key, elem):
     txt = elem.text
     if(txt is not None):
         d[key] = txt.strip()
-    
     
 
 def study_parser(fname):
@@ -330,6 +331,16 @@ def sample_parser(fname):
                 d['submitter_ids'] = []
             d['submitter_ids'].append({ns :
                                       value})
+
+
+def parse_livelist(fname):
+    with open_file(fname) as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            for k in row:
+                if(row[k] == ''):
+                    row[k]=None
+            yield(row)
 
 
 def dump_data(root_dir,out_dir):

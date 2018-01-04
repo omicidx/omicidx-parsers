@@ -48,7 +48,22 @@ def _safe_add_text_element(d, key, elem):
     txt = elem.text
     if(txt is not None):
         d[key] = txt.strip()
-    
+
+def _add_attributes(d, elem):
+    tag = elem.find('./TAG')
+    value = elem.find('./VALUE')
+    if(value is not None):
+        if('attributes' not in d):
+            d['attributes'] = []
+        d['attributes'].append({ "tag": tag.text,
+                                 "value": value.text})
+    else:
+        if('tags' not in d):
+            d['tags'] = []
+        d['tags'].append(tag.text)
+
+        
+
 
 def study_parser(fname):
     """Parse an SRA study XML file
@@ -102,19 +117,7 @@ def study_parser(fname):
         if(elem.tag == 'STUDY_DESCRIPTION' and event == 'end'):
             d['description'] = elem.text
         if(elem.tag == 'STUDY_ATTRIBUTE' and event == 'end'):
-            tag = elem.find('./TAG')
-            value = elem.find('./VALUE')
-            if('tags' not in d):
-                d['tags'] = []
-            d['tags'].append(tag.text)
-            if(value is not None):
-                if('attributes' not in d):
-                    d['attributes'] = []
-                    d['values'] = []                
-                d['values'].append(value.text)
-                d['attributes'].append({ "tag": tag.text,
-                                         "value": value.text})
-
+            _add_attributes(d, elem)
 
 def run_parser(fname):
     """Parse an SRA run XML file
@@ -160,18 +163,7 @@ def run_parser(fname):
         if(elem.tag =='RUN' and event == 'end'):
             d = {}
         if(elem.tag == 'RUN_ATTRIBUTE' and event == 'end'):
-            tag = elem.find('./TAG')
-            value = elem.find('./VALUE')
-            if('tags' not in d):
-                d['tags'] = []
-            d['tags'].append(tag.text)
-            if(value is not None):
-                if('attributes' not in d):
-                    d['attributes'] = []
-                    d['values'] = []                
-                d['values'].append(value.text)
-                d['attributes'].append({ "tag": tag.text,
-                                         "value": value.text})
+            _add_attributes(d, elem)
 
 def experiment_parser(fname):
     """Parse an SRA experiment XML file
@@ -194,6 +186,13 @@ def experiment_parser(fname):
         f = open(fname,'r')
         xml_iter = ET.iterparse(f, ['start', 'end'])
     d = {}
+    library_tags = [
+        "LIBRARY_STRATEGY",
+        "LIBRARY_SOURCE",
+        "LIBRARY_SELECTION",
+        "LIBRARY_CONSTRUCTION_PROTOCOL",
+        "LIBRARY_NAME"
+        ]
     for event, elem in xml_iter:
         if(elem.tag =='EXPERIMENT' and event == 'end'):
             try:
@@ -208,15 +207,27 @@ def experiment_parser(fname):
             elem.clear()
             yield(d)
         if(elem.tag == 'STUDY_REF' and event == 'end'):
-            d['study_accession'] = elem.attrib['accession']
+            try:
+                d['study_accession'] = elem.attrib['accession']
+            except:
+                pass
         if(elem.tag == 'SUBMITTER_ID' and event == 'end'):
             db = elem.attrib['namespace'].lower()
             if(db == 'geo'):
-                d[db + '_xref'] = elem.text
+                d[db + '_accession'] = elem.text
         if(elem.tag == 'TITLE' and event == 'end'):
             d['title'] = elem.text
         if(elem.tag =='EXPERIMENT' and event == 'start'):
             d = {}
+        if(elem.tag =='READ_SPEC' and event == 'end'):
+            if('read_spec' not in d):
+                d['read_spec']=[]
+            read_spec = {}
+            read_spec['read_index'] = int(elem.find('.//READ_INDEX').text)
+            read_spec['read_class'] = elem.find('.//READ_CLASS').text
+            read_spec['read_type'] = elem.find('.//READ_TYPE').text
+            read_spec['base_coord'] = int(elem.find('.//BASE_COORD').text)
+            d['read_spec'].append(read_spec)
         if(elem.tag == "DESIGN_DESCRIPTION" and event == 'end'):
             _safe_add_text_element(d, 'design_description', elem)
         if(elem.tag == "SAMPLE_DESCRIPTOR" and event == 'end'):
@@ -224,14 +235,8 @@ def experiment_parser(fname):
                 d['sample_accession'] = elem.attrib['accession']
             except:
                 pass
-        if(elem.tag == "LIBRARY_NAME" and event == 'end'):
-            _safe_add_text_element(d, 'library_name', elem)
-        if(elem.tag == "LIBRARY_STRATEGY" and event == 'end'):
-            _safe_add_text_element(d, 'library_strategy', elem)
-        if(elem.tag == "LIBRARY_SOURCE" and event == 'end'):
-            _safe_add_text_element(d, 'library_source', elem)
-        if(elem.tag == "LIBRARY_SELECTION" and event == 'end'):
-            _safe_add_text_element(d, 'library_selection', elem)
+        if(elem.tag in library_tags and event == 'end'):
+            _safe_add_text_element(d, elem.tag.lower(), elem)
         if(elem.tag == "PAIRED" and event == 'end'):
             d['paired'] = True
         if(elem.tag == "SINGLE" and event == 'end'):
@@ -242,18 +247,7 @@ def experiment_parser(fname):
             d['platform'] = elem.find('.//INSTRUMENT_MODEL/..').tag
             d['instrument_model'] = elem.find('.//INSTRUMENT_MODEL').text
         if(elem.tag == 'EXPERIMENT_ATTRIBUTE' and event == 'end'):
-            tag = elem.find('./TAG')
-            value = elem.find('./VALUE')
-            if('tags' not in d):
-                d['tags'] = []
-            d['tags'].append(tag.text)
-            if(value is not None):
-                if('attributes' not in d):
-                    d['attributes'] = []
-                    d['values'] = []
-                d['values'].append(value.text)
-                d['attributes'].append({ "tag": tag.text,
-                                         "value": value.text})
+            _add_attributes(d, elem)
 
 def sample_parser(fname):
     """Parse an SRA sample XML file
@@ -309,18 +303,7 @@ def sample_parser(fname):
         if(elem.tag == 'TITLE' and event == 'end'):
             d['title'] = elem.text
         if(elem.tag == 'SAMPLE_ATTRIBUTE' and event == 'end'):
-            tag = elem.find('./TAG')
-            value = elem.find('./VALUE')
-            if('tags' not in d):
-                d['tags'] = []
-            d['tags'].append(tag.text)
-            if(value is not None):
-                if('attributes' not in d):
-                    d['attributes'] = []
-                    d['values'] = []
-                d['values'].append(value.text)
-                d['attributes'].append({ "tag": tag.text,
-                                         "value": value.text})
+            _add_attributes(d, elem)
         
         if(elem.tag == 'DESCRIPTION' and event == 'end'):
             d['description'] = elem.text
@@ -333,7 +316,7 @@ def sample_parser(fname):
                                       value})
 
 
-def parse_livelist(fname):
+def _custom_csv_parser(fname):
     with open_file(fname) as f:
         reader = csv.DictReader(f)
         for row in reader:
@@ -341,6 +324,15 @@ def parse_livelist(fname):
                 if(row[k] == ''):
                     row[k]=None
             yield(row)
+    
+def parse_livelist(fname):
+    return _custom_csv_parser(fname)
+    
+def parse_run_info(fname):
+    return _custom_csv_parser(fname)
+
+def parse_addons_info(fname):
+    return _custom_csv_parser(fname)
 
 
 def dump_data(root_dir,out_dir):

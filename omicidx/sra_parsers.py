@@ -334,25 +334,3 @@ def parse_run_info(fname):
 def parse_addons_info(fname):
     return _custom_csv_parser(fname)
 
-
-def dump_data(root_dir,out_dir):
-    with open(os.path.join(out_dir,'sra_study.json'), 'w') as f:
-        for d in study_parser(os.path.join(root_dir, 'meta_study_set.xml.gz')):
-            json.dump(d, f)
-            f.write('\n')
-
-    with open(os.path.join(out_dir,'sra_run.json'), 'w') as f:
-        for d in run_parser(os.path.join(root_dir, 'meta_run_set.xml.gz')):
-            json.dump(d, f)
-            f.write('\n')
-
-    with open(os.path.join(out_dir,'sra_sample.json'), 'w') as f:
-        for d in sample_parser(os.path.join(root_dir, 'meta_sample_set.xml.gz')):
-            json.dump(d, f)
-            f.write('\n')
-
-    with open(os.path.join(out_dir,'sra_experiment.json'), 'w') as f:
-        for d in experiment_parser(os.path.join(root_dir, 'meta_experiment_set.xml.gz')):
-            json.dump(d, f)
-            f.write('\n')
-            

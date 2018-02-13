@@ -26,6 +26,7 @@ import os
 import json
 import csv
 import urllib
+import urllib.request
 import xml.etree.ElementTree as etree
 from omicidx.utils import open_file
 
@@ -57,6 +58,14 @@ def _add_attributes(d, elem):
     if(value is not None):
         if('attributes' not in d):
             d['attributes'] = []
+        if(tag.text.startswith('ENA')):
+            key = tag.text.replace('ENA-','').replace('-','_').lower()
+            if(tag.text.endswith('COUNT')):
+                value = int(value.text)
+            else:
+                value = value.text
+            d[key]=value
+            return
         d['attributes'].append({ "tag": tag.text,
                                  "value": value.text})
     else:
@@ -255,7 +264,7 @@ def experiment_parser(fname):
             _add_attributes(d, elem)
 
 
-def _study_xml_iter_parser(xml):
+def study_xml_iter_parser(xml):
     """Parse an SRA xml STUDY element
 
     Parameters
@@ -296,12 +305,14 @@ def _study_xml_iter_parser(xml):
             _add_attributes(d, elem)
     return(d)
 
-def _run_xml_iter_parser(xml):
+def run_xml_iter_parser(xml):
     """Parse an SRA xml RUN element
 
     Parameters
     ----------
     xml: an xml.etree Element
+    include_run_info: boolean
+        Whether or not to make a call out to the run_info api
 
     Returns
     -------
@@ -318,10 +329,19 @@ def _run_xml_iter_parser(xml):
             d['title'] = elem.text
         if(elem.tag == 'RUN_ATTRIBUTE' ):
             _add_attributes(d, elem)
+#    if(include_run_info):
+#        url = 'https://trace.ncbi.nlm.nih.gov/Traces/sra/?sp=runinfo&acc={}'
+#        url = url.format(d['accession'])
+#        txt = urllib.request.urlopen(url).read().decode()
+#        reader = csv.DictReader(io.StringIO(txt),delimiter=",")
+#        vals = next(reader)
+#        for k in ["ReleaseDate","LoadDate","spots","bases","spots_with_mates","avgLength","size_MB"]:
+#            d[k.lower()] = vals[k]
     return d
 
+
             
-def _experiment_xml_iter_parser(xml):
+def experiment_xml_iter_parser(xml):
     """Parse an SRA xml EXPERIMENT element
 
     Parameters
@@ -388,7 +408,7 @@ def _experiment_xml_iter_parser(xml):
             _add_attributes(d, elem)
     return(d)
 
-def _sample_xml_iter_parser(xml):
+def sample_xml_iter_parser(xml):
     """Parse an SRA xml SAMPLE element
 
     Parameters
@@ -519,19 +539,69 @@ def parse_run_info(fname):
 def parse_addons_info(fname):
     return _custom_csv_parser(fname)
 
-def load_xml_by_accession(accession):
+def load_experiment_xml_by_accession(accession):
     with urllib.request.urlopen('https://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?save=efetch&db=sra&rettype=FullXml&term={}'.format(accession)) as response:
         xml = etree.parse(response)
         return xml
 
 
 import json
-def get_accession_list(from_date=None, count=50, type="EXPERIMENT"):
-    column_names = ["Accession", "Submission", "Type", "Received", "Published", "LastUpdate", "Status", "Insdc", "Meta", "BioSample", "BioProject", "ReplacedBy", "FileSize", "FileMd5", "FileDate"]
-    url = "https://www.ncbi.nlm.nih.gov/Traces/sra/status/srastatrep.fcgi/acc-mirroring?from_date={}&count={}&type={}"
-    url = url.format(from_date,count,type)
+def get_accession_list(from_date="2004-01-01", count = 50, offset = 0, type="EXPERIMENT"):
+    column_names = ["Accession", "Submission", "Type", "Received", "Published", "LastUpdate", "Status", "Insdc"]
+    url = "https://www.ncbi.nlm.nih.gov/Traces/sra/status/srastatrep.fcgi/acc-mirroring?from_date={}&count={}&type={}&offset={}"
+    url = url.format(from_date, count, type, offset)
+    print(url)
+    res = None
     with urllib.request.urlopen(url) as response:
         res = json.loads(response.read().decode('UTF-8'))
-        return res
+        c = 0
+    print(res['fetched_count'], count, int(res['fetched_count']) == count)
+    while(int(res['fetched_count']) == count): # or (c+1 <= res['fetched_count'])):
+        offset += 1
+        c+=1
+        print(c,offset)
+        if(c != int(res['fetched_count'])):
+            retval = dict(zip(res['column_names'],res['rows'][c-1]))
+            yield(retval)
+        else:
+            print(c,offset)
+            url = "https://www.ncbi.nlm.nih.gov/Traces/sra/status/srastatrep.fcgi/acc-mirroring?from_date={}&count={}&type={}&offset={}"
+            url = url.format(from_date, count, type, offset)
+            with urllib.request.urlopen(url) as response:
+                res = json.loads(response.read().decode('UTF-8'))
+            print(res['fetched_count'])
+            c = 0
+    raise(StopIteration)
     
+import io    
+def get_study_records(from_date = "2004-01-01", count = 50, offset = 0):
+    for row in get_accession_list(from_date, count, offset, type="STUDY"):
+        xml = etree.parse(io.StringIO(row['Meta'])).getroot()
+        yield(_study_xml_iter_parser(xml))
+
+
+
+        
+class LiveList(object):
+    def __init__(self,from_date = "2004-01-01", count = 100, offset = 0):
+        self.from_date = from_date
+        self.count = count
+        self.counter = offset
+        self.done = False
+        self._fill_buffer()
+
+    def _url(self):
+        columns = ",".join(["Accession", "Submission", "Type", "Received", "Published", "LastUpdate", "Status", "Insdc"])
+        url = "https://www.ncbi.nlm.nih.gov/Traces/sra/status/srastatrep.fcgi/acc-mirroring?from_date={}&count={}&offset={}&columns={}"
+        url = url.format(self.from_date, self.count, self.counter % self.count, columns)
+        return(url)
+
+    def _fill_buffer(self):
+        if(not self.done):
+            url = self._url()
+            with urllib.request.urlopen(url) as response:
+                self.buffer = json.loads(response.read().decode('UTF-8'))
+                if(int(self.buffer['fetched_count']) != self.count):
+                    self.done=True
+
     

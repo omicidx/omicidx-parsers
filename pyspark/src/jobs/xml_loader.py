@@ -3,6 +3,10 @@ from pyspark.sql import SQLContext
 import argparse
 import logging
 
+logging.basicConfig( level=logging.INFO)
+logger = logging.getLogger('XML_TO_PARQUET')
+
+
 def read_xml(spark, in_uri, rowTag, partitions = None):
     sql = SQLContext(spark)
 
@@ -33,9 +37,9 @@ if __name__ == '__main__':
                         help = "partitions", default = None)
 
     opts = parser.parse_args()
-    logging.info("HERRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRE")
-    
 
+    logger.info("READING: "+opts.input)
     xml = read_xml(spark, opts.input, opts.rowTag, opts.partitions)
-    logging.info(xml.printSchema())
+    logger.info("WRITING: "+opts.output)
     write_xml(spark, xml, opts.output)
+    logger.info("OUTPUT written to "+opts.output)

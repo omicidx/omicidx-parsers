@@ -1,0 +1,52 @@
+---
+title: "Developer Notes"
+date: 2018-02-22T17:12:17-05:00
+---
+
+## SRA
+
+The SRA metadata are mined from the [reports/Mirroring] directory. The files there include five XML files:
+
+- Experiment
+- Sample
+- Run
+- Study
+- Analysis
+
+These five files each contain all the records from the NCBI copy of
+SRA, as well as all data that have been mirrored from the EBI and
+DDBJ, the European and Japanese partners for NCBI. An additional three
+csv files, `fileinfo_addons`, `fileinfo_runs`, and `livelist` contain
+technical metadata such as update dates and file sizes. 
+
+These files are *updated monthly* and placed into a "Full" mirroring
+folder. Other folders in the mirroring directory contain only updated
+records; 
+
+{{< note title="Note" >}}
+We do not currently process the "update" records, only the monthly
+"Full" dataset.
+{{< /note >}}
+
+## Workflow
+
+1. Copy files from NCBI to s3 bucket
+2. Convert XML and CSV files to [Parquet] format and save back to s3
+3. Perform data cleanup process (just basic flattening, column name
+   changes for convenience) using [Apache Spark] and save
+   results back to s3
+4. Join SRA entities to produce *run-level* and *experiment-level*
+   data summaries.
+5. Perform data dumps.
+
+```{r}
+print('hello')
+
+```
+
+
+
+
+[reports/Mirroring]: http://ftp.ncbi.nlm.nih.gov/sra/reports/Mirroring/
+
+

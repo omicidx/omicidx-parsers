@@ -2,22 +2,22 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>The Omix Metadata Index Project</title>
-    <link>/</link>
+    <link>https://seandavi.github.io/omicidx/</link>
     <description>Recent content on The Omix Metadata Index Project</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>Released under the MIT license</copyright>
     <lastBuildDate>Wed, 09 Mar 2016 00:11:02 +0100</lastBuildDate>
     
-	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://seandavi.github.io/omicidx/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Getting started</title>
-      <link>/getting-started/</link>
+      <link>https://seandavi.github.io/omicidx/getting-started/</link>
       <pubDate>Wed, 09 Mar 2016 00:11:02 +0100</pubDate>
       
-      <guid>/getting-started/</guid>
+      <guid>https://seandavi.github.io/omicidx/getting-started/</guid>
       <description>Installation Installing Hugo Hugo itself is just a single binary without dependencies on expensive runtimes like Ruby, Python or PHP and without dependencies on any databases. You just need to download the latest version. For more information read the official installation guides.
 Let&amp;rsquo;s make sure Hugo is set up as expected. You should see a similar version number in your terminal:
 hugo version # Hugo Static Site Generator v0.15 BuildDate: 2016-01-03T12:47:47+01:00  Installing Material Next, assuming you have Hugo up and running the hugo-material-docs theme can be installed with git:</description>
@@ -25,10 +25,10 @@ hugo version # Hugo Static Site Generator v0.15 BuildDate: 2016-01-03T12:47:47+0
     
     <item>
       <title>Adding content</title>
-      <link>/adding-content/</link>
+      <link>https://seandavi.github.io/omicidx/adding-content/</link>
       <pubDate>Wed, 09 Mar 2016 19:56:50 +0100</pubDate>
       
-      <guid>/adding-content/</guid>
+      <guid>https://seandavi.github.io/omicidx/adding-content/</guid>
       <description>Hello world Let&amp;rsquo;s create our first content file for your documentation. Open a terminal and add the following command for each new file you want to add. Replace &amp;lt;section-name&amp;gt; with a general term that describes your document in detail.
 hugo new &amp;lt;section-name&amp;gt;/filename.md  Visitors of your website will find the final document under www.example.com/&amp;lt;section-name&amp;gt;/filename/.
 Since it&amp;rsquo;s possible to have multiple content files in the same section I recommend to create at least one index.</description>
@@ -36,10 +36,10 @@ Since it&amp;rsquo;s possible to have multiple content files in the same section
     
     <item>
       <title>Roadmap</title>
-      <link>/roadmap/</link>
+      <link>https://seandavi.github.io/omicidx/roadmap/</link>
       <pubDate>Thu, 22 Feb 2018 17:00:53 +0000</pubDate>
       
-      <guid>/roadmap/</guid>
+      <guid>https://seandavi.github.io/omicidx/roadmap/</guid>
       <description>Data sources  In progress:
  NCBI GEO  Planned:
  NCI Genomic Data Commons    Documentation Things are a bit skimpy right now. We will be working on documentation on an ongoing basis.</description>
@@ -47,49 +47,49 @@ Since it&amp;rsquo;s possible to have multiple content files in the same section
     
     <item>
       <title>License</title>
-      <link>/license/</link>
+      <link>https://seandavi.github.io/omicidx/license/</link>
       <pubDate>Wed, 09 Mar 2016 20:10:46 +0100</pubDate>
       
-      <guid>/license/</guid>
+      <guid>https://seandavi.github.io/omicidx/license/</guid>
       <description>The software backing this resource is available freely under the MIT license.
 Limitations THE SOFTWARE AND THE DATA SOURCES PRESENTED AS PART OF THIS PROJECT ARE PROVIDED &amp;ldquo;AS IS&amp;rdquo;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</description>
     </item>
     
     <item>
       <title>Developer Notes</title>
-      <link>/technical-docs/developer-notes/</link>
+      <link>https://seandavi.github.io/omicidx/technical-docs/developer-notes/</link>
       <pubDate>Thu, 22 Feb 2018 17:12:17 -0500</pubDate>
       
-      <guid>/technical-docs/developer-notes/</guid>
+      <guid>https://seandavi.github.io/omicidx/technical-docs/developer-notes/</guid>
       <description>SRA The SRA metadata are mined from the reports/Mirroring directory. The files there include five XML files:
  Experiment Sample Run Study Analysis  These five files each contain all the records from the NCBI copy of SRA, as well as all data that have been mirrored from the EBI and DDBJ, the European and Japanese partners for NCBI. An additional three csv files, fileinfo_addons, fileinfo_runs, and livelist contain technical metadata such as update dates and file sizes.</description>
     </item>
     
     <item>
       <title>Developer Notes</title>
-      <link>/technical-docs/</link>
+      <link>https://seandavi.github.io/omicidx/technical-docs/</link>
       <pubDate>Thu, 22 Feb 2018 17:12:17 -0500</pubDate>
       
-      <guid>/technical-docs/</guid>
+      <guid>https://seandavi.github.io/omicidx/technical-docs/</guid>
       <description>SRA The SRA metadata are mined from the reports/Mirroring directory. The files there include five XML files:
  Experiment Sample Run Study Analysis  These five files each contain all the records from the NCBI copy of SRA, as well as all data that have been mirrored from the EBI and DDBJ, the European and Japanese partners for NCBI. An additional three csv files, fileinfo_addons, fileinfo_runs, and livelist contain technical metadata such as update dates and file sizes.</description>
     </item>
     
     <item>
       <title>abc page</title>
-      <link>/adding-content/abc/</link>
+      <link>https://seandavi.github.io/omicidx/adding-content/abc/</link>
       <pubDate>Thu, 22 Feb 2018 16:32:05 +0000</pubDate>
       
-      <guid>/adding-content/abc/</guid>
+      <guid>https://seandavi.github.io/omicidx/adding-content/abc/</guid>
       <description></description>
     </item>
     
     <item>
       <title>The Omix Index Project</title>
-      <link>/</link>
+      <link>https://seandavi.github.io/omicidx/</link>
       <pubDate>Thu, 22 Feb 2018 15:54:09 +0000</pubDate>
       
-      <guid>/</guid>
+      <guid>https://seandavi.github.io/omicidx/</guid>
       <description>Overview Databases and repositories of large-scale high-throughput are incredibly valuable. Despite considerable successes in exposing the information in these databases and repositories through searchable web portals and programmatic APIs, there are additional use cases that rely on access to bulk metadata. The data engineering required to produce such bulk metadata can be significant and is often done by individuals or groups to meet internal needs. The goal of the Omix Index Project is provide metadata from large data repositories of biological datasets in pre-digested formats that are immediately amenable to data mining, natural language processing, loading to databases or data warehouses, or for highly selective and flexible search and query capabilities using state-of-the-art data science tools.</description>
     </item>
     

@@ -2,22 +2,22 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Roadmaps on The Omix Metadata Index Project</title>
-    <link>/roadmap/</link>
+    <link>https://seandavi.github.io/omicidx/roadmap/</link>
     <description>Recent content in Roadmaps on The Omix Metadata Index Project</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>Released under the MIT license</copyright>
     <lastBuildDate>Thu, 22 Feb 2018 17:00:53 +0000</lastBuildDate>
     
-	<atom:link href="/roadmap/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://seandavi.github.io/omicidx/roadmap/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Roadmap</title>
-      <link>/roadmap/</link>
+      <link>https://seandavi.github.io/omicidx/roadmap/</link>
       <pubDate>Thu, 22 Feb 2018 17:00:53 +0000</pubDate>
       
-      <guid>/roadmap/</guid>
+      <guid>https://seandavi.github.io/omicidx/roadmap/</guid>
       <description>Data sources  In progress:
  NCBI GEO  Planned:
  NCI Genomic Data Commons    Documentation Things are a bit skimpy right now. We will be working on documentation on an ongoing basis.</description>

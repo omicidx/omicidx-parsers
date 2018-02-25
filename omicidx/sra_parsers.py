@@ -17,8 +17,6 @@ so these parsers should work on any of these.
 The parsers all use SAX-like parsing, so parsing uses very
 little memory (and is reasonably fast). 
 """
-
-from lxml import etree as ET
 import gzip
 import bz2
 import datetime
@@ -32,8 +30,9 @@ import urllib.request
 import xml.etree.ElementTree as etree
 from omicidx.utils import open_file
 
+
 class SRAExperiment(object):
-    def __init__(self,node):
+    def __init__(self, node):
         """Parse SRA Experiment to dict
 
         Parameters
@@ -46,13 +45,11 @@ class SRAExperiment(object):
             'submission': self.parse_submission(node.find(".//SUBMISSION")),
             'organization': "TODO",
             'pool': "TODO",
-#            'experiment' : self.experiment_xml_iter_parser(node),
-#            'run' : self.run_xml_iter_parser(node),
-            'sample' : self.parse_sample(node.find(".//SAMPLE")),
-            'study' : self.parse_study(node.find(".//STUDY"))
+            'experiment': self.parse_experiment(node.find(".//EXPERIMENT")),
+            'run': "TODO",
+            'sample': self.parse_sample(node.find(".//SAMPLE")),
+            'study': self.parse_study(node.find(".//STUDY"))
         }
-        
-
 
     def _safe_add_text_element(d, key, elem):
         """Add text from an xml element to a dict
@@ -75,7 +72,7 @@ class SRAExperiment(object):
         txt = elem.text
         if(txt is not None):
             d[key] = txt.strip()
-            
+
     def _parse_attributes(self, xml):
         if(xml is None):
             return None
@@ -91,7 +88,7 @@ class SRAExperiment(object):
         for elem in xml:
             tag = elem.find('./TAG')
             value = elem.find('./VALUE')
-            d.append({'tag': tag, 'value': value})
+            d['attributes'].append({'tag': tag.text, 'value': value.text})
         return(d)
 
     def _get_special_ids(self, id_rec):
@@ -107,7 +104,7 @@ class SRAExperiment(object):
         try:
             _id = id_rec['id']
             _db = id_rec['namespace']
-        except:
+        except Exception:
             return False
 
         if (_id is None) | (_db is None):
@@ -116,7 +113,7 @@ class SRAExperiment(object):
         # normalize db name
         try:
             norm = _db.strip(' ()[].:').lower()
-        except:
+        except Exception:
             norm = ''
 
         if norm in namespace_map.keys():
@@ -127,23 +124,20 @@ class SRAExperiment(object):
         else:
             return False
 
-        
-        
-            
     def _parse_identifiers(self, xml, section):
         """Parse IDENTIFIERS section"""
 
         d = defaultdict(list)
 
         for _id in xml:
-            if(_id.tag == "PRIMARY_ID"): 
-                d[section + '_id'] = _id.text
+            if(_id.tag == "PRIMARY_ID"):
+                d[section + '_accession'] = _id.text
             elif(_id.tag == "SUBMITTER_ID"):
                 id_rec = {'namespace': _id.get("namespace"), 'id': _id.text}
                 d[_id.tag.lower()].append(id_rec)
             elif(_id.tag == "UUID"):
                 d[_id.tag.lower()].append(_id.text)
-            else: # all other id types (secondary, external)
+            else:  # all other id types (secondary, external)
                 id_rec = {'namespace': _id.get("namespace"), 'id': _id.text}
                 d[_id.tag.lower()].append(id_rec)
                 special = self._get_special_ids(id_rec)
@@ -151,17 +145,31 @@ class SRAExperiment(object):
                     d[special[0]] = special[1]
                 else:
                     d[_id.tag.lower()].append(id_rec)
-            
-                
         return(d)
 
     def _process_path_map(self, xml, path_map):
         d = {}
         for k, v in path_map.items():
             try:
-                if(v[1])=='text':
+                # use "text" as second tuple value to
+                # get the text value
+                if(v[1] == 'text'):
                     d[k] = xml.find(v[0]).text
-            except:
+                # use the name of the attribute to
+                # get a specific attribute
+                elif(v[1] == 'child'):
+                    child = xml.find(v[0]).getchildren()
+
+                    if len(child) > 1:
+                        raise Exception(
+                            'There are too many elements')
+                    elif v[2] == 'text':
+                        d[k] = child[0].text
+                    elif v[2] == 'tag':
+                        d[k] = child[0].tag
+                else:
+                    d[k] = xml.find(v[0]).get(v[1])
+            except Exception as e:
                 pass
         return(d)
 
@@ -195,7 +203,7 @@ class SRAExperiment(object):
         d.update(self._process_path_map(xml, path_map))
         d.update(self._parse_identifiers(xml.find("IDENTIFIERS"),"study"))
         d.update(self._parse_study_type(xml.find('DESCRIPTOR/STUDY_TYPE')))
-        # d.update(self._parse_attributes(xml.find("STUDY_ATTRIBUTES")))
+        d.update(self._parse_attributes(xml.find("STUDY_ATTRIBUTES")))
         return(d)
 
     def parse_submission(self, xml):
@@ -222,16 +230,11 @@ class SRAExperiment(object):
             'title': (".//RUN_TITLE", "text"),
             'abstract': (".//STUDY_ABSTRACT", "text"),
             'description': (".//STUDY_DESCRIPTION", "text"),
+            'experiment_accession': (".//EXPERIMENT_REF", "accession")
         }
         
         d.update(xml.attrib)
         for elem in xml.iter():
-            if(elem.tag == 'PRIMARY_ID' ):
-                d['accession'] = elem.text
-            if(elem.tag == 'EXPERIMENT_REF' ):
-                d['experiment_accession'] = elem.attrib['accession']
-            if(elem.tag == 'TITLE' ):
-                d['title'] = elem.text
             if(elem.tag == 'RUN_ATTRIBUTE' ):
                 _add_attributes(d, elem)
     #    if(include_run_info):
@@ -245,8 +248,7 @@ class SRAExperiment(object):
         return d
 
 
-            
-    def experiment_xml_iter_parser(self,xml):
+    def parse_experiment(self, xml):
         """Parse an SRA xml EXPERIMENT element
 
         Parameters
@@ -258,59 +260,46 @@ class SRAExperiment(object):
         A dict object parsed from the XML
         """
         d = {}
-        library_tags = [
-            "LIBRARY_STRATEGY",
-            "LIBRARY_SOURCE",
-            "LIBRARY_SELECTION",
-            "LIBRARY_CONSTRUCTION_PROTOCOL",
-            "LIBRARY_NAME"
-            ]
-        for elem in xml.iter():
-            if(elem.tag == 'STUDY_REF'):
-                try:
-                    d['study_accession'] = elem.attrib['accession']
-                except:
-                    pass
-            if(elem.tag == 'SUBMITTER_ID' ):
-                db = elem.attrib['namespace'].lower()
-                if(db == 'geo'):
-                    d[db + '_accession'] = elem.text
-            if(elem.tag == 'TITLE' ):
-                d['title'] = elem.text
-            if(elem.tag =='EXPERIMENT' ):
-                d = {}
-            if(elem.tag =='READ_SPEC' ):
-                if('read_spec' not in d):
-                    d['read_spec']=[]
-                read_spec = {}
-                read_spec['read_index'] = int(elem.find('.//READ_INDEX').text)
-                read_spec['read_class'] = elem.find('.//READ_CLASS').text
-                read_spec['read_type'] = elem.find('.//READ_TYPE').text
-                try:
-                    read_spec['base_coord'] = int(elem.find('.//BASE_COORD').text)
-                except:
-                    pass
-                d['read_spec'].append(read_spec)
-            if(elem.tag == "DESIGN_DESCRIPTION" ):
-                _safe_add_text_element(d, 'design_description', elem)
-            if(elem.tag == "SAMPLE_DESCRIPTOR" ):
-                try:
-                    d['sample_accession'] = elem.attrib['accession']
-                except:
-                    pass
-            if(elem.tag in library_tags ):
-                _safe_add_text_element(d, elem.tag.lower(), elem)
-            if(elem.tag == "PAIRED" ):
-                d['paired'] = True
-            if(elem.tag == "SINGLE" ):
-                d['paired'] = False
-            if(elem.tag == "SPOT_LENGTH" ):
-                d['spot_length'] = int(elem.text)
-            if(elem.tag == "PLATFORM" ):
-                d['platform'] = elem.find('.//INSTRUMENT_MODEL/..').tag
-                d['instrument_model'] = elem.find('.//INSTRUMENT_MODEL').text
-            if(elem.tag == 'EXPERIMENT_ATTRIBUTE' ):
-                _add_attributes(d, elem)
+        d.update(xml.attrib)
+
+        path_map = {
+            'title': ('./TITLE', 'text'),
+            'study_accession': ('./STUDY_REF/IDENTIFIERS/PRIMARY_ID', 'text'),
+            'design': ('./DESIGN/DESIGN_DESCRIPTION', 'text'),
+            'library_name': (
+                './DESIGN/LIBRARY_DESCRIPTOR/LIBRARY_NAME', 'text'),
+            'library_strategy': (
+                './DESIGN/LIBRARY_DESCRIPTOR/LIBRARY_STRATEGY', 'text'),
+            'library_source': (
+                './DESIGN/LIBRARY_DESCRIPTOR/LIBRARY_SOURCE', 'text'),
+            'library_selection': (
+                './DESIGN/LIBRARY_DESCRIPTOR/LIBRARY_SELECTION', 'text'),
+            'library_layout': (
+                './DESIGN/LIBRARY_DESCRIPTOR/LIBRARY_LAYOUT',
+                'child', 'tag'),
+            'library_layout_orientation': (
+                './DESIGN/LIBRARY_DESCRIPTOR/LIBRARY_LAYOUT/PAIRED',
+                'ORIENTATION'),
+            'library_layout_length': (
+                './DESIGN/LIBRARY_DESCRIPTOR/LIBRARY_LAYOUT/PAIRED',
+                'NOMINAL_LENGTH'),
+            'library_layout_sdev': (
+                './DESIGN/LIBRARY_DESCRIPTOR/LIBRARY_LAYOUT/PAIRED',
+                'NOMINAL_SDEV'),
+            'pooling_stategy': (
+                './DESIGN/LIBRARY_DESCRIPTOR/POOLING_STRATEGY',
+                'text'),
+            'library_construction_protocol': (
+                './DESIGN/LIBRARY_DESCRIPTOR/LIBRARY_CONSTRUCTION_PROTOCOL',
+                'text'),
+            'platform': ('./PLATFORM', 'child', 'tag'),
+            'instrument_model': ('./PLATFORM/*/INSTRUMENT_MODEL', 'text')
+        }
+
+        d.update(self._process_path_map(xml, path_map))
+        d.update(self._parse_identifiers(xml.find("IDENTIFIERS"),"experiment"))
+        d.update(self._parse_attributes(xml.find("EXPERIMENT_ATTRIBUTES")))
+
         return(d)
 
     def parse_sample(self, xml):
@@ -329,25 +318,17 @@ class SRAExperiment(object):
         d.update(xml.attrib)
         path_map = {
             'title': (".//TITLE", "text"),
-            'organism': (".//SCIENTIFIC_ABSTRACT", "text"),
+            'organism': (".//SCIENTIFIC_NAME", "text"),
             'description': (".//DESCRIPTION", "text"),
         }
         d.update(self._process_path_map(xml, path_map))
-        d.update(self._parse_identifiers(xml.find("IDENTIFIERS"),"sample"))
+        d.update(self._parse_identifiers(xml.find("IDENTIFIERS"), "sample"))
+        d.update(self._parse_attributes(xml.find("SAMPLE_ATTRIBUTES")))
 
         for elem in xml.iter():
-            if(elem.tag == "TAXON_ID" ):
+            if(elem.tag == "TAXON_ID"):
                 d['taxon_id'] = int(elem.text)
-            if(elem.tag == 'SAMPLE_ATTRIBUTE' ):
-                _add_attributes(d, elem)
 
-            if(elem.tag == 'SUBMITTER_ID' ):
-                ns = elem.attrib['namespace']
-                value = elem.text
-                if('submitter_ids' not in d):
-                    d['submitter_ids'] = []
-                d['submitter_ids'].append({'namespace' : ns,
-                                           'value': value})
         return(d)
 
 

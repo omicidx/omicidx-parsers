@@ -25,500 +25,330 @@ import datetime
 import os
 import json
 import csv
+import re
+from collections import defaultdict
 import urllib
 import urllib.request
 import xml.etree.ElementTree as etree
 from omicidx.utils import open_file
 
-def _safe_add_text_element(d, key, elem):
-    """Add text from an xml element to a dict
-    
-    Because not all elements have text elements despite 
-    their existence in the xml tree, this little 
-    function checks for text existence and then
-    adds the text conditionally. If no text is present,
-    the key is not created. 
+class SRAExperiment(object):
+    def __init__(self,node):
+        """Parse SRA Experiment to dict
 
-    Parameters
-    ----------
-    d : dict
-        Add the text element to this dict
-    key : str
-        The key to which to add the text element
-    elem : lxml.etree.Element
-        From where to extract the text
-    """
-    txt = elem.text
-    if(txt is not None):
-        d[key] = txt.strip()
+        Parameters
+        ----------
+        node: xml.etree.ElementTree.Element
+            Element
 
-def _add_attributes(d, elem):
-    tag = elem.find('./TAG')
-    value = elem.find('./VALUE')
-    if(value is not None):
-        if('attributes' not in d):
-            d['attributes'] = []
-        if(tag.text.startswith('ENA')):
-            key = tag.text.replace('ENA-','').replace('-','_').lower()
-            if(tag.text.endswith('COUNT')):
-                value = int(value.text)
-            else:
-                value = value.text
-            d[key]=value
-            return
-        d['attributes'].append({ "tag": tag.text,
-                                 "value": value.text})
-    else:
-        if('tags' not in d):
-            d['tags'] = []
-        d['tags'].append(tag.text)
-
+        """
+        self.data = {
+            'submission': self.parse_submission(node.find(".//SUBMISSION")),
+            'organization': "TODO",
+            'pool': "TODO",
+#            'experiment' : self.experiment_xml_iter_parser(node),
+#            'run' : self.run_xml_iter_parser(node),
+            'sample' : self.parse_sample(node.find(".//SAMPLE")),
+            'study' : self.parse_study(node.find(".//STUDY"))
+        }
         
 
 
-def study_parser(fname):
-    """Parse an SRA study XML file
+    def _safe_add_text_element(d, key, elem):
+        """Add text from an xml element to a dict
 
-    Parameters
-    ----------
-    fname : str
-        The filename (optionally gzipped) for parsing
+        Because not all elements have text elements despite 
+        their existence in the xml tree, this little 
+        function checks for text existence and then
+        adds the text conditionally. If no text is present,
+        the key is not created. 
+
+        Parameters
+        ----------
+        d : dict
+            Add the text element to this dict
+        key : str
+            The key to which to add the text element
+        elem : lxml.etree.Element
+            From where to extract the text
+        """
+        txt = elem.text
+        if(txt is not None):
+            d[key] = txt.strip()
+            
+    def _parse_attributes(self, xml):
+        if(xml is None):
+            return None
+        """Add attributes to a record
+
+        Parameters
+        ----------
+        xml: xml.etree.ElementTree.ElementTree.Element
+            An xml element of level "EXPERIMENT|STUDY|RUN|SAMPLE_ATTRIBUTES"
+        """
+        d = defaultdict(list)
+        # Iterate over "XXX_ATTRIBUTES"
+        for elem in xml:
+            tag = elem.find('./TAG')
+            value = elem.find('./VALUE')
+            d.append({'tag': tag, 'value': value})
+        return(d)
+
+    def _get_special_ids(self, id_rec):
+        namespace_map = {"geo": "GEO",
+                         "gds": "GEO_Dataset",
+                         "pubmed": "pubmed",
+                         "biosample": "BioSample",
+                         "bioproject": "BioProject"}
+        # code below from sramongo/sra.py by jtfear
+        # https://github.com/jfear/sramongo/blob/master/sramongo/sra.py
+        # 
+        # Make sure fully formed xref
+        try:
+            _id = id_rec['id']
+            _db = id_rec['namespace']
+        except:
+            return False
+
+        if (_id is None) | (_db is None):
+            return False
+
+        # normalize db name
+        try:
+            norm = _db.strip(' ()[].:').lower()
+        except:
+            norm = ''
+
+        if norm in namespace_map.keys():
+            # Normalize the ids a little
+            id_norm = re.sub('geo|gds|bioproject|biosample|pubmed|pmid',
+                             '', _id.lower()).strip(' :().').upper()
+            return namespace_map[norm], id_norm
+        else:
+            return False
+
+        
+        
+            
+    def _parse_identifiers(self, xml, section):
+        """Parse IDENTIFIERS section"""
+
+        d = defaultdict(list)
+
+        for _id in xml:
+            if(_id.tag == "PRIMARY_ID"): 
+                d[section + '_id'] = _id.text
+            elif(_id.tag == "SUBMITTER_ID"):
+                id_rec = {'namespace': _id.get("namespace"), 'id': _id.text}
+                d[_id.tag.lower()].append(id_rec)
+            elif(_id.tag == "UUID"):
+                d[_id.tag.lower()].append(_id.text)
+            else: # all other id types (secondary, external)
+                id_rec = {'namespace': _id.get("namespace"), 'id': _id.text}
+                d[_id.tag.lower()].append(id_rec)
+                special = self._get_special_ids(id_rec)
+                if(special):
+                    d[special[0]] = special[1]
+                else:
+                    d[_id.tag.lower()].append(id_rec)
+            
+                
+        return(d)
+
+    def _process_path_map(self, xml, path_map):
+        d = {}
+        for k, v in path_map.items():
+            try:
+                if(v[1])=='text':
+                    d[k] = xml.find(v[0]).text
+            except:
+                pass
+        return(d)
+
+    def _parse_study_type(self, xml):
+        d = {}
+        if(xml.get('existing_study_type')):
+            d['study_type'] = xml.get('existing_study_type')
+        if(xml.get('new_study_type')):
+            d['study_type'] = xml.get('new_study_type')
+        return(d)
+        
+    def parse_study(self, xml):
+        """Parse an SRA xml STUDY element
+
+        Parameters
+        ----------
+        xml: an xml.etree Element
+
+        Returns
+        -------
+        A dict object parsed from the XML
+        """
+
+        d = {}
+        d.update(xml.attrib)
+        path_map = {
+            'title': (".//STUDY_TITLE", "text"),
+            'abstract': (".//STUDY_ABSTRACT", "text"),
+            'description': (".//STUDY_DESCRIPTION", "text"),
+        }
+        d.update(self._process_path_map(xml, path_map))
+        d.update(self._parse_identifiers(xml.find("IDENTIFIERS"),"study"))
+        d.update(self._parse_study_type(xml.find('DESCRIPTOR/STUDY_TYPE')))
+        # d.update(self._parse_attributes(xml.find("STUDY_ATTRIBUTES")))
+        return(d)
+
+    def parse_submission(self, xml):
+        d = {}
+        d.update(xml.attrib)
+        d.update(self._parse_identifiers(xml.find("IDENTIFIERS"),"submission"))
+        return d
     
-    Returns
-    -------
-    generator of dict objects
-        A generator that returns a simple dict for each
-        record.
-    """
-    if(fname.endswith('.gz')):
-        f = gzip.open(fname,'r')
-        xml_iter = ET.iterparse(f, ['start', 'end'])
-    else:
-        f = open(fname,'r')
-        xml_iter = ET.iterparse(f, ['start', 'end'])
-    d = {}
-    for event, elem in xml_iter:
-        if(elem.tag =='STUDY' and event == 'end'):
-            try:
-                d['alias']=elem.attrib['alias']
-            except:
-                pass
-            elem.clear()
-            yield(d)
-        if(elem.tag == 'STUDY' and event == 'start'):
-            d = {}
-        if(elem.tag == 'PRIMARY_ID' and event == 'end'):
-            d['accession'] = elem.text
-        if(elem.tag == 'EXTERNAL_ID' and event == 'end'):
-            d['external_id'] = {}
-            d['external_id']['id'] = elem.text
-            d['external_id']['namespace'] = elem.attrib['namespace']
-            if(d['external_id']['namespace'] == 'BioProject'):
-                d['BioProject'] = elem.text
-            if(d['external_id']['namespace'] == 'dbGaP'):
-                d['dbGaP'] = elem.text
-        if(elem.tag == 'SUBMITTER_ID' and event == 'end'):
-            d['submitter_id'] = {}
-            d['submitter_id']['id'] = elem.text
-            d['submitter_id']['namespace'] = elem.attrib['namespace']
-        if(elem.tag == 'STUDY_TITLE' and event == 'end'):
-            d['title'] = elem.text
-        if(elem.tag == 'STUDY_ABSTRACT' and event == 'end'):
-            d['abstract'] = elem.text
-        if(elem.tag == 'STUDY_DESCRIPTION' and event == 'end'):
-            d['description'] = elem.text
-        if(elem.tag == 'STUDY_ATTRIBUTE' and event == 'end'):
-            _add_attributes(d, elem)
+    def run_xml_iter_parser(self, xml):
+        """Parse an SRA xml RUN element
 
-def run_parser(fname):
-    """Parse an SRA run XML file
+        Parameters
+        ----------
+        xml: an xml.etree Element
+        include_run_info: boolean
+            Whether or not to make a call out to the run_info api
 
-    Parameters
-    ----------
-    fname : str
-        The filename (optionally gzipped) for parsing
-    
-    Returns
-    -------
-    generator of dict objects
-        A generator that returns a simple dict for each
-        record.
-    """
-    if(fname.endswith('.gz')):
-        f = gzip.open(fname,'r')
-        xml_iter = ET.iterparse(f, ['start', 'end'])
-    else:
-        f = open(fname,'r')
-        xml_iter = ET.iterparse(f, ['start', 'end'])
-    d = {}
-    for event, elem in xml_iter:
-        if(elem.tag =='RUN' and event == 'end'):
-            try:
-                d['alias']=elem.attrib['alias']
-            except:
-                pass
-            d['accession'] = elem.attrib['accession']
-            #d['run_date'] = datetime.datetime.strptime("2010-02-27T00:00:00Z","%Y-%m-%dT%H:%M:%SZ")
-            try:
-                d['run_date']=elem.attrib['run_date']
-            except:
-                pass
-            elem.clear()
-            yield(d)
-        if(elem.tag == 'PRIMARY_ID' and event == 'end'):
-            d['accession'] = elem.text
-        if(elem.tag == 'EXPERIMENT_REF' and event == 'end'):
-            d['experiment_accession'] = elem.attrib['accession']
-        if(elem.tag == 'TITLE' and event == 'end'):
-            d['title'] = elem.text
-        if(elem.tag =='RUN' and event == 'end'):
-            d = {}
-        if(elem.tag == 'RUN_ATTRIBUTE' and event == 'end'):
-            _add_attributes(d, elem)
-
-def experiment_parser(fname):
-    """Parse an SRA experiment XML file
-
-    Parameters
-    ----------
-    fname : str
-        The filename (optionally gzipped) for parsing
-    
-    Returns
-    -------
-    generator of dict objects
-        A generator that returns a simple dict for each
-        record.
-    """
-    if(fname.endswith('.gz')):
-        f = gzip.open(fname,'r')
-        xml_iter = ET.iterparse(f, ['start', 'end'])
-    else:
-        f = open(fname,'r')
-        xml_iter = ET.iterparse(f, ['start', 'end'])
-    d = {}
-    library_tags = [
-        "LIBRARY_STRATEGY",
-        "LIBRARY_SOURCE",
-        "LIBRARY_SELECTION",
-        "LIBRARY_CONSTRUCTION_PROTOCOL",
-        "LIBRARY_NAME"
-        ]
-    for event, elem in xml_iter:
-        if(elem.tag =='EXPERIMENT' and event == 'end'):
-            try:
-                d['alias']=elem.attrib['alias']
-            except:
-                pass
-            d['accession'] = elem.attrib['accession']
-            try:
-                d['center_name']=elem.attrib['center_name']
-            except:
-                pass
-            elem.clear()
-            yield(d)
-        if(elem.tag == 'STUDY_REF' and event == 'end'):
-            try:
-                d['study_accession'] = elem.attrib['accession']
-            except:
-                pass
-        if(elem.tag == 'SUBMITTER_ID' and event == 'end'):
-            db = elem.attrib['namespace'].lower()
-            if(db == 'geo'):
-                d[db + '_accession'] = elem.text
-        if(elem.tag == 'TITLE' and event == 'end'):
-            d['title'] = elem.text
-        if(elem.tag =='EXPERIMENT' and event == 'start'):
-            d = {}
-        if(elem.tag =='READ_SPEC' and event == 'end'):
-            if('read_spec' not in d):
-                d['read_spec']=[]
-            read_spec = {}
-            read_spec['read_index'] = int(elem.find('.//READ_INDEX').text)
-            read_spec['read_class'] = elem.find('.//READ_CLASS').text
-            read_spec['read_type'] = elem.find('.//READ_TYPE').text
-            try:
-                read_spec['base_coord'] = int(elem.find('.//BASE_COORD').text)
-            except:
-                pass
-            d['read_spec'].append(read_spec)
-        if(elem.tag == "DESIGN_DESCRIPTION" and event == 'end'):
-            _safe_add_text_element(d, 'design_description', elem)
-        if(elem.tag == "SAMPLE_DESCRIPTOR" and event == 'end'):
-            try:
-                d['sample_accession'] = elem.attrib['accession']
-            except:
-                pass
-        if(elem.tag in library_tags and event == 'end'):
-            _safe_add_text_element(d, elem.tag.lower(), elem)
-        if(elem.tag == "PAIRED" and event == 'end'):
-            d['paired'] = True
-        if(elem.tag == "SINGLE" and event == 'end'):
-            d['paired'] = False
-        if(elem.tag == "SPOT_LENGTH" and event == 'end'):
-            d['spot_length'] = int(elem.text)
-        if(elem.tag == "PLATFORM" and event == 'end'):
-            d['platform'] = elem.find('.//INSTRUMENT_MODEL/..').tag
-            d['instrument_model'] = elem.find('.//INSTRUMENT_MODEL').text
-        if(elem.tag == 'EXPERIMENT_ATTRIBUTE' and event == 'end'):
-            _add_attributes(d, elem)
-
-
-def study_xml_iter_parser(xml):
-    """Parse an SRA xml STUDY element
-
-    Parameters
-    ----------
-    xml: an xml.etree Element
-
-    Returns
-    -------
-    A dict object parsed from the XML
-    """
-
-    d = {}
-    d.update(xml.attrib)
-    for elem in xml.iter():
-        if(elem.tag == 'PRIMARY_ID' ):
-            d['accession'] = elem.text
-        if(elem.tag == 'EXTERNAL_ID' ):
-            d['external_id'] = {}
-            d['external_id']['id'] = elem.text
-            d['external_id']['namespace'] = elem.attrib['namespace']
-            if(d['external_id']['namespace'] == 'BioProject'):
-                d['BioProject'] = elem.text
-            if(d['external_id']['namespace'] == 'dbGaP'):
-                d['dbGaP'] = elem.text
-            if(d['external_id']['namespace'] == 'GEO'):
-                d['GEO'] = elem.text
-        if(elem.tag == 'SUBMITTER_ID' ):
-            d['submitter_id'] = {}
-            d['submitter_id']['id'] = elem.text
-            d['submitter_id']['namespace'] = elem.attrib['namespace']
-        if(elem.tag == 'STUDY_TITLE' ):
-            d['title'] = elem.text
-        if(elem.tag == 'STUDY_ABSTRACT' ):
-            d['abstract'] = elem.text
-        if(elem.tag == 'STUDY_DESCRIPTION' ):
-            d['description'] = elem.text
-        if(elem.tag == 'STUDY_ATTRIBUTE' ):
-            _add_attributes(d, elem)
-    return(d)
-
-def run_xml_iter_parser(xml):
-    """Parse an SRA xml RUN element
-
-    Parameters
-    ----------
-    xml: an xml.etree Element
-    include_run_info: boolean
-        Whether or not to make a call out to the run_info api
-
-    Returns
-    -------
-    A dict object parsed from the XML
-    """
-    d = {}
-    d.update(xml.attrib)
-    for elem in xml.iter():
-        if(elem.tag == 'PRIMARY_ID' ):
-            d['accession'] = elem.text
-        if(elem.tag == 'EXPERIMENT_REF' ):
-            d['experiment_accession'] = elem.attrib['accession']
-        if(elem.tag == 'TITLE' ):
-            d['title'] = elem.text
-        if(elem.tag == 'RUN_ATTRIBUTE' ):
-            _add_attributes(d, elem)
-#    if(include_run_info):
-#        url = 'https://trace.ncbi.nlm.nih.gov/Traces/sra/?sp=runinfo&acc={}'
-#        url = url.format(d['accession'])
-#        txt = urllib.request.urlopen(url).read().decode()
-#        reader = csv.DictReader(io.StringIO(txt),delimiter=",")
-#        vals = next(reader)
-#        for k in ["ReleaseDate","LoadDate","spots","bases","spots_with_mates","avgLength","size_MB"]:
-#            d[k.lower()] = vals[k]
-    return d
+        Returns
+        -------
+        A dict object parsed from the XML
+        """
+        d = {}
+        path_map = {
+            'title': (".//RUN_TITLE", "text"),
+            'abstract': (".//STUDY_ABSTRACT", "text"),
+            'description': (".//STUDY_DESCRIPTION", "text"),
+        }
+        
+        d.update(xml.attrib)
+        for elem in xml.iter():
+            if(elem.tag == 'PRIMARY_ID' ):
+                d['accession'] = elem.text
+            if(elem.tag == 'EXPERIMENT_REF' ):
+                d['experiment_accession'] = elem.attrib['accession']
+            if(elem.tag == 'TITLE' ):
+                d['title'] = elem.text
+            if(elem.tag == 'RUN_ATTRIBUTE' ):
+                _add_attributes(d, elem)
+    #    if(include_run_info):
+    #        url = 'https://trace.ncbi.nlm.nih.gov/Traces/sra/?sp=runinfo&acc={}'
+    #        url = url.format(d['accession'])
+    #        txt = urllib.request.urlopen(url).read().decode()
+    #        reader = csv.DictReader(io.StringIO(txt),delimiter=",")
+    #        vals = next(reader)
+    #        for k in ["ReleaseDate","LoadDate","spots","bases","spots_with_mates","avgLength","size_MB"]:
+    #            d[k.lower()] = vals[k]
+        return d
 
 
             
-def experiment_xml_iter_parser(xml):
-    """Parse an SRA xml EXPERIMENT element
+    def experiment_xml_iter_parser(self,xml):
+        """Parse an SRA xml EXPERIMENT element
 
-    Parameters
-    ----------
-    xml: an xml.etree Element
+        Parameters
+        ----------
+        xml: an xml.etree Element
 
-    Returns
-    -------
-    A dict object parsed from the XML
-    """
-    d = {}
-    library_tags = [
-        "LIBRARY_STRATEGY",
-        "LIBRARY_SOURCE",
-        "LIBRARY_SELECTION",
-        "LIBRARY_CONSTRUCTION_PROTOCOL",
-        "LIBRARY_NAME"
-        ]
-    for elem in xml.iter():
-        if(elem.tag == 'STUDY_REF'):
-            try:
-                d['study_accession'] = elem.attrib['accession']
-            except:
-                pass
-        if(elem.tag == 'SUBMITTER_ID' ):
-            db = elem.attrib['namespace'].lower()
-            if(db == 'geo'):
-                d[db + '_accession'] = elem.text
-        if(elem.tag == 'TITLE' ):
-            d['title'] = elem.text
-        if(elem.tag =='EXPERIMENT' ):
-            d = {}
-        if(elem.tag =='READ_SPEC' ):
-            if('read_spec' not in d):
-                d['read_spec']=[]
-            read_spec = {}
-            read_spec['read_index'] = int(elem.find('.//READ_INDEX').text)
-            read_spec['read_class'] = elem.find('.//READ_CLASS').text
-            read_spec['read_type'] = elem.find('.//READ_TYPE').text
-            try:
-                read_spec['base_coord'] = int(elem.find('.//BASE_COORD').text)
-            except:
-                pass
-            d['read_spec'].append(read_spec)
-        if(elem.tag == "DESIGN_DESCRIPTION" ):
-            _safe_add_text_element(d, 'design_description', elem)
-        if(elem.tag == "SAMPLE_DESCRIPTOR" ):
-            try:
-                d['sample_accession'] = elem.attrib['accession']
-            except:
-                pass
-        if(elem.tag in library_tags ):
-            _safe_add_text_element(d, elem.tag.lower(), elem)
-        if(elem.tag == "PAIRED" ):
-            d['paired'] = True
-        if(elem.tag == "SINGLE" ):
-            d['paired'] = False
-        if(elem.tag == "SPOT_LENGTH" ):
-            d['spot_length'] = int(elem.text)
-        if(elem.tag == "PLATFORM" ):
-            d['platform'] = elem.find('.//INSTRUMENT_MODEL/..').tag
-            d['instrument_model'] = elem.find('.//INSTRUMENT_MODEL').text
-        if(elem.tag == 'EXPERIMENT_ATTRIBUTE' ):
-            _add_attributes(d, elem)
-    return(d)
+        Returns
+        -------
+        A dict object parsed from the XML
+        """
+        d = {}
+        library_tags = [
+            "LIBRARY_STRATEGY",
+            "LIBRARY_SOURCE",
+            "LIBRARY_SELECTION",
+            "LIBRARY_CONSTRUCTION_PROTOCOL",
+            "LIBRARY_NAME"
+            ]
+        for elem in xml.iter():
+            if(elem.tag == 'STUDY_REF'):
+                try:
+                    d['study_accession'] = elem.attrib['accession']
+                except:
+                    pass
+            if(elem.tag == 'SUBMITTER_ID' ):
+                db = elem.attrib['namespace'].lower()
+                if(db == 'geo'):
+                    d[db + '_accession'] = elem.text
+            if(elem.tag == 'TITLE' ):
+                d['title'] = elem.text
+            if(elem.tag =='EXPERIMENT' ):
+                d = {}
+            if(elem.tag =='READ_SPEC' ):
+                if('read_spec' not in d):
+                    d['read_spec']=[]
+                read_spec = {}
+                read_spec['read_index'] = int(elem.find('.//READ_INDEX').text)
+                read_spec['read_class'] = elem.find('.//READ_CLASS').text
+                read_spec['read_type'] = elem.find('.//READ_TYPE').text
+                try:
+                    read_spec['base_coord'] = int(elem.find('.//BASE_COORD').text)
+                except:
+                    pass
+                d['read_spec'].append(read_spec)
+            if(elem.tag == "DESIGN_DESCRIPTION" ):
+                _safe_add_text_element(d, 'design_description', elem)
+            if(elem.tag == "SAMPLE_DESCRIPTOR" ):
+                try:
+                    d['sample_accession'] = elem.attrib['accession']
+                except:
+                    pass
+            if(elem.tag in library_tags ):
+                _safe_add_text_element(d, elem.tag.lower(), elem)
+            if(elem.tag == "PAIRED" ):
+                d['paired'] = True
+            if(elem.tag == "SINGLE" ):
+                d['paired'] = False
+            if(elem.tag == "SPOT_LENGTH" ):
+                d['spot_length'] = int(elem.text)
+            if(elem.tag == "PLATFORM" ):
+                d['platform'] = elem.find('.//INSTRUMENT_MODEL/..').tag
+                d['instrument_model'] = elem.find('.//INSTRUMENT_MODEL').text
+            if(elem.tag == 'EXPERIMENT_ATTRIBUTE' ):
+                _add_attributes(d, elem)
+        return(d)
 
-def sample_xml_iter_parser(xml):
-    """Parse an SRA xml SAMPLE element
+    def parse_sample(self, xml):
+        """Parse an SRA xml SAMPLE element
 
-    Parameters
-    ----------
-    xml: an xml.etree Element
+        Parameters
+        ----------
+        xml: an xml.etree Element
 
-    Returns
-    -------
-    A dict object parsed from the XML
-    """
+        Returns
+        -------
+        A dict object parsed from the XML
+        """
 
-    d = {}
-    d.update(xml.attrib)
-    for elem in xml.iter():
-        if(elem.tag == "TAXON_ID" ):
-            d['taxon_id'] = int(elem.text)
-        if(elem.tag == "SCIENTIFIC_NAME"):
-            d['organism'] = elem.text
-        if(elem.tag == "EXTERNAL_ID"):
-            try:
-                if(elem.attrib['namespace']=='BioSample'):
-                    d['biosample_accession']=elem.text
-                if(elem.attrib['namespace']=='GEO'):
-                    d['geo_accession']=elem.text
-                if(elem.attrib['namespace']=='ArrayExpress'):
-                    d['arrayexpress_accession']=elem.text
-            except:
-                pass
-        if(elem.tag == 'TITLE' ):
-            d['title'] = elem.text
-        if(elem.tag == 'SAMPLE_ATTRIBUTE' ):
-            _add_attributes(d, elem)
-        
-        if(elem.tag == 'DESCRIPTION' ):
-            d['description'] = elem.text
-        if(elem.tag == 'SUBMITTER_ID' ):
-            ns = elem.attrib['namespace']
-            value = elem.text
-            if('submitter_ids' not in d):
-                d['submitter_ids'] = []
-            d['submitter_ids'].append({'namespace' : ns,
-                                       'value': value})
-    return(d)
+        d = {}
+        d.update(xml.attrib)
+        path_map = {
+            'title': (".//TITLE", "text"),
+            'organism': (".//SCIENTIFIC_ABSTRACT", "text"),
+            'description': (".//DESCRIPTION", "text"),
+        }
+        d.update(self._process_path_map(xml, path_map))
+        d.update(self._parse_identifiers(xml.find("IDENTIFIERS"),"sample"))
 
+        for elem in xml.iter():
+            if(elem.tag == "TAXON_ID" ):
+                d['taxon_id'] = int(elem.text)
+            if(elem.tag == 'SAMPLE_ATTRIBUTE' ):
+                _add_attributes(d, elem)
 
-def sample_parser(fname):
-    """Parse an SRA sample XML file
-        
-    Parameters
-    ----------
-    fname : str
-        The filename (optionally gzipped) for parsing
-    
-    Returns
-    -------
-    generator of dict objects
-        A generator that returns a simple dict for each
-        record.
-    """
-
-    if(fname.endswith('.gz')):
-        f = gzip.open(fname,'r')
-        xml_iter = ET.iterparse(f, ['start', 'end'])
-    else:
-        f = open(fname,'r')
-        xml_iter = ET.iterparse(f, ['start', 'end'])
-    d = {}
-    for event, elem in xml_iter:
-        if(elem.tag =='SAMPLE' and event == 'start'):
-            d = {}
-        if(elem.tag =='SAMPLE' and event == 'end'):
-            try:
-                d['alias']=elem.attrib['alias']
-            except:
-                pass
-            try:
-                d['center_name']=elem.attrib['center_name']
-            except:
-                pass
-            d['accession'] = elem.attrib['accession']
-            elem.clear()
-            yield(d)
-        if(elem.tag == "TAXON_ID" and  event == 'end'):
-            d['taxon_id'] = int(elem.text)
-        if(elem.tag == "SCIENTIFIC_NAME" and  event == 'end'):
-            d['organism'] = elem.text
-        if(elem.tag == "EXTERNAL_ID" and  event == 'end'):
-            try:
-                if(elem.attrib['namespace']=='BioSample'):
-                    d['biosample_accession']=elem.text
-                if(elem.attrib['namespace']=='GEO'):
-                    d['geo_accession']=elem.text
-                if(elem.attrib['namespace']=='ArrayExpress'):
-                    d['arrayexpress_accession']=elem.text
-            except:
-                pass
-        if(elem.tag == 'TITLE' and event == 'end'):
-            d['title'] = elem.text
-        if(elem.tag == 'SAMPLE_ATTRIBUTE' and event == 'end'):
-            _add_attributes(d, elem)
-        
-        if(elem.tag == 'DESCRIPTION' and event == 'end'):
-            d['description'] = elem.text
-        if(elem.tag == 'SUBMITTER_ID' and event == 'end'):
-            ns = elem.attrib['namespace']
-            value = elem.text
-            if('submitter_ids' not in d):
-                d['submitter_ids'] = []
-            d['submitter_ids'].append({'namespace' : ns,
-                                       'value': value})
+            if(elem.tag == 'SUBMITTER_ID' ):
+                ns = elem.attrib['namespace']
+                value = elem.text
+                if('submitter_ids' not in d):
+                    d['submitter_ids'] = []
+                d['submitter_ids'].append({'namespace' : ns,
+                                           'value': value})
+        return(d)
 
 
 def _custom_csv_parser(fname):

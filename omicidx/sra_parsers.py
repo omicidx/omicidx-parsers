@@ -28,7 +28,12 @@ from collections import defaultdict
 import urllib
 import urllib.request
 import xml.etree.ElementTree as etree
-from omicidx.utils import open_file
+
+def lambda_handler(event, context):
+    accession = event['accession']
+    v = load_experiment_xml_by_accession(accession)
+    s = SRAExperiment(v.getroot())
+    return json.dumps(s.data)
 
 
 class SRAExperiment(object):
@@ -86,9 +91,15 @@ class SRAExperiment(object):
         d = defaultdict(list)
         # Iterate over "XXX_ATTRIBUTES"
         for elem in xml:
-            tag = elem.find('./TAG')
-            value = elem.find('./VALUE')
-            d['attributes'].append({'tag': tag.text, 'value': value.text})
+            try:
+                tag = elem.find('./TAG')
+                value = elem.find('./VALUE')
+                d['attributes'].append({'tag': tag.text, 'value': value.text})
+            except AttributeError:
+                # tag or value missing text, so skip
+                pass
+        if(len(d)==0):
+            d={}
         return(d)
 
     def _get_special_ids(self, id_rec):
@@ -180,7 +191,14 @@ class SRAExperiment(object):
         if(xml.get('new_study_type')):
             d['study_type'] = xml.get('new_study_type')
         return(d)
-        
+
+    def try_update(self, d, value):
+        try:
+            d.update(value)
+            return(d)
+        except:
+            return(d)
+    
     def parse_study(self, xml):
         """Parse an SRA xml STUDY element
 
@@ -203,7 +221,7 @@ class SRAExperiment(object):
         d.update(self._process_path_map(xml, path_map))
         d.update(self._parse_identifiers(xml.find("IDENTIFIERS"),"study"))
         d.update(self._parse_study_type(xml.find('DESCRIPTOR/STUDY_TYPE')))
-        d.update(self._parse_attributes(xml.find("STUDY_ATTRIBUTES")))
+        d = self.try_update(d, self._parse_attributes(xml.find("STUDY_ATTRIBUTES")))
         return(d)
 
     def parse_submission(self, xml):
@@ -298,7 +316,7 @@ class SRAExperiment(object):
 
         d.update(self._process_path_map(xml, path_map))
         d.update(self._parse_identifiers(xml.find("IDENTIFIERS"),"experiment"))
-        d.update(self._parse_attributes(xml.find("EXPERIMENT_ATTRIBUTES")))
+        d = self.try_update(d, self._parse_attributes(xml.find("EXPERIMENT_ATTRIBUTES")))
 
         return(d)
 
@@ -394,25 +412,45 @@ def get_study_records(from_date = "2004-01-01", count = 50, offset = 0):
 
         
 class LiveList(object):
-    def __init__(self,from_date = "2004-01-01", count = 100, offset = 0):
+    def __init__(self,from_date = "2004-01-01", count = 2500, offset = 0, entity = "EXPERIMENT"):
         self.from_date = from_date
+        self.offset = offset
         self.count = count
-        self.counter = offset
+        self.counter = 0
+        self.entity = entity
         self.done = False
         self._fill_buffer()
 
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if(not self.done):
+            retval =  self.buffer[self.counter]
+            self.counter += 1
+            self.offset += 1
+            if(self.counter == len(self.buffer)):
+                self.counter = 0
+                self._fill_buffer()
+            return retval
+        else:
+            raise(StopIteration)
+
     def _url(self):
+        print("current offset: ", self.offset)
         columns = ",".join(["Accession", "Submission", "Type", "Received", "Published", "LastUpdate", "Status", "Insdc"])
-        url = "https://www.ncbi.nlm.nih.gov/Traces/sra/status/srastatrep.fcgi/acc-mirroring?from_date={}&count={}&offset={}&columns={}"
-        url = url.format(self.from_date, self.count, self.counter % self.count, columns)
+        url = "https://www.ncbi.nlm.nih.gov/Traces/sra/status/srastatrep.fcgi/acc-mirroring?from_date={}&count={}&offset={}&columns={}&format=tsv&type={}"
+        url = url.format(self.from_date, self.count, self.offset, columns, self.entity)
         return(url)
 
     def _fill_buffer(self):
         if(not self.done):
             url = self._url()
-            with urllib.request.urlopen(url) as response:
-                self.buffer = json.loads(response.read().decode('UTF-8'))
-                if(int(self.buffer['fetched_count']) != self.count):
+            with io.StringIO(urllib.request.urlopen(url).read().decode()) as response:
+                reader = csv.DictReader(response, delimiter="\t")
+                self.buffer = [row for row in reader]
+                if(len(self.buffer) == 0):
                     self.done=True
 
     

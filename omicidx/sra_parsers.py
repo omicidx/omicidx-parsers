@@ -15,12 +15,7 @@ others are incrementals. However, the format is the same,
 so these parsers should work on any of these.
 
 The parsers all use SAX-like parsing, so parsing uses very
-little memory (and is reasonably fast). 
-"""
-import gzip
-import bz2
-import datetime
-import os
+little memory (and is reasonably fast). """
 import json
 import csv
 import re
@@ -28,6 +23,7 @@ from collections import defaultdict
 import urllib
 import urllib.request
 import xml.etree.ElementTree as etree
+
 
 def lambda_handler(event, context):
     accession = event['accession']
@@ -80,7 +76,7 @@ class SRAExperiment(object):
 
     def _parse_attributes(self, xml):
         if(xml is None):
-            return None
+            return {}
         """Add attributes to a record
 
         Parameters
@@ -412,13 +408,14 @@ def get_study_records(from_date = "2004-01-01", count = 50, offset = 0):
 
         
 class LiveList(object):
-    def __init__(self,from_date = "2004-01-01", count = 2500, offset = 0, entity = "EXPERIMENT"):
+    def __init__(self,from_date = "2004-01-01", to_date = None, count = 2500, offset = 0, entity = "EXPERIMENT"):
         self.from_date = from_date
         self.offset = offset
         self.count = count
         self.counter = 0
         self.entity = entity
         self.done = False
+        self.to_date = to_date
         self._fill_buffer()
 
 
@@ -442,6 +439,8 @@ class LiveList(object):
         columns = ",".join(["Accession", "Submission", "Type", "Received", "Published", "LastUpdate", "Status", "Insdc"])
         url = "https://www.ncbi.nlm.nih.gov/Traces/sra/status/srastatrep.fcgi/acc-mirroring?from_date={}&count={}&offset={}&columns={}&format=tsv&type={}"
         url = url.format(self.from_date, self.count, self.offset, columns, self.entity)
+        if(self.to_date is not None):
+            url+="&to_date={}".format(self.to_date)
         return(url)
 
     def _fill_buffer(self):

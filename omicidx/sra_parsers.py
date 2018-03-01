@@ -371,9 +371,13 @@ def load_experiment_xml_by_accession(accession):
 
 
 import json
-def get_accession_list(from_date="2004-01-01", count = 50, offset = 0, type="EXPERIMENT"):
-    column_names = ["Accession", "Submission", "Type", "Received", "Published", "LastUpdate", "Status", "Insdc"]
-    url = "https://www.ncbi.nlm.nih.gov/Traces/sra/status/srastatrep.fcgi/acc-mirroring?from_date={}&count={}&type={}&offset={}"
+def get_accession_list(from_date="2004-01-01",
+                       count = 50, offset = 0, type="EXPERIMENT"):
+    column_names = ["Accession", "Submission", "Type",
+                    "Received", "Published", "LastUpdate", "Status", "Insdc"]
+    url = "https://www.ncbi.nlm.nih.gov/Traces/sra/status/" + \
+          "srastatrep.fcgi/acc-mirroring?" + \
+          "from_date={}&count={}&type={}&offset={}"
     url = url.format(from_date, count, type, offset)
     print(url)
     res = None
@@ -381,16 +385,18 @@ def get_accession_list(from_date="2004-01-01", count = 50, offset = 0, type="EXP
         res = json.loads(response.read().decode('UTF-8'))
         c = 0
     print(res['fetched_count'], count, int(res['fetched_count']) == count)
-    while(int(res['fetched_count']) == count): # or (c+1 <= res['fetched_count'])):
+    while(int(res['fetched_count']) == count):
         offset += 1
-        c+=1
-        print(c,offset)
+        c += 1
+        print(c, offset)
         if(c != int(res['fetched_count'])):
-            retval = dict(zip(res['column_names'],res['rows'][c-1]))
+            retval = dict(zip(res['column_names'], res['rows'][c-1]))
             yield(retval)
         else:
-            print(c,offset)
-            url = "https://www.ncbi.nlm.nih.gov/Traces/sra/status/srastatrep.fcgi/acc-mirroring?from_date={}&count={}&type={}&offset={}"
+            print(c, offset)
+            url = "https://www.ncbi.nlm.nih.gov/Traces/sra/" +\
+                "status/srastatrep.fcgi/acc-mirroring" + \
+                "?from_date={}&count={}&type={}&offset={}"
             url = url.format(from_date, count, type, offset)
             with urllib.request.urlopen(url) as response:
                 res = json.loads(response.read().decode('UTF-8'))
@@ -398,33 +404,28 @@ def get_accession_list(from_date="2004-01-01", count = 50, offset = 0, type="EXP
             c = 0
     raise(StopIteration)
     
-import io    
-def get_study_records(from_date = "2004-01-01", count = 50, offset = 0):
-    for row in get_accession_list(from_date, count, offset, type="STUDY"):
-        xml = etree.parse(io.StringIO(row['Meta'])).getroot()
-        yield(_study_xml_iter_parser(xml))
 
-
-
-        
 class LiveList(object):
-    def __init__(self,from_date = "2004-01-01", to_date = None, count = 2500, offset = 0, entity = "EXPERIMENT"):
+    def __init__(self, from_date="2004-01-01",
+                 to_date=None, count=2500,
+                 offset=0, entity="EXPERIMENT",
+                 status='live'):
         self.from_date = from_date
         self.offset = offset
         self.count = count
         self.counter = 0
+        self.status = status
         self.entity = entity
         self.done = False
         self.to_date = to_date
         self._fill_buffer()
-
 
     def __iter__(self):
         return self
 
     def __next__(self):
         if(not self.done):
-            retval =  self.buffer[self.counter]
+            retval = self.buffer[self.counter]
             self.counter += 1
             self.offset += 1
             if(self.counter == len(self.buffer)):
@@ -436,20 +437,28 @@ class LiveList(object):
 
     def _url(self):
         print("current offset: ", self.offset)
-        columns = ",".join(["Accession", "Submission", "Type", "Received", "Published", "LastUpdate", "Status", "Insdc"])
-        url = "https://www.ncbi.nlm.nih.gov/Traces/sra/status/srastatrep.fcgi/acc-mirroring?from_date={}&count={}&offset={}&columns={}&format=tsv&type={}"
-        url = url.format(self.from_date, self.count, self.offset, columns, self.entity)
+        columns = ",".join(["Accession", "Submission", "Type",
+                            "Received", "Published", "LastUpdate",
+                            "Status", "Insdc"])
+        url = "https://www.ncbi.nlm.nih.gov/Traces/" \
+              "sra/status/srastatrep.fcgi/acc-mirroring?" \
+              "from_date={}&count={}&offset={}&columns={}" \
+              "&format=tsv&type={}&status={}"
+        url = url.format(self.from_date, self.count,
+                         self.offset, columns,
+                         self.entity, self.status)
         if(self.to_date is not None):
-            url+="&to_date={}".format(self.to_date)
+            url += "&to_date={}".format(self.to_date)
         return(url)
 
     def _fill_buffer(self):
         if(not self.done):
             url = self._url()
-            with io.StringIO(urllib.request.urlopen(url).read().decode()) as response:
+            with io.StringIO(urllib.request.urlopen(url)
+                             .read().decode()) as response:
                 reader = csv.DictReader(response, delimiter="\t")
                 self.buffer = [row for row in reader]
                 if(len(self.buffer) == 0):
-                    self.done=True
+                    self.done = True
 
     

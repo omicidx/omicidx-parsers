@@ -17,7 +17,7 @@ from collections import defaultdict
 import urllib
 import urllib.request
 import xml.etree.ElementTree as etree
-
+import io
 
 def lambda_handler(event, context):
     accession = event['accession']
@@ -38,7 +38,22 @@ def parse_study(xml):
     A dict object parsed from the XML
     """
 
-    d = {}
+    required_keys = ['abstract',
+                     'BioProject',
+                     'GEO',
+                     'accession',
+                     'alias',
+                     'attributes',
+                     'center_name',
+                     'broker_name',
+                     'description',
+                     'external_id',
+                     'study_type',
+                     'submitter_id',
+                     'secondary_id',
+                     'study_accession',
+                     'title']
+    d = dict((k,None) for k in required_keys)
     d.update(xml.attrib)
     path_map = {
         'title': (".//STUDY_TITLE", "text"),
@@ -85,7 +100,11 @@ def parse_run(xml):
     d = {}
     d.update(xml.attrib)
     for k in ['total_spots', 'total_bases', 'size']:
-        d[k] = int(d[k])
+        try:
+            d[k] = int(d[k])
+        except:
+            # missing some key elements
+            pass
     path_map = {
         'experiment_accession': ("EXPERIMENT_REF", "accession")
     }
@@ -109,9 +128,38 @@ def parse_experiment(xml):
     -------
     a dict of experiment
     """
-    d = {}
-    d.update(xml.attrib)
-
+    required_keys = [
+        'accession',
+        'attributes',
+        'alias',
+        'center_name',
+        'design',
+        'description',
+        'experiment_accession',
+        'instrument_model',
+        'library_name',
+        'library_construction_protocol',
+        'library_layout_orientation',
+        'library_layout_length',
+        'library_layout_sdev',
+        'library_strategy',
+        'library_source',
+        'library_selection',
+        'library_layout',
+        'platform',
+        'submitter_id',
+        'study_accession',
+        'submitter_id'
+        'title'
+    ]
+    
+    d = dict((k,None) for k in required_keys)
+    try:
+        d.update(xml.attrib)
+    except:
+        import xml.etree.ElementTree as et
+        et.tostring(xml)
+    
     path_map = {
         'title': ('./TITLE', 'text'),
         'study_accession': ('./STUDY_REF/IDENTIFIERS/PRIMARY_ID', 'text'),
@@ -188,8 +236,11 @@ def _parse_run_reads(node):
     """Parse reads from runs."""
     d = dict()
     d['reads'] = []
-
+    if node is None:
+        # No read statistics present
+        return(d)
     nreads = node.get('nreads')
+
     try:
         if nreads is not None:
             d['nreads'] = int(nreads)
@@ -228,13 +279,16 @@ def _parse_taxon(node):
             if i.getchildren():
                 d.update(crawl(i, d))
         return d
-
-    d = {'tax_analysis': {'nspot_analyze': node.get('analyzed_spot_count'),
-                          'total_spots': node.get('total_spot_count'),
-                          'mapped_spots': node.get('identified_spot_count'),
-                          'tax_counts': crawl(node),
-                          },
-         }
+    try:
+        d = {'tax_analysis': {'nspot_analyze': node.get('analyzed_spot_count'),
+                              'total_spots': node.get('total_spot_count'),
+                              'mapped_spots': node.get('identified_spot_count'),
+                              'tax_counts': crawl(node)
+        }
+        }
+    except AttributeError:
+        # No tax_analysis node
+        return {}
 
     try:
         if d['tax_analysis']['nspot_analyze'] is not None:
@@ -480,16 +534,31 @@ class SRAExperimentPackage(object):
 
         """
         study = {}
+        experiment = {}
+        runs = []
+        sample = {}
+
+
+        # Currently, just skip all incomplete or
+        # broken records by returning None in data slot
         try:
-            study = SRASampleRecord(node.find(".//STUDY")).data
+            study = {}
+            experiment = SRAExperimentRecord(node.find(".//EXPERIMENT")).data
+            try:
+                study = SRAStudyRecord(node.find(".//STUDY")).data
+            except:
+                study = {'accession': experiment.data['study_accession']}
+            sample = SRASampleRecord(node.find(".//SAMPLE")).data
+            runs = list([SRARunRecord(run).data for run in node.findall(".//RUN")])
+            self.data = {
+                'experiment': experiment,
+                'runs': runs,
+                'sample': sample,
+                'study': study
+            }
         except:
-            pass
-        self.data = {
-            'experiment': SRAExperimentRecord(node.find(".//EXPERIMENT")).data,
-            'runs': list([SRARunRecord(run).data for run in node.findall(".//RUN")]),
-            'sample': SRASampleRecord(node.find(".//SAMPLE")).data,
-            'study': study
-        }
+            self.data = None
+        
 
     def sample(self):
         return self.data['sample']

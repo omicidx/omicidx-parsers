@@ -123,7 +123,7 @@ with open(opts.outfile, 'w') as outfile:
                         addfiles = {'additional_files' :  addons_info[rec['accession']]}
                         rec = {**rec, **addfiles}
                 outfile.write(json.dumps(rec) + "\n")
-        element.clear()
+                element.clear()
         logger.info('parsed {} livelist entries'.format(n))
         logger.info('filling with livelist entities'.format(n))
         n = 0

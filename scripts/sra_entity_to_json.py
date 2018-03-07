@@ -4,6 +4,7 @@ import omicidx.sra_parsers
 import json
 import logging
 import collections
+from xml.etree import ElementTree as et
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
@@ -22,21 +23,28 @@ parser.add_argument('-a', '--addons_info',
 #required
 parser.add_argument('fname',
                     help = "The SRA xml filename")
+parser.add_argument('outfile',
+                    help="the output filename where to write json records")
+
 
 opts = parser.parse_args()
 
 if('study' in opts.fname):
     entity = "STUDY"
-    sra_parser = omicidx.sra_parsers.study_parser
+    sra_parser = omicidx.sra_parsers.SRAStudyRecord
+
 if('run' in opts.fname):
     entity = "RUN"
-    sra_parser = omicidx.sra_parsers.run_parser
+    sra_parser = omicidx.sra_parsers.SRARunRecord
+
 if('sample' in opts.fname):
     entity = "SAMPLE"
-    sra_parser = omicidx.sra_parsers.sample_parser
+    sra_parser = omicidx.sra_parsers.SRASampleRecord
+
 if('experiment' in opts.fname):
     entity = "EXPERIMENT"
-    sra_parser = omicidx.sra_parsers.experiment_parser
+    sra_parser = omicidx.sra_parsers.SRAExperimentRecord
+
 logger.info('configuration: {}'.format(str(opts)))
 logger.info('using {} entity type'.format(entity))
 if(opts.livelist):
@@ -93,37 +101,40 @@ if(opts.run_info and entity=='RUN'):
     logger.info('parsed {} run fileinfo entries'.format(n))        
 logger.info('parsing {} records'.format(entity))
 n = 0
-for rec in sra_parser(opts.fname):
-    n+=1
-    if((n % 100000)==0):
-        logger.info('parsed {} {} entries'.format(entity, n))
-    if(opts.livelist):
-        rec = {**rec, **livelist[rec['accession']]}
-        # mark those livelist entries already used
-        livelist[rec['accession']]['used']=True
-    if(opts.run_info and entity=='RUN'):
-        try:
-            rec = {**rec, **run_info[rec['accession']]}
-        except:
-            pass
-    if(opts.addons_info):
-        if(rec['accession'] in addons_info):
-            addfiles = {'additional_files' :  addons_info[rec['accession']]}
-            rec = {**rec, **addfiles}
-    print(json.dumps(rec))
-logger.info('parsed {} livelist entries'.format(n))
-logger.info('filling with livelist entities'.format(n))
-n = 0
-for rec in livelist.values():
-    if('used' in rec):
-        continue
-    if(opts.run_info and entity=='RUN'):
-        try:
-            rec = {**rec, **runinfo[llrec['accession']]}
-        except:
-            pass
-    n+=1
-    print(json.dumps(rec))
-logger.info('added {} livelist entries'.format(n))
-    
-    
+with open(opts.outfile, 'w') as outfile:
+    with omicidx.sra_parsers.open_file(opts.fname) as f:
+        for event, element in et.iterparse(f):
+            if(event == 'end' and element.tag == entity):
+                rec = sra_parser(element).data
+                n+=1
+                if((n % 100000)==0):
+                    logger.info('parsed {} {} entries'.format(entity, n))
+                if(opts.livelist):
+                    rec = {**rec, **livelist[rec['accession']]}
+                    # mark those livelist entries already used
+                    livelist[rec['accession']]['used']=True
+                if(opts.run_info and entity=='RUN'):
+                    try:
+                        rec = {**rec, **run_info[rec['accession']]}
+                    except:
+                        pass
+                if(opts.addons_info):
+                    if(rec['accession'] in addons_info):
+                        addfiles = {'additional_files' :  addons_info[rec['accession']]}
+                        rec = {**rec, **addfiles}
+                outfile.write(json.dumps(rec) + "\n")
+        element.clear()
+        logger.info('parsed {} livelist entries'.format(n))
+        logger.info('filling with livelist entities'.format(n))
+        n = 0
+        for rec in livelist.values():
+            if('used' in rec):
+                continue
+            if(opts.run_info and entity=='RUN'):
+                try:
+                    rec = rec.update(runinfo[llrec['accession']])
+                except:
+                    pass
+            n+=1
+            outfile.write(json.dumps(rec) + "\n")
+        logger.info('added {} livelist entries'.format(n))

@@ -18,6 +18,7 @@ import urllib
 import urllib.request
 import xml.etree.ElementTree as etree
 import io
+import gzip
 
 def lambda_handler(event, context):
     accession = event['accession']
@@ -62,7 +63,7 @@ def parse_study(xml):
     }
     d.update(_process_path_map(xml, path_map))
     d.update(_parse_identifiers(xml.find("IDENTIFIERS"),"study"))
-    d.update(_parse_study_type(xml.find('DESCRIPTOR/STUDY_TYPE')))
+    try_update(d, _parse_study_type(xml.find('DESCRIPTOR/STUDY_TYPE')))
     d = try_update(d, _parse_attributes(xml.find("STUDY_ATTRIBUTES")))
     return(d)
 
@@ -110,7 +111,7 @@ def parse_run(xml):
     }
 
     d = try_update(d, _parse_taxon(xml.find("tax_analysis")))
-    d = try_update(d, _parse_run_reads(xml.find("Statistics")))
+    d = try_update(d, _parse_run_reads(xml.find(".//SPOT_DESCRIPTOR")))
     d.update(_process_path_map(xml, path_map))
     d.update(_parse_identifiers(xml.find("IDENTIFIERS"), "run"))
     d = try_update(d, _parse_attributes(xml.find("RUN_ATTRIBUTES")))
@@ -235,29 +236,35 @@ def parse_sample(xml):
 def _parse_run_reads(node):
     """Parse reads from runs."""
     d = dict()
+    try:
+        d['spot_length'] = int(node.find('.//SPOT_LENGTH').text)
+    except Exception as e:
+        d['spot_length'] = 0
     d['reads'] = []
     if node is None:
         # No read statistics present
         return(d)
-    nreads = node.get('nreads')
+    readrecs = node.findall(".//READ_SPEC")
+    d['nreads'] = len(readrecs)
 
-    try:
-        if nreads is not None:
-            d['nreads'] = int(nreads)
-    except:
-        # Sometimes nreads is set to 'variable' and no read information is
-        # provided. I set these values to -1.
-        if nreads == 'variable':
-            d['nreads'] = -1
-        else:
-            raise ValueError('nreads is "{}", this value is not expected. '
-                             ''.format(nreads))
-    for read in node.findall('.//Read'):
+    for read in readrecs:
         r = {}
-        r['read_len_avg'] = float(read.get('average', 0))
-        r['read_len_stdev'] = float(read.get('stdev', 0))
-        r['count'] = int(read.get('count', 0))
-        r['index'] = int(read.get('index', 0))+1
+        try:
+            r['read_index'] = int(read.find('./READ_INDEX').text)
+        except:
+            pass
+        try:
+            r['read_class'] = read.find('./READ_CLASS').text
+        except:
+            pass
+        try:
+            r['read_type'] = read.find('./READ_TYPE').text
+        except:
+            pass
+        try:
+            r['base_coord'] = int(read.find('./BASE_COORD').text)
+        except:
+            pass
         d['reads'].append(r)
 
     return d
@@ -452,6 +459,8 @@ def _process_path_map(xml, path_map):
 
 def _parse_study_type(xml):
     d = {}
+    if(xml is None):
+        return d
     if(xml.get('existing_study_type')):
         d['study_type'] = xml.get('existing_study_type')
     if(xml.get('new_study_type')):
@@ -463,7 +472,7 @@ def try_update(d, value):
     try:
         d.update(value)
         return(d)
-    except Exception:
+    except Exception as e:
         return(d)
 
 
@@ -589,6 +598,11 @@ class SRAExperimentPackage(object):
         return self.data['study']
 
 
+def open_file(fname, encoding = 'UTF-8'):
+    if(fname.endswith('.gz')):
+        return(gzip.open(fname, mode = "rt", encoding = encoding))
+    return(open(fname, "r", encoding = encoding))
+
 def _custom_csv_parser(fname):
     with open_file(fname) as f:
         reader = csv.DictReader(f)
@@ -646,7 +660,9 @@ def get_accession_list(from_date="2004-01-01",
             print(res['fetched_count'])
             c = 0
     raise(StopIteration)
-    
+
+
+
 
 class LiveList(object):
     def __init__(self, from_date="2004-01-01",
@@ -704,4 +720,3 @@ class LiveList(object):
                 if(len(self.buffer) == 0):
                     self.done = True
 
-    

@@ -3,3 +3,10 @@
 omicidx.egg-info
 *#
 _build
+pyvenv.cfg
+lib
+bin
+*log
+.ensime*
+.idea*
+*.gz

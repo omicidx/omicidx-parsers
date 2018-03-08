@@ -9,4 +9,6 @@ setup(name='omicidx',
       author_email='seandavi@gmail.com',
       url='https://github.com/seandavi/omicidx',
       packages=['omicidx'],
+      scripts = ['scripts/sra_entity_to_json.py'],
+      
      )

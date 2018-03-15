@@ -12,5 +12,5 @@ do
     bzip2 $i.json
     aws s3 cp $i.json.bz2 s3://omics_metadata/sra/$DIRECTORY/$i.json.bz2
 done
-
+ls $DIRECTORY/*csv.gz | xargs -I {} aws s3 cp {} s3://omics_metadata/sra/{}
 

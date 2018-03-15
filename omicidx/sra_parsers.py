@@ -192,6 +192,7 @@ def parse_experiment(xml):
             './DESIGN/LIBRARY_DESCRIPTOR/LIBRARY_CONSTRUCTION_PROTOCOL',
             'text'),
         'platform': ('./PLATFORM', 'child', 'tag'),
+        'sample_accession': ('.//SAMPLE_DESCRIPTOR','accession'),
         'instrument_model': ('./PLATFORM/*/INSTRUMENT_MODEL', 'text')
     }
 

@@ -65,6 +65,8 @@ def parse_study(xml):
     d.update(_parse_identifiers(xml.find("IDENTIFIERS"),"study"))
     try_update(d, _parse_study_type(xml.find('DESCRIPTOR/STUDY_TYPE')))
     d = try_update(d, _parse_attributes(xml.find("STUDY_ATTRIBUTES")))
+    d.update(_parse_links(
+        xml.find("STUDY_LINKS")))
     return(d)
 
 
@@ -147,6 +149,7 @@ def parse_experiment(xml):
         'library_source',
         'library_selection',
         'library_layout',
+        'xrefs',
         'platform',
         'submitter_id',
         'study_accession',
@@ -199,8 +202,11 @@ def parse_experiment(xml):
     d.update(_process_path_map(xml, path_map))
     d.update(_parse_identifiers(xml.find("IDENTIFIERS"),
                                      "experiment"))
-    d = try_update(d, _parse_attributes(
+
+    d.update(_parse_attributes(
         xml.find("EXPERIMENT_ATTRIBUTES")))
+    d.update(_parse_links(
+        xml.find("EXPERIMENT_LINKS")))
     return d
 
 
@@ -226,6 +232,8 @@ def parse_sample(xml):
     d.update(_process_path_map(xml, path_map))
     d.update(_parse_identifiers(xml.find("IDENTIFIERS"), "sample"))
     d.update(_parse_attributes(xml.find("SAMPLE_ATTRIBUTES")))
+    d.update(_parse_links(
+        xml.find("SAMPLE_LINKS")))
 
     for elem in xml.iter():
         if(elem.tag == "TAXON_ID"):
@@ -365,6 +373,30 @@ def _parse_attributes(xml):
             tag = elem.find('./TAG')
             value = elem.find('./VALUE')
             d['attributes'].append({'tag': tag.text, 'value': value.text})
+        except AttributeError:
+            # tag or value missing text, so skip
+            pass
+    if(len(d)==0):
+        d={}
+    return(d)
+
+def _parse_links(xml):
+    """Add attributes to a record
+
+    Parameters
+    ----------
+    xml: xml.etree.ElementTree.ElementTree.Element
+        An xml element of level "EXPERIMENT|STUDY|RUN|SAMPLE_LINKS"
+    """
+    if(xml is None):
+        return {}
+    d = defaultdict(list)
+    # Iterate over "XXX_ATTRIBUTES"
+    for elem in xml.findall(".//XREF_LINK"):
+        try:
+            tag = elem.find('./DB')
+            value = elem.find('./ID')
+            d['xrefs'].append({'db': tag.text, 'id': value.text})
         except AttributeError:
             # tag or value missing text, so skip
             pass

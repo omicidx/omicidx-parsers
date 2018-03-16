@@ -449,12 +449,12 @@ def _parse_identifiers(xml, section):
             d[section + '_accession'] = _id.text
         elif(_id.tag == "SUBMITTER_ID"):
             id_rec = {'namespace': _id.get("namespace"), 'id': _id.text}
-            d[_id.tag.lower()].append(id_rec)
+            d['identifiers'].append(id_rec)
         elif(_id.tag == "UUID"):
-            d[_id.tag.lower()].append(_id.text)
+            d['identifiers'].append(_id.text)
         else:  # all other id types (secondary, external)
             id_rec = {'namespace': _id.get("namespace"), 'id': _id.text}
-            d[_id.tag.lower()].append(id_rec)
+            d['identifiers'].append(id_rec)
             special = _get_special_ids(id_rec)
             if(special):
                 d[special[0]] = special[1]

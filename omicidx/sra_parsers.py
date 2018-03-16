@@ -139,6 +139,7 @@ def parse_experiment(xml):
         'design',
         'description',
         'experiment_accession',
+        'identifiers',
         'instrument_model',
         'library_name',
         'library_construction_protocol',
@@ -151,9 +152,8 @@ def parse_experiment(xml):
         'library_layout',
         'xrefs',
         'platform',
-        'submitter_id',
+        'sample_accession',
         'study_accession',
-        'submitter_id'
         'title'
     ]
     
@@ -459,7 +459,7 @@ def _parse_identifiers(xml, section):
             if(special):
                 d[special[0]] = special[1]
             else:
-                d[_id.tag.lower()].append(id_rec)
+                d['identifier'].append(id_rec)
     return(d)
 
 

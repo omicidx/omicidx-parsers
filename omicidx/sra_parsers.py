@@ -48,7 +48,6 @@ def parse_study(xml):
                      'center_name',
                      'broker_name',
                      'description',
-                     'external_id',
                      'study_type',
                      'study_accession',
                      'title']

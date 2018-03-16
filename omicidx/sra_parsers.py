@@ -50,8 +50,6 @@ def parse_study(xml):
                      'description',
                      'external_id',
                      'study_type',
-                     'submitter_id',
-                     'secondary_id',
                      'study_accession',
                      'title']
     d = dict((k,None) for k in required_keys)

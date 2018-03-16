@@ -448,7 +448,7 @@ def _parse_identifiers(xml, section):
             id_rec = {'namespace': _id.get("namespace"), 'id': _id.text}
             d['identifiers'].append(id_rec)
         elif(_id.tag == "UUID"):
-            d['identifiers'].append(_id.text)
+            d['identifiers'].append({'uuid':_id.text})
         else:  # all other id types (secondary, external)
             id_rec = {'namespace': _id.get("namespace"), 'id': _id.text}
             d['identifiers'].append(id_rec)

@@ -459,7 +459,7 @@ def _parse_identifiers(xml, section):
             if(special):
                 d[special[0]] = special[1]
             else:
-                d['identifier'].append(id_rec)
+                d['identifiers'].append(id_rec)
     return(d)
 
 

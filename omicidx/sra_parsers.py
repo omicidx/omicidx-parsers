@@ -692,7 +692,23 @@ def get_accession_list(from_date="2004-01-01",
     raise(StopIteration)
 
 
-
+def sra_object_generator(fname):
+    """Iterate over objects in an SRA meta_XXX_set xml file
+    
+    :param: fname str() name of xml file, may be gzipped or not
+    
+    :returns: An iterator over SRA objects. Access actual data 
+        as a dict using Object.data
+    
+    """
+    validClasses = ['experiment', 'run', 'study', 'sample']
+    if(fname.endswith("gz")):
+        fh = gzip.GzipFile(fname)
+    else:
+        fh = open(fname)
+    for event, element in et.iterparse(fh):
+        if((element.tag.lower() in validClasses) and (event == "end")):
+            yield getattr(s, "SRA" + element.tag.title() + "Record")(element)
 
 class LiveList(object):
     def __init__(self, from_date="2004-01-01",

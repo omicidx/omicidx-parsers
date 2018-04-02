@@ -10,3 +10,7 @@ bin
 .ensime*
 .idea*
 *.gz
+/.DS_Store
+include
+/pip-selfcheck.json
+share

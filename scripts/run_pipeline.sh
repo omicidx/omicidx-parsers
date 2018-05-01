@@ -15,7 +15,7 @@ do
     j=`echo $i | sed s/meta_// | sed s/_set\.xml\.gz//`
     echo $i
     echo $j
-    ../sra_entity_to_json.py $i $j.json
+    sra_entity_to_json.py $i $j.json
     bzip2 -f $j.json
 done
 rm *xml* *json *html

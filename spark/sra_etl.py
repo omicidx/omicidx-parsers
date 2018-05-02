@@ -12,7 +12,6 @@ def main(sql, base_url, outdir):
     accession_info = sql.read.format('csv').options(header=True).options(delimiter="\t")\
                                                                 .load(base_url + "SRA_Accessions.tab.bz2")\
                                                                 .select("Accession", "Spots", "Bases")\
-                                                                .filter("Accession like 'DRR%'")\
                                                                 .withColumnRenamed('Bases','bases')\
                                                                 .withColumnRenamed('Spots','spots')\
                                                                 .withColumnRenamed('Accession','accinfo_accession')

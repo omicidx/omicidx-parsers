@@ -16,6 +16,9 @@ def main(sql, base_url, outdir):
                                                                 .withColumnRenamed('Bases','bases')\
                                                                 .withColumnRenamed('Spots','spots')\
                                                                 .withColumnRenamed('Accession','accinfo_accession')
+
+    accession_info = accession_info.withColumn("bases", accession_info.bases.cast('long'))
+    accession_info = accession_info.withColumn("spots", accession_info.spots.cast('long'))
     
     run = run.join(accession_info, run.accession==accession_info.accinfo_accession, "left").drop("accinfo_accession")
     
@@ -68,7 +71,7 @@ def main(sql, base_url, outdir):
     runinfo = runinfo.withColumn('FileSize', runinfo.FileSize.cast("integer"))
     runinfo = runinfo.withColumn("FileDate", to_timestamp("FileDate", "yyyy-MM-dd HH:mm:ss"))
 
-    r2 = r1.join(runinfo, runinfo.Accession == r1.run_accession, "left").drop("Accession")
+    r2 = r1.join(runinfo, runinfo.Accession == r1.run_accession, "left").drop("Accession").withColumnRenamed('run_accession', 'accession')
 
     nested_experiment = experiment.select(experiment.accession.alias("nested_accession"), struct([col(c) for c in experiment.drop("accession").columns]).alias("experiment"))
     r3 = r2.join(nested_experiment, nested_experiment.nested_accession == r2.experiment_accession, "left").drop("nested_accession")

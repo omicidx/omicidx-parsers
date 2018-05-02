@@ -9,6 +9,16 @@ def main(sql, base_url, outdir):
     run = sql.read.json(base_url + "run.json.bz2")
     run = run.withColumn("run_date", to_timestamp("run_date", "yyyy-MM-dd HH:mm:ss"))
 
+    accession_info = sql.read.format('csv').options(header=True).options(delimiter="\t")\
+                                                                .load(base_url + "SRA_Accessions.tab.bz2")\
+                                                                .select("Accession", "Spots", "Bases")\
+                                                                .filter("Accession like 'DRR%'")\
+                                                                .withColumnRenamed('Bases','bases')\
+                                                                .withColumnRenamed('Spots','spots')\
+                                                                .withColumnRenamed('Accession','accinfo_accession')
+    
+    run = run.join(accession_info, run.accession==accession_info.accinfo_accession, "left").drop("accinfo_accession")
+    
     study = sql.read.json(base_url + "study.json.bz2")
 
     sample = sql.read.json(base_url + "sample.json.bz2")
@@ -18,6 +28,9 @@ def main(sql, base_url, outdir):
     from pyspark.sql.functions import to_timestamp
     datecols = "Received Published LastUpdate LastMetaUpdate".split()
     ll = sql.read.format('csv').options(header=True).load(base_url + "livelist.csv.gz").repartition(25)
+
+    accession_info = sql.read.format('csv').options(header=True).options(delimiter="\t").load(base_url + "SRA_Accessions.tab.bz2")
+
     for c in datecols:
         ll = ll.withColumn(c, to_timestamp(c, "yyyy-MM-dd HH:mm:ss"))
         ll = ll.withColumn('Insdc', (ll.Insdc == "True").cast("boolean"))
@@ -29,7 +42,8 @@ def main(sql, base_url, outdir):
     experiment = experiment.join(ll, experiment.accession == ll.livelist_accession, "left").drop("livelist_accession")
     experiment = experiment\
                  .withColumn('library_layout_length',experiment.library_layout_length.cast('float'))\
-                 .withColumn('library_layout_length',experiment.library_layout_sdev.cast('float'))
+                 .withColumn('library_layout_length',experiment.library_layout_sdev.cast('float'))\
+                 .drop('experiment_accession')
     experiment.cache()
     
     sample = sample.join(ll, ll.livelist_accession == sample.accession, "left").drop("livelist_accession")
@@ -70,7 +84,8 @@ def main(sql, base_url, outdir):
     #
     experiment.write.mode("overwrite").parquet(outdir + 'parquet/experiment_parquet')
     sample.write.mode("overwrite").parquet(outdir + 'parquet/sample_parquet')
-    run.write.mode("overwrite").parquet(outdir + 'parquet/run_parquet')
+    # includes file addons
+    r2.write.mode("overwrite").parquet(outdir + 'parquet/run_parquet')
     study.write.mode("overwrite").parquet(outdir + 'parquet/study_parquet')
 
     # 

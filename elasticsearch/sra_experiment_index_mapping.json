@@ -1,0 +1,242 @@
+{
+    "properties": {
+        "Insdc": {
+            "type": "boolean"
+        },
+        "LastMetaUpdate": {
+            "type": "date"
+        },
+        "LastUpdate": {
+            "type": "date"
+        },
+        "Published": {
+            "type": "date"
+        },
+        "Received": {
+            "type": "date"
+        },
+        "Status": {
+            "type": "text",
+            "fields": {
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
+            }
+        },
+        "accession": {
+            "type": "text",
+            "fields": {
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
+            }
+        },
+        "alias": {
+            "type": "text",
+            "fields": {
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
+            }
+        },
+        "attributes": {
+            "properties": {
+		"tag": {
+                    "type": "text",
+                    "fields": {
+			"keyword": {
+			    "type": "keyword",
+			    "ignore_above": 256
+			}
+                    }
+		},
+		"value": {
+                    "type": "text",
+                    "fields": {
+			"keyword": {
+			    "type": "keyword",
+			    "ignore_above": 256
+			}
+                    }
+		}
+            }
+        },
+        "broker_name": {
+            "type": "text",
+            "fields": {
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
+            }
+        },
+        "center_name": {
+            "type": "text",
+            "fields": {
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
+            }
+        },
+        "design": {
+            "type": "text",
+            "fields": {
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
+            }
+        },
+        "identifiers": {
+            "properties": {
+		"id": {
+                    "type": "text",
+                    "fields": {
+			"keyword": {
+			    "type": "keyword",
+			    "ignore_above": 256
+			}
+                    }
+		},
+		"namespace": {
+                    "type": "text",
+                    "fields": {
+			"keyword": {
+			    "type": "keyword",
+			    "ignore_above": 256
+			}
+                    }
+		},
+		"uuid": {
+                    "type": "text",
+                    "fields": {
+			"keyword": {
+			    "type": "keyword",
+			    "ignore_above": 256
+			}
+                    }
+		}
+            }
+        },
+        "instrument_model": {
+            "type": "text",
+            "fields": {
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
+            }
+        },
+        "library_construction_protocol": {
+            "type": "text",
+            "fields": {
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
+            }
+        },
+        "library_layout": {
+            "type": "text",
+            "fields": {
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
+            }
+        },
+        "library_layout_length": {
+            "type": "float"
+        },
+        "library_layout_sdev": {
+            "type": "text",
+            "fields": {
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
+            }
+        },
+        "library_name": {
+            "type": "text",
+            "fields": {
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
+            }
+        },
+        "library_selection": {
+            "type": "text",
+            "fields": {
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
+            }
+        },
+        "library_source": {
+            "type": "text",
+            "fields": {
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
+            }
+        },
+        "library_strategy": {
+            "type": "text",
+            "fields": {
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
+            }
+        },
+        "platform": {
+            "type": "text",
+            "fields": {
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
+            }
+        },
+        "title": {
+            "type": "text",
+            "fields": {
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
+            }
+        },
+        "xrefs": {
+            "properties": {
+		"db": {
+                    "type": "text",
+                    "fields": {
+			"keyword": {
+			    "type": "keyword",
+			    "ignore_above": 256
+			}
+                    }
+		},
+		"id": {
+                    "type": "text",
+                    "fields": {
+			"keyword": {
+			    "type": "keyword",
+			    "ignore_above": 256
+			}
+                    }
+		}
+            }
+        }
+    }
+}
+

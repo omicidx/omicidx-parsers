@@ -1,11 +1,21 @@
 {
-    "mappings": {
-      "doc": {
         "properties": {
-          "@timestamp": {
+          "experiment_Insdc": {
+            "type": "boolean"
+          },
+          "experiment_LastMetaUpdate": {
             "type": "date"
           },
-          "@version": {
+          "experiment_LastUpdate": {
+            "type": "date"
+          },
+          "experiment_Published": {
+            "type": "date"
+          },
+          "experiment_Received": {
+            "type": "date"
+          },
+          "experiment_Status": {
             "type": "text",
             "fields": {
               "keyword": {
@@ -14,7 +24,7 @@
               }
             }
           },
-          "BioProject": {
+          "experiment_accession": {
             "type": "text",
             "fields": {
               "keyword": {
@@ -23,7 +33,7 @@
               }
             }
           },
-          "BioSample": {
+          "experiment_alias": {
             "type": "text",
             "fields": {
               "keyword": {
@@ -32,139 +42,7 @@
               }
             }
           },
-          "GEO": {
-            "type": "text",
-            "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
-            }
-          },
-          "Insdc": {
-            "type": "text",
-            "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
-            }
-          },
-          "LastMetaUpdate": {
-            "type": "date",
-            "format": "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis"
-          },
-          "LastUpdate": {
-            "type": "date",
-            "format": "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis"
-          },
-          "Published": {
-            "type": "date",
-            "format": "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis"
-          },
-          "Received": {
-            "type": "date",
-            "format": "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis"
-          },
-          "ReplacedBy": {
-            "type": "text",
-            "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
-            }
-          },
-          "Status": {
-            "type": "text",
-            "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
-            }
-          },
-          "Type": {
-            "type": "text",
-            "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
-            }
-          },
-          "abstract": {
-            "type": "text",
-            "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
-            }
-          },
-          "accession": {
-            "type": "text",
-            "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
-            }
-          },
-          "additional_files": {
-            "properties": {
-              "file_date": {
-                "type": "text",
-                "fields": {
-                  "keyword": {
-                    "type": "keyword",
-                    "ignore_above": 256
-                  }
-                }
-              },
-              "file_md5": {
-                "type": "text",
-                "fields": {
-                  "keyword": {
-                    "type": "keyword",
-                    "ignore_above": 256
-                  }
-                }
-              },
-              "file_name": {
-                "type": "text",
-                "fields": {
-                  "keyword": {
-                    "type": "keyword",
-                    "ignore_above": 256
-                  }
-                }
-              },
-              "file_size": {
-                "type": "long"
-              },
-              "url": {
-                "type": "text",
-                "fields": {
-                  "keyword": {
-                    "type": "keyword",
-                    "ignore_above": 256
-                  }
-                }
-              }
-            }
-          },
-          "alias": {
-            "type": "text",
-            "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
-            }
-          },
-          "attributes": {
-            "type": "nested",
+          "experiment_attributes": {
             "properties": {
               "tag": {
                 "type": "text",
@@ -186,7 +64,7 @@
               }
             }
           },
-          "broker_name": {
+          "experiment_broker_name": {
             "type": "text",
             "fields": {
               "keyword": {
@@ -195,7 +73,7 @@
               }
             }
           },
-          "center_name": {
+          "experiment_center_name": {
             "type": "text",
             "fields": {
               "keyword": {
@@ -204,7 +82,7 @@
               }
             }
           },
-          "description": {
+          "experiment_design": {
             "type": "text",
             "fields": {
               "keyword": {
@@ -213,26 +91,7 @@
               }
             }
           },
-          "design": {
-            "type": "text",
-            "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
-            }
-          },
-          "experiment_accession": {
-            "type": "text",
-            "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
-            }
-          },
-          "external_id": {
-            "type": "nested",
+          "experiment_identifiers": {
             "properties": {
               "id": {
                 "type": "text",
@@ -251,10 +110,19 @@
                     "ignore_above": 256
                   }
                 }
+              },
+              "uuid": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
               }
             }
           },
-          "file_date": {
+          "experiment_instrument_model": {
             "type": "text",
             "fields": {
               "keyword": {
@@ -263,7 +131,7 @@
               }
             }
           },
-          "file_md5": {
+          "experiment_library_construction_protocol": {
             "type": "text",
             "fields": {
               "keyword": {
@@ -272,10 +140,134 @@
               }
             }
           },
-          "file_size": {
+          "experiment_library_layout": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "experiment_library_layout_length": {
+            "type": "float"
+          },
+          "experiment_library_layout_sdev": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "experiment_library_name": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "experiment_library_selection": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "experiment_library_source": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "experiment_library_strategy": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "experiment_platform": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "experiment_title": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "experiment_xrefs": {
+            "properties": {
+              "db": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
+              },
+              "id": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
+              }
+            }
+          },
+          "run_FileDate": {
+            "type": "date"
+          },
+          "run_FileMd5": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "run_FileSize": {
             "type": "long"
           },
-          "host": {
+          "run_Insdc": {
+            "type": "boolean"
+          },
+          "run_LastMetaUpdate": {
+            "type": "date"
+          },
+          "run_LastUpdate": {
+            "type": "date"
+          },
+          "run_Published": {
+            "type": "date"
+          },
+          "run_Received": {
+            "type": "date"
+          },
+          "run_Status": {
             "type": "text",
             "fields": {
               "keyword": {
@@ -284,7 +276,7 @@
               }
             }
           },
-          "instrument_model": {
+          "run_accession": {
             "type": "text",
             "fields": {
               "keyword": {
@@ -293,7 +285,7 @@
               }
             }
           },
-          "library_construction_protocol": {
+          "run_alias": {
             "type": "text",
             "fields": {
               "keyword": {
@@ -302,7 +294,32 @@
               }
             }
           },
-          "library_layout": {
+          "run_attributes": {
+            "properties": {
+              "tag": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
+              },
+              "value": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
+              }
+            }
+          },
+          "run_bases": {
+          "type" : "long"
+          },
+          "run_broker_name": {
             "type": "text",
             "fields": {
               "keyword": {
@@ -311,7 +328,7 @@
               }
             }
           },
-          "library_layout_length": {
+          "run_center_name": {
             "type": "text",
             "fields": {
               "keyword": {
@@ -320,83 +337,78 @@
               }
             }
           },
-          "library_layout_sdev": {
-            "type": "text",
-            "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
+          "run_file_addons": {
+            "properties": {
+              "FileDate": {
+                "type": "date"
+              },
+              "FileMd5": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
+              },
+              "FileName": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
+              },
+              "FileSize": {
+                "type": "long"
+              },
+              "URL": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
               }
             }
           },
-          "library_name": {
-            "type": "text",
-            "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
+          "run_identifiers": {
+            "properties": {
+              "id": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
+              },
+              "namespace": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
+              },
+              "uuid": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
               }
             }
           },
-          "library_selection": {
-            "type": "text",
-            "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
-            }
-          },
-          "library_source": {
-            "type": "text",
-            "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
-            }
-          },
-          "library_strategy": {
-            "type": "text",
-            "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
-            }
-          },
-          "nreads": {
+          "run_nreads": {
             "type": "long"
           },
-          "organism": {
-            "type": "text",
-            "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
-            }
-          },
-          "path": {
-            "type": "text",
-            "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
-            }
-          },
-          "platform": {
-            "type": "text",
-            "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
-            }
-          },
-          "reads": {
-            "type": "nested",
+          "run_reads": {
             "properties": {
               "base_coord": {
                 "type": "long"
@@ -424,7 +436,7 @@
               }
             }
           },
-          "run_accession": {
+          "run_run_center": {
             "type": "text",
             "fields": {
               "keyword": {
@@ -433,7 +445,13 @@
               }
             }
           },
-          "run_center": {
+          "run_spot_length": {
+            "type": "long"
+          },
+          "run_spots": {
+            "type": "long"
+          },
+          "sample_BioSample": {
             "type": "text",
             "fields": {
               "keyword": {
@@ -442,8 +460,38 @@
               }
             }
           },
-          "run_date": {
+          "sample_GEO": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "sample_Insdc": {
+            "type": "boolean"
+          },
+          "sample_LastMetaUpdate": {
             "type": "date"
+          },
+          "sample_LastUpdate": {
+            "type": "date"
+          },
+          "sample_Published": {
+            "type": "date"
+          },
+          "sample_Received": {
+            "type": "date"
+          },
+          "sample_Status": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
           },
           "sample_accession": {
             "type": "text",
@@ -454,10 +502,27 @@
               }
             }
           },
-          "secondary_id": {
-            "type": "nested",
+          "sample_alias": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "sample_attributes": {
             "properties": {
-              "id": {
+              "tag": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
+              },
+              "value": {
                 "type": "text",
                 "fields": {
                   "keyword": {
@@ -468,10 +533,7 @@
               }
             }
           },
-          "spot_length": {
-            "type": "long"
-          },
-          "study_accession": {
+          "sample_broker_name": {
             "type": "text",
             "fields": {
               "keyword": {
@@ -480,7 +542,7 @@
               }
             }
           },
-          "study_type": {
+          "sample_center_name": {
             "type": "text",
             "fields": {
               "keyword": {
@@ -489,8 +551,16 @@
               }
             }
           },
-          "submitter_id": {
-            "type": "nested",
+          "sample_description": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "sample_identifiers": {
             "properties": {
               "id": {
                 "type": "text",
@@ -512,10 +582,32 @@
               }
             }
           },
-          "taxon_id": {
-            "type": "long"
+          "sample_numeric_properties": {
+            "properties": {
+              "property_id": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
+              },
+              "unit_id": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
+              },
+              "value": {
+                "type": "float"
+              }
+            }
           },
-          "title": {
+          "sample_ontology_terms": {
             "type": "text",
             "fields": {
               "keyword": {
@@ -524,16 +616,238 @@
               }
             }
           },
-          "uuid": {
+          "sample_organism": {
             "type": "text",
             "fields": {
               "keyword": {
                 "type": "keyword",
                 "ignore_above": 256
+              }
+            }
+          },
+          "sample_sample_type": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "sample_taxon_id": {
+            "type": "long"
+          },
+          "sample_title": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "sample_xrefs": {
+            "properties": {
+              "db": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
+              },
+              "id": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
+              }
+            }
+          },
+          "study_BioProject": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "study_GEO": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "study_Insdc": {
+            "type": "boolean"
+          },
+          "study_LastMetaUpdate": {
+            "type": "date"
+          },
+          "study_LastUpdate": {
+            "type": "date"
+          },
+          "study_Published": {
+            "type": "date"
+          },
+          "study_Received": {
+            "type": "date"
+          },
+          "study_Status": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "study_abstract": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "study_accession": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "study_alias": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "study_attributes": {
+            "properties": {
+              "tag": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
+              },
+              "value": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
+              }
+            }
+          },
+          "study_broker_name": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "study_center_name": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "study_description": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "study_identifiers": {
+            "properties": {
+              "id": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
+              },
+              "namespace": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
+              }
+            }
+          },
+          "study_study_type": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "study_title": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "study_xrefs": {
+            "properties": {
+              "db": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
+              },
+              "id": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
               }
             }
           }
         }
-      }
-    }
-  }
+      
+}

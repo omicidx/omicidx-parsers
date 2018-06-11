@@ -43,6 +43,8 @@
             }
         },
         "experiment_attributes": {
+	    "type": "nested",
+	    "include_in_parent": "true",
             "properties": {
 		"tag": {
                     "type": "text",
@@ -92,7 +94,8 @@
             }
         },
         "experiment_identifiers": {
-	    
+	    "type": "nested",
+	    "include_in_parent": "true",
             "properties": {
 		"id": {
                     "type": "text",
@@ -217,6 +220,8 @@
             }
         },
         "experiment_xrefs": {
+	    "type": "nested",
+	    "include_in_parent": "true",
             "properties": {
 		"db": {
                     "type": "text",
@@ -296,6 +301,8 @@
             }
         },
         "run_attributes": {
+	    "type": "nested",
+	    "include_in_parent": "true",
             "properties": {
 		"tag": {
                     "type": "text",
@@ -339,6 +346,8 @@
             }
         },
         "run_file_addons": {
+	    "type": "nested",
+	    "include_in_parent": "true",
             "properties": {
 		"FileDate": {
                     "type": "date"
@@ -376,6 +385,8 @@
             }
         },
         "run_identifiers": {
+	    "type": "nested",
+	    "include_in_parent": "true",
             "properties": {
 		"id": {
                     "type": "text",
@@ -410,6 +421,8 @@
             "type": "long"
         },
         "run_reads": {
+	    "type": "nested",
+	    "include_in_parent": "true",
             "properties": {
 		"base_coord": {
                     "type": "long"
@@ -513,6 +526,8 @@
             }
         },
         "sample_attributes": {
+	    "type": "nested",
+	    "include_in_parent": "true",
             "properties": {
 		"tag": {
                     "type": "text",
@@ -562,6 +577,8 @@
             }
         },
         "sample_identifiers": {
+	    "type": "nested",
+	    "include_in_parent": "true",
             "properties": {
 		"id": {
                     "type": "text",
@@ -584,6 +601,8 @@
             }
         },
         "sample_numeric_properties": {
+	    "type": "nested",
+	    "include_in_parent": "true",
             "properties": {
 		"property_id": {
                     "type": "text",
@@ -648,6 +667,8 @@
             }
         },
         "sample_xrefs": {
+	    "type": "nested",
+	    "include_in_parent": "true",
             "properties": {
 		"db": {
                     "type": "text",
@@ -739,6 +760,8 @@
             }
         },
         "study_attributes": {
+	    "type": "nested",
+	    "include_in_parent": "true",
             "properties": {
 		"tag": {
                     "type": "text",
@@ -788,6 +811,8 @@
             }
         },
         "study_identifiers": {
+	    "type": "nested",
+	    "include_in_parent": "true",
             "properties": {
 		"id": {
                     "type": "text",
@@ -828,6 +853,8 @@
             }
         },
         "study_xrefs": {
+	    "type": "nested",
+	    "include_in_parent": "true",
             "properties": {
 		"db": {
                     "type": "text",

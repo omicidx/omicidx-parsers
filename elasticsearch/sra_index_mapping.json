@@ -1,853 +1,881 @@
 {
-        "properties": {
-          "experiment_Insdc": {
+    "properties": {
+        "experiment_Insdc": {
             "type": "boolean"
-          },
-          "experiment_LastMetaUpdate": {
+        },
+        "experiment_LastMetaUpdate": {
             "type": "date"
-          },
-          "experiment_LastUpdate": {
+        },
+        "experiment_LastUpdate": {
             "type": "date"
-          },
-          "experiment_Published": {
+        },
+        "experiment_Published": {
             "type": "date"
-          },
-          "experiment_Received": {
+        },
+        "experiment_Received": {
             "type": "date"
-          },
-          "experiment_Status": {
+        },
+        "experiment_Status": {
             "type": "text",
             "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
             }
-          },
-          "experiment_accession": {
+        },
+        "experiment_accession": {
             "type": "text",
             "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
             }
-          },
-          "experiment_alias": {
+        },
+        "experiment_alias": {
             "type": "text",
             "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
             }
-          },
-          "experiment_attributes": {
+        },
+        "experiment_attributes": {
+	    "type": "nested",
+	    "include_in_parent": "true",
             "properties": {
-              "tag": {
-                "type": "text",
-                "fields": {
-                  "keyword": {
+		"tag": {
+                    "type": "text",
+                    "fields": {
+			"keyword": {
+			    "type": "keyword",
+			    "ignore_above": 256
+			}
+                    }
+		},
+		"value": {
+                    "type": "text",
+                    "fields": {
+			"keyword": {
+			    "type": "keyword",
+			    "ignore_above": 256
+			}
+                    }
+		}
+            }
+        },
+        "experiment_broker_name": {
+            "type": "text",
+            "fields": {
+		"keyword": {
                     "type": "keyword",
                     "ignore_above": 256
-                  }
-                }
-              },
-              "value": {
-                "type": "text",
-                "fields": {
-                  "keyword": {
+		}
+            }
+        },
+        "experiment_center_name": {
+            "type": "text",
+            "fields": {
+		"keyword": {
                     "type": "keyword",
                     "ignore_above": 256
-                  }
-                }
-              }
+		}
             }
-          },
-          "experiment_broker_name": {
+        },
+        "experiment_design": {
             "type": "text",
             "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
             }
-          },
-          "experiment_center_name": {
-            "type": "text",
-            "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
-            }
-          },
-          "experiment_design": {
-            "type": "text",
-            "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
-            }
-          },
-          "experiment_identifiers": {
+        },
+        "experiment_identifiers": {
+	    "type": "nested",
+	    "include_in_parent": "true",
             "properties": {
-              "id": {
-                "type": "text",
-                "fields": {
-                  "keyword": {
-                    "type": "keyword",
-                    "ignore_above": 256
-                  }
-                }
-              },
-              "namespace": {
-                "type": "text",
-                "fields": {
-                  "keyword": {
-                    "type": "keyword",
-                    "ignore_above": 256
-                  }
-                }
-              },
-              "uuid": {
-                "type": "text",
-                "fields": {
-                  "keyword": {
-                    "type": "keyword",
-                    "ignore_above": 256
-                  }
-                }
-              }
+		"id": {
+                    "type": "text",
+                    "fields": {
+			"keyword": {
+			    "type": "keyword",
+			    "ignore_above": 256
+			}
+                    }
+		},
+		"namespace": {
+                    "type": "text",
+                    "fields": {
+			"keyword": {
+			    "type": "keyword",
+			    "ignore_above": 256
+			}
+                    }
+		},
+		"uuid": {
+                    "type": "text",
+                    "fields": {
+			"keyword": {
+			    "type": "keyword",
+			    "ignore_above": 256
+			}
+                    }
+		}
             }
-          },
-          "experiment_instrument_model": {
+        },
+        "experiment_instrument_model": {
             "type": "text",
             "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
             }
-          },
-          "experiment_library_construction_protocol": {
+        },
+        "experiment_library_construction_protocol": {
             "type": "text",
             "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
             }
-          },
-          "experiment_library_layout": {
+        },
+        "experiment_library_layout": {
             "type": "text",
             "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
             }
-          },
-          "experiment_library_layout_length": {
+        },
+        "experiment_library_layout_length": {
             "type": "float"
-          },
-          "experiment_library_layout_sdev": {
+        },
+        "experiment_library_layout_sdev": {
             "type": "text",
             "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
             }
-          },
-          "experiment_library_name": {
+        },
+        "experiment_library_name": {
             "type": "text",
             "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
             }
-          },
-          "experiment_library_selection": {
+        },
+        "experiment_library_selection": {
             "type": "text",
             "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
             }
-          },
-          "experiment_library_source": {
+        },
+        "experiment_library_source": {
             "type": "text",
             "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
             }
-          },
-          "experiment_library_strategy": {
+        },
+        "experiment_library_strategy": {
             "type": "text",
             "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
             }
-          },
-          "experiment_platform": {
+        },
+        "experiment_platform": {
             "type": "text",
             "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
             }
-          },
-          "experiment_title": {
+        },
+        "experiment_title": {
             "type": "text",
             "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
             }
-          },
-          "experiment_xrefs": {
+        },
+        "experiment_xrefs": {
+	    "type": "nested",
+	    "include_in_parent": "true",
             "properties": {
-              "db": {
-                "type": "text",
-                "fields": {
-                  "keyword": {
-                    "type": "keyword",
-                    "ignore_above": 256
-                  }
-                }
-              },
-              "id": {
-                "type": "text",
-                "fields": {
-                  "keyword": {
-                    "type": "keyword",
-                    "ignore_above": 256
-                  }
-                }
-              }
+		"db": {
+                    "type": "text",
+                    "fields": {
+			"keyword": {
+			    "type": "keyword",
+			    "ignore_above": 256
+			}
+                    }
+		},
+		"id": {
+                    "type": "text",
+                    "fields": {
+			"keyword": {
+			    "type": "keyword",
+			    "ignore_above": 256
+			}
+                    }
+		}
             }
-          },
-          "run_FileDate": {
+        },
+        "run_FileDate": {
             "type": "date"
-          },
-          "run_FileMd5": {
+        },
+        "run_FileMd5": {
             "type": "text",
             "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
             }
-          },
-          "run_FileSize": {
+        },
+        "run_FileSize": {
             "type": "long"
-          },
-          "run_Insdc": {
+        },
+        "run_Insdc": {
             "type": "boolean"
-          },
-          "run_LastMetaUpdate": {
+        },
+        "run_LastMetaUpdate": {
             "type": "date"
-          },
-          "run_LastUpdate": {
+        },
+        "run_LastUpdate": {
             "type": "date"
-          },
-          "run_Published": {
+        },
+        "run_Published": {
             "type": "date"
-          },
-          "run_Received": {
+        },
+        "run_Received": {
             "type": "date"
-          },
-          "run_Status": {
+        },
+        "run_Status": {
             "type": "text",
             "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
             }
-          },
-          "run_accession": {
+        },
+        "run_accession": {
             "type": "text",
             "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
             }
-          },
-          "run_alias": {
+        },
+        "run_alias": {
             "type": "text",
             "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
             }
-          },
-          "run_attributes": {
+        },
+        "run_attributes": {
+	    "type": "nested",
+	    "include_in_parent": "true",
             "properties": {
-              "tag": {
-                "type": "text",
-                "fields": {
-                  "keyword": {
-                    "type": "keyword",
-                    "ignore_above": 256
-                  }
-                }
-              },
-              "value": {
-                "type": "text",
-                "fields": {
-                  "keyword": {
-                    "type": "keyword",
-                    "ignore_above": 256
-                  }
-                }
-              }
+		"tag": {
+                    "type": "text",
+                    "fields": {
+			"keyword": {
+			    "type": "keyword",
+			    "ignore_above": 256
+			}
+                    }
+		},
+		"value": {
+                    "type": "text",
+                    "fields": {
+			"keyword": {
+			    "type": "keyword",
+			    "ignore_above": 256
+			}
+                    }
+		}
             }
-          },
-          "run_bases": {
-          "type" : "long"
-          },
-          "run_broker_name": {
+        },
+        "run_bases": {
+            "type" : "long"
+        },
+        "run_broker_name": {
             "type": "text",
             "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
             }
-          },
-          "run_center_name": {
+        },
+        "run_center_name": {
             "type": "text",
             "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
             }
-          },
-          "run_file_addons": {
+        },
+        "run_file_addons": {
+	    "type": "nested",
+	    "include_in_parent": "true",
             "properties": {
-              "FileDate": {
-                "type": "date"
-              },
-              "FileMd5": {
-                "type": "text",
-                "fields": {
-                  "keyword": {
-                    "type": "keyword",
-                    "ignore_above": 256
-                  }
-                }
-              },
-              "FileName": {
-                "type": "text",
-                "fields": {
-                  "keyword": {
-                    "type": "keyword",
-                    "ignore_above": 256
-                  }
-                }
-              },
-              "FileSize": {
-                "type": "long"
-              },
-              "URL": {
-                "type": "text",
-                "fields": {
-                  "keyword": {
-                    "type": "keyword",
-                    "ignore_above": 256
-                  }
-                }
-              }
+		"FileDate": {
+                    "type": "date"
+		},
+		"FileMd5": {
+                    "type": "text",
+                    "fields": {
+			"keyword": {
+			    "type": "keyword",
+			    "ignore_above": 256
+			}
+                    }
+		},
+		"FileName": {
+                    "type": "text",
+                    "fields": {
+			"keyword": {
+			    "type": "keyword",
+			    "ignore_above": 256
+			}
+                    }
+		},
+		"FileSize": {
+                    "type": "long"
+		},
+		"URL": {
+                    "type": "text",
+                    "fields": {
+			"keyword": {
+			    "type": "keyword",
+			    "ignore_above": 256
+			}
+                    }
+		}
             }
-          },
-          "run_identifiers": {
+        },
+        "run_identifiers": {
+	    "type": "nested",
+	    "include_in_parent": "true",
             "properties": {
-              "id": {
-                "type": "text",
-                "fields": {
-                  "keyword": {
-                    "type": "keyword",
-                    "ignore_above": 256
-                  }
-                }
-              },
-              "namespace": {
-                "type": "text",
-                "fields": {
-                  "keyword": {
-                    "type": "keyword",
-                    "ignore_above": 256
-                  }
-                }
-              },
-              "uuid": {
-                "type": "text",
-                "fields": {
-                  "keyword": {
-                    "type": "keyword",
-                    "ignore_above": 256
-                  }
-                }
-              }
+		"id": {
+                    "type": "text",
+                    "fields": {
+			"keyword": {
+			    "type": "keyword",
+			    "ignore_above": 256
+			}
+                    }
+		},
+		"namespace": {
+                    "type": "text",
+                    "fields": {
+			"keyword": {
+			    "type": "keyword",
+			    "ignore_above": 256
+			}
+                    }
+		},
+		"uuid": {
+                    "type": "text",
+                    "fields": {
+			"keyword": {
+			    "type": "keyword",
+			    "ignore_above": 256
+			}
+                    }
+		}
             }
-          },
-          "run_nreads": {
+        },
+        "run_nreads": {
             "type": "long"
-          },
-          "run_reads": {
+        },
+        "run_reads": {
+	    "type": "nested",
+	    "include_in_parent": "true",
             "properties": {
-              "base_coord": {
-                "type": "long"
-              },
-              "read_class": {
-                "type": "text",
-                "fields": {
-                  "keyword": {
+		"base_coord": {
+                    "type": "long"
+		},
+		"read_class": {
+                    "type": "text",
+                    "fields": {
+			"keyword": {
+			    "type": "keyword",
+			    "ignore_above": 256
+			}
+                    }
+		},
+		"read_index": {
+                    "type": "long"
+		},
+		"read_type": {
+                    "type": "text",
+                    "fields": {
+			"keyword": {
+			    "type": "keyword",
+			    "ignore_above": 256
+			}
+                    }
+		}
+            }
+        },
+        "run_run_center": {
+            "type": "text",
+            "fields": {
+		"keyword": {
                     "type": "keyword",
                     "ignore_above": 256
-                  }
-                }
-              },
-              "read_index": {
-                "type": "long"
-              },
-              "read_type": {
-                "type": "text",
-                "fields": {
-                  "keyword": {
+		}
+            }
+        },
+        "run_spot_length": {
+            "type": "long"
+        },
+        "run_spots": {
+            "type": "long"
+        },
+        "sample_BioSample": {
+            "type": "text",
+            "fields": {
+		"keyword": {
                     "type": "keyword",
                     "ignore_above": 256
-                  }
-                }
-              }
+		}
             }
-          },
-          "run_run_center": {
+        },
+        "sample_GEO": {
             "type": "text",
             "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
             }
-          },
-          "run_spot_length": {
-            "type": "long"
-          },
-          "run_spots": {
-            "type": "long"
-          },
-          "sample_BioSample": {
-            "type": "text",
-            "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
-            }
-          },
-          "sample_GEO": {
-            "type": "text",
-            "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
-            }
-          },
-          "sample_Insdc": {
+        },
+        "sample_Insdc": {
             "type": "boolean"
-          },
-          "sample_LastMetaUpdate": {
+        },
+        "sample_LastMetaUpdate": {
             "type": "date"
-          },
-          "sample_LastUpdate": {
+        },
+        "sample_LastUpdate": {
             "type": "date"
-          },
-          "sample_Published": {
+        },
+        "sample_Published": {
             "type": "date"
-          },
-          "sample_Received": {
+        },
+        "sample_Received": {
             "type": "date"
-          },
-          "sample_Status": {
+        },
+        "sample_Status": {
             "type": "text",
             "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
             }
-          },
-          "sample_accession": {
+        },
+        "sample_accession": {
             "type": "text",
             "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
             }
-          },
-          "sample_alias": {
+        },
+        "sample_alias": {
             "type": "text",
             "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
             }
-          },
-          "sample_attributes": {
+        },
+        "sample_attributes": {
+	    "type": "nested",
+	    "include_in_parent": "true",
             "properties": {
-              "tag": {
-                "type": "text",
-                "fields": {
-                  "keyword": {
+		"tag": {
+                    "type": "text",
+                    "fields": {
+			"keyword": {
+			    "type": "keyword",
+			    "ignore_above": 256
+			}
+                    }
+		},
+		"value": {
+                    "type": "text",
+                    "fields": {
+			"keyword": {
+			    "type": "keyword",
+			    "ignore_above": 256
+			}
+                    }
+		}
+            }
+        },
+        "sample_broker_name": {
+            "type": "text",
+            "fields": {
+		"keyword": {
                     "type": "keyword",
                     "ignore_above": 256
-                  }
-                }
-              },
-              "value": {
-                "type": "text",
-                "fields": {
-                  "keyword": {
+		}
+            }
+        },
+        "sample_center_name": {
+            "type": "text",
+            "fields": {
+		"keyword": {
                     "type": "keyword",
                     "ignore_above": 256
-                  }
-                }
-              }
+		}
             }
-          },
-          "sample_broker_name": {
+        },
+        "sample_description": {
             "type": "text",
             "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
             }
-          },
-          "sample_center_name": {
-            "type": "text",
-            "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
-            }
-          },
-          "sample_description": {
-            "type": "text",
-            "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
-            }
-          },
-          "sample_identifiers": {
+        },
+        "sample_identifiers": {
+	    "type": "nested",
+	    "include_in_parent": "true",
             "properties": {
-              "id": {
-                "type": "text",
-                "fields": {
-                  "keyword": {
-                    "type": "keyword",
-                    "ignore_above": 256
-                  }
-                }
-              },
-              "namespace": {
-                "type": "text",
-                "fields": {
-                  "keyword": {
-                    "type": "keyword",
-                    "ignore_above": 256
-                  }
-                }
-              }
+		"id": {
+                    "type": "text",
+                    "fields": {
+			"keyword": {
+			    "type": "keyword",
+			    "ignore_above": 256
+			}
+                    }
+		},
+		"namespace": {
+                    "type": "text",
+                    "fields": {
+			"keyword": {
+			    "type": "keyword",
+			    "ignore_above": 256
+			}
+                    }
+		}
             }
-          },
-          "sample_numeric_properties": {
+        },
+        "sample_numeric_properties": {
+	    "type": "nested",
+	    "include_in_parent": "true",
             "properties": {
-              "property_id": {
-                "type": "text",
-                "fields": {
-                  "keyword": {
+		"property_id": {
+                    "type": "text",
+                    "fields": {
+			"keyword": {
+			    "type": "keyword",
+			    "ignore_above": 256
+			}
+                    }
+		},
+		"unit_id": {
+                    "type": "text",
+                    "fields": {
+			"keyword": {
+			    "type": "keyword",
+			    "ignore_above": 256
+			}
+                    }
+		},
+		"value": {
+                    "type": "float"
+		}
+            }
+        },
+        "sample_ontology_terms": {
+            "type": "text",
+            "fields": {
+		"keyword": {
                     "type": "keyword",
                     "ignore_above": 256
-                  }
-                }
-              },
-              "unit_id": {
-                "type": "text",
-                "fields": {
-                  "keyword": {
+		}
+            }
+        },
+        "sample_organism": {
+            "type": "text",
+            "fields": {
+		"keyword": {
                     "type": "keyword",
                     "ignore_above": 256
-                  }
-                }
-              },
-              "value": {
-                "type": "float"
-              }
+		}
             }
-          },
-          "sample_ontology_terms": {
+        },
+        "sample_sample_type": {
             "type": "text",
             "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
             }
-          },
-          "sample_organism": {
-            "type": "text",
-            "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
-            }
-          },
-          "sample_sample_type": {
-            "type": "text",
-            "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
-            }
-          },
-          "sample_taxon_id": {
+        },
+        "sample_taxon_id": {
             "type": "long"
-          },
-          "sample_title": {
+        },
+        "sample_title": {
             "type": "text",
             "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
             }
-          },
-          "sample_xrefs": {
+        },
+        "sample_xrefs": {
+	    "type": "nested",
+	    "include_in_parent": "true",
             "properties": {
-              "db": {
-                "type": "text",
-                "fields": {
-                  "keyword": {
-                    "type": "keyword",
-                    "ignore_above": 256
-                  }
-                }
-              },
-              "id": {
-                "type": "text",
-                "fields": {
-                  "keyword": {
-                    "type": "keyword",
-                    "ignore_above": 256
-                  }
-                }
-              }
+		"db": {
+                    "type": "text",
+                    "fields": {
+			"keyword": {
+			    "type": "keyword",
+			    "ignore_above": 256
+			}
+                    }
+		},
+		"id": {
+                    "type": "text",
+                    "fields": {
+			"keyword": {
+			    "type": "keyword",
+			    "ignore_above": 256
+			}
+                    }
+		}
             }
-          },
-          "study_BioProject": {
+        },
+        "study_BioProject": {
             "type": "text",
             "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
             }
-          },
-          "study_GEO": {
+        },
+        "study_GEO": {
             "type": "text",
             "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
             }
-          },
-          "study_Insdc": {
+        },
+        "study_Insdc": {
             "type": "boolean"
-          },
-          "study_LastMetaUpdate": {
+        },
+        "study_LastMetaUpdate": {
             "type": "date"
-          },
-          "study_LastUpdate": {
+        },
+        "study_LastUpdate": {
             "type": "date"
-          },
-          "study_Published": {
+        },
+        "study_Published": {
             "type": "date"
-          },
-          "study_Received": {
+        },
+        "study_Received": {
             "type": "date"
-          },
-          "study_Status": {
+        },
+        "study_Status": {
             "type": "text",
             "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
             }
-          },
-          "study_abstract": {
+        },
+        "study_abstract": {
             "type": "text",
             "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
             }
-          },
-          "study_accession": {
+        },
+        "study_accession": {
             "type": "text",
             "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
             }
-          },
-          "study_alias": {
+        },
+        "study_alias": {
             "type": "text",
             "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
             }
-          },
-          "study_attributes": {
+        },
+        "study_attributes": {
+	    "type": "nested",
+	    "include_in_parent": "true",
             "properties": {
-              "tag": {
-                "type": "text",
-                "fields": {
-                  "keyword": {
+		"tag": {
+                    "type": "text",
+                    "fields": {
+			"keyword": {
+			    "type": "keyword",
+			    "ignore_above": 256
+			}
+                    }
+		},
+		"value": {
+                    "type": "text",
+                    "fields": {
+			"keyword": {
+			    "type": "keyword",
+			    "ignore_above": 256
+			}
+                    }
+		}
+            }
+        },
+        "study_broker_name": {
+            "type": "text",
+            "fields": {
+		"keyword": {
                     "type": "keyword",
                     "ignore_above": 256
-                  }
-                }
-              },
-              "value": {
-                "type": "text",
-                "fields": {
-                  "keyword": {
+		}
+            }
+        },
+        "study_center_name": {
+            "type": "text",
+            "fields": {
+		"keyword": {
                     "type": "keyword",
                     "ignore_above": 256
-                  }
-                }
-              }
+		}
             }
-          },
-          "study_broker_name": {
+        },
+        "study_description": {
             "type": "text",
             "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
             }
-          },
-          "study_center_name": {
-            "type": "text",
-            "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
-            }
-          },
-          "study_description": {
-            "type": "text",
-            "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
-            }
-          },
-          "study_identifiers": {
+        },
+        "study_identifiers": {
+	    "type": "nested",
+	    "include_in_parent": "true",
             "properties": {
-              "id": {
-                "type": "text",
-                "fields": {
-                  "keyword": {
-                    "type": "keyword",
-                    "ignore_above": 256
-                  }
-                }
-              },
-              "namespace": {
-                "type": "text",
-                "fields": {
-                  "keyword": {
-                    "type": "keyword",
-                    "ignore_above": 256
-                  }
-                }
-              }
+		"id": {
+                    "type": "text",
+                    "fields": {
+			"keyword": {
+			    "type": "keyword",
+			    "ignore_above": 256
+			}
+                    }
+		},
+		"namespace": {
+                    "type": "text",
+                    "fields": {
+			"keyword": {
+			    "type": "keyword",
+			    "ignore_above": 256
+			}
+                    }
+		}
             }
-          },
-          "study_study_type": {
+        },
+        "study_study_type": {
             "type": "text",
             "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
             }
-          },
-          "study_title": {
+        },
+        "study_title": {
             "type": "text",
             "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+		"keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+		}
             }
-          },
-          "study_xrefs": {
+        },
+        "study_xrefs": {
+	    "type": "nested",
+	    "include_in_parent": "true",
             "properties": {
-              "db": {
-                "type": "text",
-                "fields": {
-                  "keyword": {
-                    "type": "keyword",
-                    "ignore_above": 256
-                  }
-                }
-              },
-              "id": {
-                "type": "text",
-                "fields": {
-                  "keyword": {
-                    "type": "keyword",
-                    "ignore_above": 256
-                  }
-                }
-              }
+		"db": {
+                    "type": "text",
+                    "fields": {
+			"keyword": {
+			    "type": "keyword",
+			    "ignore_above": 256
+			}
+                    }
+		},
+		"id": {
+                    "type": "text",
+                    "fields": {
+			"keyword": {
+			    "type": "keyword",
+			    "ignore_above": 256
+			}
+                    }
+		}
             }
-          }
         }
-      
+    }
+    
 }

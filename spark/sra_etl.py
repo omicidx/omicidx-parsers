@@ -3,14 +3,14 @@ import sys
 import argparse
 
 def main(sql, base_url, outdir):
-    experiment = sql.read.json(base_url + 'experiment.json.bz2')
+    experiment = sql.read.json(base_url + 'experiment.json.gz')
 
     from pyspark.sql.functions import to_timestamp
-    run = sql.read.json(base_url + "run.json.bz2")
+    run = sql.read.json(base_url + "run.json.gz")
     run = run.withColumn("run_date", to_timestamp("run_date", "yyyy-MM-dd HH:mm:ss"))
 
     accession_info = sql.read.format('csv').options(header=True).options(delimiter="\t")\
-                                                                .load(base_url + "SRA_Accessions.tab.bz2")\
+                                                                .load(base_url + "SRA_Accessions.tab.gz")\
                                                                 .select("Accession", "Spots", "Bases")\
                                                                 .withColumnRenamed('Bases','bases')\
                                                                 .withColumnRenamed('Spots','spots')\
@@ -21,9 +21,9 @@ def main(sql, base_url, outdir):
     
     run = run.join(accession_info, run.accession==accession_info.accinfo_accession, "left").drop("accinfo_accession")
     
-    study = sql.read.json(base_url + "study.json.bz2")
+    study = sql.read.json(base_url + "study.json.gz")
 
-    sample = sql.read.json(base_url + "sample.json.bz2")
+    sample = sql.read.json(base_url + "sample.json.gz")
     metasra = sql.read.parquet('s3n://omics_metadata/metasra/v1.4/metasra_parquet/')
     sample = sample.join(metasra, metasra.sample_accession == sample.accession, "left").drop("sample_accession")
 
@@ -31,7 +31,7 @@ def main(sql, base_url, outdir):
     datecols = "Received Published LastUpdate LastMetaUpdate".split()
     ll = sql.read.format('csv').options(header=True).load(base_url + "livelist.csv.gz").repartition(25)
 
-    accession_info = sql.read.format('csv').options(header=True).options(delimiter="\t").load(base_url + "SRA_Accessions.tab.bz2")
+    accession_info = sql.read.format('csv').options(header=True).options(delimiter="\t").load(base_url + "SRA_Accessions.tab.gz")
 
     for c in datecols:
         ll = ll.withColumn(c, to_timestamp(c, "yyyy-MM-dd HH:mm:ss"))

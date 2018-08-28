@@ -1,0 +1,44 @@
+[
+    {
+        "Classification": "zeppelin-env", 
+        "Configurations": [
+            {
+                "Classification": "export", 
+                "Configurations": [], 
+                "Properties": {
+                    "ZEPPELIN_NOTEBOOK_STORAGE": "org.apache.zeppelin.notebook.repo.S3NotebookRepo",
+                    "ZEPPELIN_NOTEBOOK_S3_BUCKET": "target-osteosarcoma",
+                    "ZEPPELIN_NOTEBOOK_USER": "sdavis2"
+                }
+            }
+        ], 
+        "Properties": {}
+    },
+    {
+        "Classification": "spark-defaults",
+        "Properties": {
+            "spark.jars.packages": "com.databricks:spark-xml_2.11:0.4.1,org.elasticsearch:elasticsearch-spark-20_2.11:6.2.3,org.postgresql:postgresql:42.2.2"
+        }
+    },
+    {
+        "Classification":"spark",
+        "Properties": {
+            "maximizeResourceAllocation":"true"
+        }
+    },
+    {
+        "Classification": "spark-env",
+        "Properties": {},
+        "Configurations": [
+            {
+                "Classification": "export",
+                "Properties": {
+                    "PYSPARK_PYTHON": "python34",
+		    "PYSPARK_DRIVER_PYTHON": "python34"
+                },
+                "Configurations": []
+            }
+        ]
+    }
+]
+

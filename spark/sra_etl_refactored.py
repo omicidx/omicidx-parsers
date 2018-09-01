@@ -93,6 +93,18 @@ def extract_livelist(base_url):
 
 
 
+def extract_addons(base_url):
+    """Read in the addons table
+    """
+    addons = (sql
+              .read
+              .format('csv')
+              .options(header=True)
+              .load(base_url + "fileinfo_addons.csv.gz").repartition(25))
+    addons = addons.withColumn('FileSize', addons.FileSize.cast("integer"))
+    addons = addons.withColumn("FileDate", to_timestamp("FileDate", "yyyy-MM-dd HH:mm:ss"))
+    return addons
+
 
 def extract_accession_info(base_url):
     """Read the SRA_Accessions.tab.gz file table
@@ -183,8 +195,30 @@ def transform_livelist(ll):
           .drop("BioProject")
           .drop("BioSample")
           .drop("Type"))
-    return(ll)
+    return ll
 
+
+
+def transform_study(study, ll):
+    """Transform the study info table
+    
+    Usage: 
+        >>> from sra.etl import transform_study
+        >>> new_study = transform_study(study, ll)
+    
+    Joins study to livelist
+
+    :param ll: a :class:``pyspark.sql.DataFrame``, 
+        typically deriving from ``transform_livelist``
+    :param study: a :class:``pyspark.sql.DataFrame``, 
+        typically deriving from ``extract_study``
+    :rtype: a :class:``pyspark.sql.DataFrame``
+    """
+    study = (study
+             .join(ll, ll.livelist_accession == study.accession, "left")
+             .drop("livelist_accession"))
+    return study
+    
     
     
 def main(sql, base_url, outdir):
@@ -192,27 +226,36 @@ def main(sql, base_url, outdir):
     run = extract_run(base_url)
     accession_info = extract_accession_info(base_url)
     accession_info = transform_accession_info(accession_info)
-    run = transform_run(run, accession_info)
-    
+
+    ll = extract_livelist(base_url)
+    ll = transform_livelist(ll)
+
     study = extract_study(base_url)
+    study = transform_study(study, ll)
+    study.printSchema()
+    
+    exit()
+    
+    run = transform_run(run, accession_info)
+    run.printSchema()
     
     sample = extract_sample(base_url)
+    sample.printSchema()
+
+    addons = extract_addons(base_url)
+    addons.printSchema()
 
     #metasra = sql.read.parquet('s3n://omics_metadata/metasra/v1.4/metasra_parquet/')
     #sample = sample.join(metasra, metasra.sample_accession == sample.accession, "left").drop("sample_accession")
 
-    ll = extract_livelist(base_url)
-    ll = transform_livelist(ll)
+
     
     exit()
 
-    study = study.join(ll, ll.livelist_accession == study.study_accession, "left").drop("livelist_accession")
-    study.cache()
-
     experiment = experiment.join(ll, experiment.accession == ll.livelist_accession, "left").drop("livelist_accession")
     experiment = experiment\
-                 .withColumn('library_layout_length',experiment.library_layout_length.cast('float'))\
-                 .withColumn('library_layout_length',experiment.library_layout_sdev.cast('float'))\
+                 .withColumn('library_layout_length',experiment.library_layout_length.cast('double'))\
+                 .withColumn('library_layout_length',experiment.library_layout_sdev.cast('double'))\
                  .drop('experiment_accession')
     experiment.cache()
     
@@ -221,10 +264,6 @@ def main(sql, base_url, outdir):
     
     run = run.join(ll, run.accession == ll.livelist_accession, "left").drop("livelist_accession")
     run.cache()
-
-    addons = sql.read.format('csv').options(header=True).load(base_url + "fileinfo_addons.csv.gz").repartition(25)
-    addons = addons.withColumn('FileSize', addons.FileSize.cast("integer"))
-    addons = addons.withColumn("FileDate", to_timestamp("FileDate", "yyyy-MM-dd HH:mm:ss"))
 
     from pyspark.sql.functions import struct, col, collect_list
     nested_addons = addons.select(addons.Accession.alias("nested_accession"), struct([col(c) for c in addons.drop("Accession").columns])\

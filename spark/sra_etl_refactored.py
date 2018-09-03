@@ -305,6 +305,12 @@ def main(sql, base_url, outdir):
     run.write.mode("overwrite").json(outdir + 'json/run_json')
     study.write.mode("overwrite").json(outdir + 'json/study_json')
 
+def create_spark(appName = "sra_etl"):
+    return SparkContext(appName = appName)
+
+def create_sql(sc):
+    return SQLContext(sc)
+    
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('jsonbase',

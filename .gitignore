@@ -16,3 +16,10 @@ include
 share
 NCBI_SRA_Mirroring*
 SRA_Accessions.tab
+.nextflow*
+trace.tx*
+node_modules
+report.htm*
+work*
+*~
+timeline.htm*

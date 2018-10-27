@@ -8,6 +8,9 @@
 These parsers each parse XML format files of the format
 available from the fullxml api.
 
+The main entry point into this module is the `parse_xml_file`
+function.
+
 """
 
 import json
@@ -19,6 +22,48 @@ import urllib.request
 import xml.etree.ElementTree as etree
 import io
 import gzip
+
+def parse_xml_file(xmlfilename):
+    """Parse an NCBI SRA mirroring XML file
+
+    This function returns an iterator over the 
+    records in the xml file, returning a dict
+    of parsed records.
+
+    For example:
+
+    wget --mirror -nH --cut-dirs=3 ftp://ftp.ncbi.nlm.nih.gov/sra/reports/Mirroring/NCBI_SRA_Mirroring_20181027/
+
+    >>> import omicidx.sra_parsers as sp
+    >>> studies = sp.parse_xml_file("NCBI_SRA_Mirroring_20181027/meta_study_set.xml.gz")
+    >>> next(studies)
+
+    :param xmlfilename: string
+    """
+    if('study' in xmlfilename):
+        entity = "STUDY"
+        sra_parser = SRAStudyRecord
+    if('run' in xmlfilename):
+        entity = "RUN"
+        sra_parser = SRARunRecord
+    if('sample' in xmlfilename):
+        entity = "SAMPLE"
+        sra_parser = SRASampleRecord
+    if('experiment' in xmlfilename):
+        entity = "EXPERIMENT"
+        sra_parser = SRAExperimentRecord
+    n=0
+    with open_file(xmlfilename) as f:
+        for event, element in etree.iterparse(f):
+            if(event == 'end' and element.tag == entity):
+                rec = sra_parser(element).data
+                n+=1
+                if((n % 100000)==0):
+                    logger.info('parsed {} {} entries'.format(entity, n))
+                element.clear()
+                yield(rec)
+    logger.info('parsed {} entity entries'.format(n))
+
 
 def lambda_handler(event, context):
     accession = event['accession']

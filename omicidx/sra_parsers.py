@@ -37,8 +37,20 @@ def parse_xml_file(xmlfilename):
     >>> import omicidx.sra_parsers as sp
     >>> studies = sp.parse_xml_file("NCBI_SRA_Mirroring_20181027/meta_study_set.xml.gz")
     >>> next(studies)
+    ...
 
-    :param xmlfilename: string
+
+    Parameters
+    ----------
+    xmlfilename : string
+        the filename to be parsed. Can be gzipped. Must include
+        the "entity" name in the filename (eg., "run", "experiment")
+
+    Returns
+    -------
+    iterator: 
+        An iterator of dict records from parsing each xml record.
+
     """
     if('study' in xmlfilename):
         entity = "STUDY"
@@ -135,8 +147,6 @@ def parse_run(xml):
     Parameters
     ----------
     xml: an xml.etree Element
-    include_run_info: boolean
-        Whether or not to make a call out to the run_info api
 
     Returns
     -------
@@ -674,10 +684,27 @@ class SRAExperimentPackage(object):
 
 
 def open_file(fname, encoding = 'UTF-8'):
+    """Open a file, generalized to deal with gzip files
+
+    Parameters
+    ----------
+    fname: string
+        The filename. If ends in '.gz', is opened with 
+        gzip. 
+
+    Returns
+    -------
+    an open file handle
+    """
     if(fname.endswith('.gz')):
         return(gzip.open(fname, mode = "rt", encoding = encoding))
     return(open(fname, "r", encoding = encoding))
 
+
+
+# this csv parser
+# 1. uses DictReader
+# 2. converts NCBI's standard of '' to None
 def _custom_csv_parser(fname):
     with open_file(fname) as f:
         reader = csv.DictReader(f)
@@ -686,10 +713,10 @@ def _custom_csv_parser(fname):
                 if(row[k] == ''):
                     row[k]=None
             yield(row)
-    
+
 def parse_livelist(fname):
     return _custom_csv_parser(fname)
-    
+
 def parse_run_info(fname):
     return _custom_csv_parser(fname)
 

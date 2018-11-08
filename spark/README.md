@@ -18,8 +18,9 @@ spark-submit sra_etl.py \
 ```sh
 # this needs some modification, but you get the gist
 export CLUSTER_ID="j-3IDRZIAOCKY2I"
+export MIRROR_DIR=s3://omicidx.cancerdatasci.org/sra/NCBI_SRA_Mirroring_20180801_Full/
 aws emr add-steps --cluster-id $CLUSTER_ID \
-  --steps Type=spark,Name=sra_etl,Args=[--deploy-mode,cluster,--master,yarn,s3://omics_metadata/sra_etl.py],ActionOnFailure=CONTINUE
+  --steps Type=spark,Name=sra_etl,Args=[--deploy-mode,cluster,--master,yarn,s3://omics_metadata/sra_etl.py,${MIRROR_DIR},${MIRROR_DIR}],ActionOnFailure=CONTINUE
 ```
 
 

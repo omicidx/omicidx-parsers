@@ -218,8 +218,23 @@ def transform_study(study, ll):
              .join(ll, ll.livelist_accession == study.accession, "left")
              .drop("livelist_accession"))
     return study
+
+def write_json(df, entity_name, outdir, overwrite = True, gzip = True):
+    writer = df.write
+    if(overwrite):
+        writer.mode('overwrite')
+    if(gzip):
+        writer.option('compression', 'gzip')
+    writer.json(outdir + 'json/{}_json/'.format(entity_name))
+
     
     
+def write_parquet(df, entity_name, outdir, overwrite = True):
+    writer = df.write
+    if(overwrite):
+        writer.mode('overwrite')
+    writer.parquet(outdir + 'parquet/{}_parquet/'.format(entity_name))
+
     
 def main(sql, base_url, outdir):
     experiment = extract_experiment(base_url)
@@ -234,8 +249,6 @@ def main(sql, base_url, outdir):
     study = transform_study(study, ll)
     study.printSchema()
     
-    exit()
-    
     run = transform_run(run, accession_info)
     run.printSchema()
     
@@ -247,10 +260,6 @@ def main(sql, base_url, outdir):
 
     #metasra = sql.read.parquet('s3n://omics_metadata/metasra/v1.4/metasra_parquet/')
     #sample = sample.join(metasra, metasra.sample_accession == sample.accession, "left").drop("sample_accession")
-
-
-    
-    exit()
 
     experiment = experiment.join(ll, experiment.accession == ll.livelist_accession, "left").drop("livelist_accession")
     experiment = experiment\
@@ -296,15 +305,21 @@ def main(sql, base_url, outdir):
     # includes file addons
     r2.write.mode("overwrite").parquet(outdir + 'parquet/run_parquet')
     study.write.mode("overwrite").parquet(outdir + 'parquet/study_parquet')
-
+    write_parquet(experiment, 'experiment', outdir)
+    write_parquet(sample, 'sample', outdir)
+    write_parquet(study, 'study', outdir)
+    write_parquet(r2, 'run', outdir)
+    
     # 
     # JSON
     #
-    experiment.write.mode("overwrite").json(outdir + 'json/experiment_json')
-    sample.write.mode("overwrite").json(outdir + 'json/sample_json')
-    run.write.mode("overwrite").json(outdir + 'json/run_json')
-    study.write.mode("overwrite").json(outdir + 'json/study_json')
+    #experiment.write.mode("overwrite").json(outdir + 'json/experiment_json')
+    write_json(experiment, 'experiment', outdir)
+    write_json(sample, 'sample', outdir)
+    write_json(study, 'study', outdir)
+    write_json(r2, 'run', outdir)
 
+    
 def create_spark(appName = "sra_etl"):
     return SparkContext(appName = appName)
 

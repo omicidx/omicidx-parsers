@@ -219,7 +219,50 @@ def transform_study(study, ll):
              .drop("livelist_accession"))
     return study
 
+
+def transform_experiment(experiment, ll):
+    """Transform the experiment info table
+    
+    Usage: 
+        >>> from sra.etl import transform_experiment
+        >>> new_experiment = transform_experiment(experiment, ll)
+    
+    Joins experiment to livelist
+
+    :param ll: a :class:``pyspark.sql.DataFrame``, 
+        typically deriving from ``transform_livelist``
+    :param experiment: a :class:``pyspark.sql.DataFrame``, 
+        typically deriving from ``extract_experiment``
+    :rtype: a :class:``pyspark.sql.DataFrame``
+    """
+    experiment = (experiment
+                  .join(ll, experiment.accession == ll.livelist_accession, "left")
+                  .drop("livelist_accession")
+                  .withColumn('library_layout_length',experiment.library_layout_length.cast('double'))\
+                  .withColumn('library_layout_length',experiment.library_layout_sdev.cast('double'))\
+                  .drop('experiment_accession'))
+    return experiment
+
+
+
 def write_json(df, entity_name, outdir, overwrite = True, gzip = True):
+    """standardized json writer
+ 
+    Will write to "outdir/json/{entity_name}_json".
+ 
+    Usage:
+        >>> from sra.etl import write_json
+        >>> write_json(study_df, 'study', 's3://omicidx.cancerdatasci.org/NCBI_20180201_Full')
+    
+    :param df: a :class:``pyspark.sql.DataFrame``
+    :param entity_name: a string, giving the name of the 
+        entity to save ("experiment", "study", "joined_run", etc.)
+    :param outdir: a string, typically the bucket and path
+    :param overwrite: a boolean, defaulting to True. If set to 
+        False, will NOT overwrite and will result in an error
+        if files exist.
+    :param gzip: a boolean, to gzip or not. Default True.
+    """
     writer = df.write
     if(overwrite):
         writer.mode('overwrite')
@@ -227,9 +270,27 @@ def write_json(df, entity_name, outdir, overwrite = True, gzip = True):
         writer.option('compression', 'gzip')
     writer.json(outdir + 'json/{}_json/'.format(entity_name))
 
-    
+  
+
     
 def write_parquet(df, entity_name, outdir, overwrite = True):
+    """standardized parquet writer
+    
+    Will write to "outdir/parquet/{entity_name}_parquet".
+    
+    Usage:
+        >>> from sra.etl import write_parquet
+        >>> write_json(study_df, 'study', 's3://omicidx.cancerdatasci.org/NCBI_20180201_Full')
+    
+    :param df: a :class:``pyspark.sql.DataFrame``
+    :param entity_name: a string, giving the name of the 
+        entity to save ("experiment", "study", "joined_run", etc.)
+    :param outdir: a string, typically the bucket and path
+    :param overwrite: a boolean, defaulting to True. If set to 
+        False, will NOT overwrite and will result in an error
+        if files exist.
+    """
+
     writer = df.write
     if(overwrite):
         writer.mode('overwrite')
@@ -261,11 +322,7 @@ def main(sql, base_url, outdir):
     #metasra = sql.read.parquet('s3n://omics_metadata/metasra/v1.4/metasra_parquet/')
     #sample = sample.join(metasra, metasra.sample_accession == sample.accession, "left").drop("sample_accession")
 
-    experiment = experiment.join(ll, experiment.accession == ll.livelist_accession, "left").drop("livelist_accession")
-    experiment = experiment\
-                 .withColumn('library_layout_length',experiment.library_layout_length.cast('double'))\
-                 .withColumn('library_layout_length',experiment.library_layout_sdev.cast('double'))\
-                 .drop('experiment_accession')
+    experiment = transform_experiment(experiment, ll)
     experiment.cache()
     
     sample = sample.join(ll, ll.livelist_accession == sample.accession, "left").drop("livelist_accession")
@@ -300,11 +357,6 @@ def main(sql, base_url, outdir):
     # 
     # PARQUET
     #
-    experiment.write.mode("overwrite").parquet(outdir + 'parquet/experiment_parquet')
-    sample.write.mode("overwrite").parquet(outdir + 'parquet/sample_parquet')
-    # includes file addons
-    r2.write.mode("overwrite").parquet(outdir + 'parquet/run_parquet')
-    study.write.mode("overwrite").parquet(outdir + 'parquet/study_parquet')
     write_parquet(experiment, 'experiment', outdir)
     write_parquet(sample, 'sample', outdir)
     write_parquet(study, 'study', outdir)
@@ -318,7 +370,50 @@ def main(sql, base_url, outdir):
     write_json(sample, 'sample', outdir)
     write_json(study, 'study', outdir)
     write_json(r2, 'run', outdir)
+    
+    
+    
+    df2 = experiment
+    from pyspark.sql.functions import col, struct
+    nested_experiment = df2.select(df2.accession.alias('experiment_accession'), struct([col(x) for x in df2.columns]).alias('experiment'))
 
+    df2 = sample
+    from pyspark.sql.functions import col, struct
+    nested_sample = df2.select(df2.accession.alias("sample_accession"), struct([col(x) for x in df2.columns]).alias('sample'))
+
+    df2 = study
+    from pyspark.sql.functions import col, struct
+    nested_study = df2.select(df2.accession.alias("study_accession"), struct([col(x) for x in df2.columns]).alias('study'))
+
+    rfinal = (r2
+         .drop("run_accession")
+         .join(nested_experiment, "experiment_accession")
+         .drop("experiment_accession")
+         .join(nested_sample, col("experiment.sample_accession")==col("sample_accession"))
+         .drop("sample_accession")
+         .join(nested_study, col("experiment.study_accession")==col("study_accession"))
+         .drop("study_accession"))
+    
+    rfinal.printSchema()
+    write_json(rfinal, 'run_joined', outdir)
+    
+    
+    
+    from pyspark.sql.functions import collect_list, col
+    aggrun = (r2
+              .groupBy('experiment_accession')
+              .agg(collect_list(struct([col(x) for x in r2.columns])).alias('runs'))
+              .join(experiment, experiment.accession==r2.experiment_accession, how='right_outer')
+              .drop('experiment_accession')
+              .join(nested_sample, "sample_accession", how='left_outer')
+              .drop("sample_accession")
+              .join(nested_study, "study_accession", how='left_outer')
+              .drop("study_accession"))
+    aggrun.cache()
+    
+    write_json(aggrun, 'experiment_joined', outdir)
+    
+    
     
 def create_spark(appName = "sra_etl"):
     return SparkContext(appName = appName)

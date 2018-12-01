@@ -17,7 +17,7 @@
     {
         "Classification": "spark-defaults",
         "Properties": {
-            "spark.jars.packages": "com.databricks:spark-xml_2.11:0.4.1,org.elasticsearch:elasticsearch-spark-20_2.11:jar:6.5.0,org.postgresql:postgresql:42.2.5"
+            "spark.jars.packages": "com.databricks:spark-xml_2.11:0.4.1,org.elasticsearch:elasticsearch-spark-20_2.11:6.5.0,org.postgresql:postgresql:42.2.5"
         }
     },
     {

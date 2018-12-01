@@ -17,7 +17,7 @@
     {
         "Classification": "spark-defaults",
         "Properties": {
-            "spark.jars.packages": "com.databricks:spark-xml_2.11:0.4.1,org.elasticsearch:elasticsearch-spark-20_2.11:6.2.3,org.postgresql:postgresql:42.2.2"
+            "spark.jars.packages": "com.databricks:spark-xml_2.11:0.4.1,org.elasticsearch:elasticsearch-spark-20_2.11:jar:6.5.0,org.postgresql:postgresql:42.2.5"
         }
     },
     {
@@ -34,7 +34,7 @@
                 "Classification": "export",
                 "Properties": {
                     "PYSPARK_PYTHON": "python34",
-		    "PYSPARK_DRIVER_PYTHON": "python34"
+		    "PYSPARK_DRIVER_PYTHON": "ipython"
                 },
                 "Configurations": []
             }

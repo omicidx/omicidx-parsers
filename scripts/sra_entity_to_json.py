@@ -29,6 +29,8 @@ parser.add_argument('outfile',
 
 opts = parser.parse_args()
 
+entity=""
+
 if('study' in opts.fname):
     entity = "STUDY"
     sra_parser = omicidx.sra_parsers.SRAStudyRecord

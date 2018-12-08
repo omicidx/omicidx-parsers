@@ -395,6 +395,7 @@ def main(sql, base_url, outdir):
          .drop("study_accession"))
     
     rfinal.printSchema()
+    write_parquet(rfinal, 'run_joined', outdir)
     write_json(rfinal, 'run_joined', outdir)
     
     
@@ -410,7 +411,7 @@ def main(sql, base_url, outdir):
               .join(nested_study, "study_accession", how='left_outer')
               .drop("study_accession"))
     aggrun.cache()
-    
+    write_parquet(aggrun, 'experiment_joined', outdir)
     write_json(aggrun, 'experiment_joined', outdir)
     
     

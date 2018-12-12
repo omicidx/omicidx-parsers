@@ -81,7 +81,7 @@ def lambda_handler(event, context):
     accession = event['accession']
     v = load_experiment_xml_by_accession(accession)
     s = list([SRAExperimentPackage(exptpkg).data for exptpkg in v.getroot().findall(".//EXPERIMENT_PACKAGE")])
-    return json.dumps(s)
+    return s
 
 
 def parse_study(xml):
@@ -160,6 +160,10 @@ def parse_run(xml):
         except:
             # missing some key elements
             pass
+    try:
+        d['avg_length'] = float(d['total_bases'])/d['total_spots']
+    except:
+        pass
     path_map = {
         'experiment_accession': ("EXPERIMENT_REF", "accession")
     }
@@ -169,6 +173,12 @@ def parse_run(xml):
     d.update(_process_path_map(xml, path_map))
     d.update(_parse_identifiers(xml.find("IDENTIFIERS"), "run"))
     d = try_update(d, _parse_attributes(xml.find("RUN_ATTRIBUTES")))
+    d.update(_parse_run_qualities(xml))
+    try:
+        # already have accession, so no need for this
+        del(d['run_accession'])
+    except:
+        pass
     return d
 
 
@@ -331,6 +341,20 @@ def _parse_run_reads(node):
     return d
 
 
+def _parse_run_qualities(node):
+    """Parse the quality stats, if available, from RUN"""
+    d = dict()
+    d['qualities'] = dict()
+    qualrecs = node.findall(".//Quality")
+    for qual in qualrecs:
+        try:
+            d['qualities'][qual.get('value')] = int(qual.get('count'))
+        except:
+            pass
+
+    return d
+
+
 def _parse_taxon(node):
     """Parse taxonomy informaiton."""
 
@@ -342,7 +366,7 @@ def _parse_taxon(node):
                 'parent': node.get('name'),
                 'total_count': int(i.get('total_count')),
                 'self_count': int(i.get('self_count')),
-                'tax_id': i.get('tax_id'),
+                'tax_id': int(i.get('tax_id')),
                 })
             if i.getchildren():
                 d.update(crawl(i, d))
@@ -728,6 +752,15 @@ def load_experiment_xml_by_accession(accession):
         xml = etree.parse(response)
         return xml
 
+
+def load_runbrowser_xml_by_accession(accession):
+    with urllib.request.urlopen("https://trace.ncbi.nlm.nih.gov/Traces/sra/?run={}&retmode=xml".format(accession)) as response:
+        xml = etree.parse(response)
+        return xml
+
+def run_from_runbrowser(accession):
+    runbrowser_xml = load_runbrowser_xml_by_accession(accession)
+    return parse_run(runbrowser_xml.getroot().find('.//RUN'))
 
 import json
 def get_accession_list(from_date="2004-01-01",

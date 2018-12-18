@@ -28,9 +28,32 @@ with tbl as
 	doc->'xrefs' as xrefs
 from
 	etl.study_jsonb
+), b as 
+(select accession,
+       status,
+       updated,
+       published,
+       received,
+       visibility,
+       bio_project,
+       replaced_by
+from etl.sra_accession
+where type='STUDY' and accession is not NULL
 )
 insert into etl.sra_study
-select tbl.*,
+select bioproject,
+       gse,
+       abstract,
+       b.accession,
+       alias,
+       attributes,
+       broker_name,
+       center_name,
+       description,
+       identifiers,
+       study_type,
+       title,
+       xrefs,
        b.status,
        b.updated,
        b.published,
@@ -38,13 +61,14 @@ select tbl.*,
        b.visibility,
        b.bio_project,
        b.replaced_by
-from tbl
-left outer join etl.sra_accession b
-on tbl.accession = b.accession;
+from b
+left join tbl
+on tbl.accession = b.accession where b.accession is not NULL;
 
 -- SRA_STUDY
 -- 
 ----------------------------------------------
+
 
 
 ----------------------------------------------
@@ -119,9 +143,42 @@ with tbl as
 	doc->>'title' as title,
 	doc->>'xrefs' as xrefs
 from etl.experiment_jsonb
+),
+b as 
+(select accession,
+       status,
+       updated,
+       published,
+       received,
+       visibility,
+       replaced_by
+from etl.sra_accession
+where type='EXPERIMENT' and accession is not NULL
 )
 insert into etl.sra_experiment 
-select tbl.*,
+select b.accession,
+       alias,
+       attributes,
+       broker_name,
+       center_name,
+       description,
+       design,
+       identifiers,
+       instrument_model,
+       library_construction_protocol,
+       library_layout,
+       library_layout_length,
+       library_layout_orientation,
+       library_layout_sdev,
+       library_name,
+       library_selection,
+       library_source,
+       library_strategy,
+       platform,
+       sample_accession,
+       study_accession,
+       title,
+       xrefs,
        b.status,
        b.updated,
        b.published,
@@ -129,7 +186,7 @@ select tbl.*,
        b.visibility,
        b.replaced_by
 from tbl 
-join etl.sra_accession b
+right join b
 on tbl.accession = b.accession;
 
 -- SRA_EXPERIMENT
@@ -158,9 +215,32 @@ with tbl as
 	(doc->>'taxon_id')::int as taxon_id,
 	doc->'xrefs' as xrefs
 from etl.sample_jsonb
+),
+b as 
+(select accession,
+       status,
+       updated,
+       published,
+       received,
+       visibility,
+       replaced_by
+from etl.sra_accession
+where type='SAMPLE' and accession is not NULL
 )
 insert into etl.sra_sample
-select tbl.*,
+select b.accession,
+       alias,
+       attributes,
+       bio_sample,
+       broker_name,
+       center_name,
+       description,
+       gsm,
+       identifiers,
+       organism,
+       title,
+       taxon_id,
+       xrefs,
        b.status,
        b.updated,
        b.published,
@@ -168,7 +248,7 @@ select tbl.*,
        b.visibility,
        b.replaced_by
 from tbl 
-join etl.sra_accession b
+right join b
 on tbl.accession = b.accession;
 
 -- SRA_SAMPLE

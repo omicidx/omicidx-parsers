@@ -11,7 +11,7 @@ setup(name='omicidx',
       packages=['omicidx'],
       install_requires = [
           "click"
-      ]
+      ],
       entry_points = {
           "console_scripts":[ 
               "sra_entity_to_json=omicidx.scripts.sra_entity_to_json:main",

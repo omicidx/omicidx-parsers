@@ -9,6 +9,13 @@ setup(name='omicidx',
       author_email='seandavi@gmail.com',
       url='https://github.com/seandavi/omicidx',
       packages=['omicidx'],
-      scripts = ['scripts/sra_entity_to_json.py'],
-      
+      install_requires = [
+          "click"
+      ]
+      entry_points = {
+          "console_scripts":[ 
+              "sra_entity_to_json=omicidx.scripts.sra_entity_to_json:main",
+              "download_files=omicidx.scripts.download_files:download_mirror_files" 
+          ]
+      }
      )

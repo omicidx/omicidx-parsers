@@ -747,6 +747,21 @@ def parse_run_info(fname):
 def parse_addons_info(fname):
     return _custom_csv_parser(fname)
 
+
+def srastatrep(accessions):
+    if(not isinstance(accessions, list)):
+        accessions = [accessions]
+    with urllib.request.urlopen('https://www.ncbi.nlm.nih.gov/Traces/sra/status/srastatrep.fcgi/acc-mirroring?acc={}'.format(",".join(accessions))) as response:
+        vals = json.load(response)
+        cnames = vals['column_names']
+        StatRep = namedtuple("StatRep", field_names = list([cname.lower() for cname in cnames]))
+        ret = {}
+        for row in vals['rows']:
+            tmp = StatRep(*row)
+            ret[tmp.accession]=tmp
+        return ret
+
+
 def load_experiment_xml_by_accession(accession):
     with urllib.request.urlopen('https://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?save=efetch&db=sra&rettype=FullXml&term={}'.format(accession)) as response:
         xml = etree.parse(response)

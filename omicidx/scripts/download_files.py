@@ -20,9 +20,11 @@ def cli():
     pass
 
 @cli.command(help = """Downloads the files necessary to build
-the SRA json conversions of the XML files. """)
-@click.option('--mirrordir',
-              help="The mirror directory, like NCBI_SRA_Mirroring_20190101_Full")
+the SRA json conversions of the XML files.
+
+Files will be placed in the <mirrordir> directory.
+""")
+@click.argument('mirrordir')
 def download_mirror_files(mirrordir):
     logger.info('getting xml files')
     subprocess.run("wget -nH -np --cut-dirs=3 -r -e robots=off {}/{}/".format(
@@ -46,7 +48,7 @@ from xml.etree import ElementTree as et
   corresponding JSON format files. JSON is line-delimited
   JSON (not an array).""")
 @click.argument('entity')
-def process_xml_file(entity):
+def process_xml_entity(entity):
 
     fname = "meta_{}_set.xml.gz".format(entity)
 

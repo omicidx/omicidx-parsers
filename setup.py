@@ -16,8 +16,7 @@ setup(name='omicidx',
       ],
       entry_points = {
           "console_scripts":[ 
-              "sra_entity_to_json=omicidx.scripts.sra_entity_to_json:main",
-              "download_files=omicidx.scripts.download_files:cli" 
+              "download_files=omicidx.scripts.cli:cli" 
           ]
       }
      )

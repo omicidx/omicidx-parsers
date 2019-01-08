@@ -8,14 +8,16 @@ setup(name='omicidx',
       author='Sean Davis',
       author_email='seandavi@gmail.com',
       url='https://github.com/seandavi/omicidx',
-      packages=['omicidx'],
+      packages=['omicidx',
+                'omicidx.scripts',
+                'omicidx.sra'],
       install_requires = [
           "click"
       ],
       entry_points = {
           "console_scripts":[ 
               "sra_entity_to_json=omicidx.scripts.sra_entity_to_json:main",
-              "download_files=omicidx.scripts.download_files:download_mirror_files" 
+              "download_files=omicidx.scripts.download_files:cli" 
           ]
       }
      )

@@ -14,7 +14,7 @@ import gzip
 import json
 import logging
 import click
-
+import subprocess
 
 class BioSample(dict):
     """BioSample class"""
@@ -92,13 +92,23 @@ class BioSampleParser(object):
                 #res = es.index(index="bioes", doc_type='biosample', id=bios['id'], body=bios)
                 elem.clear()
                 return bios
+        return StopIteration
 
 
-@click.command("""Parse biosample xml file to json and dump to stdout""")
+@click.group()
+def cli():
+    pass
+
+    
+@cli.command("""biosample_to_json""")
 @click.argument('biosample_file')
 def biosample_to_json(biosample_file):
     for i in BioSampleParser(biosample_file):
         print(i.as_json())
 
+@cli.command("""download_biosample""")
+def download_biosample():
+    subprocess.run("wget ftp://ftp.ncbi.nlm.nih.gov/biosample/biosample_set.xml.gz", shell=True)
+    
 if __name__ == '__main__':
     cli()

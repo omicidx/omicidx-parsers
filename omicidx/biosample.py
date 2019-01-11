@@ -96,7 +96,7 @@ class BioSampleParser(object):
 
 @click.command("""Parse biosample xml file to json and dump to stdout""")
 @click.argument('biosample_file')
-def cli(biosample_file):
+def biosample_to_json(biosample_file):
     for i in BioSampleParser(biosample_file):
         print(i.as_json())
 

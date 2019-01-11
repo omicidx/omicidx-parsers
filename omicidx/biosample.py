@@ -57,6 +57,7 @@ class BioSampleParser(object):
         for event, elem in self.context:
             if event == "end" and elem.tag == "BioSample":
                 bios = BioSample()
+                bios['is_reference']=None
                 for k,v in elem.items():
                     bios[k] = v
                 bios['id_recs'] = []

@@ -65,6 +65,11 @@ class BioSampleParser(object):
                     idrec = {'db': id.get('db'), 'label': id.get('db_label'), 'id':id.text}
                     bios['ids'].append(idrec['id'])
                     bios['id_recs'].append(idrec)
+                    # add xref fields for SRA, dbGaP, and GEO
+                    bios['sra_sample']=None
+                    bios['dbgap']=None
+                    bios['gsm']=None
+                    
                     if(id.get('db')=='SRA'):
                         bios['sra_sample']=id.text
                     if(id.get('db')=='dbGaP'):
@@ -100,15 +105,22 @@ def cli():
     pass
 
     
-@cli.command("""biosample_to_json""")
-@click.argument('biosample_file')
 def biosample_to_json(biosample_file):
     for i in BioSampleParser(biosample_file):
         print(i.as_json())
 
-@cli.command("""download_biosample""")
 def download_biosample():
     subprocess.run("wget ftp://ftp.ncbi.nlm.nih.gov/biosample/biosample_set.xml.gz", shell=True)
-    
+
+
+@cli.command("""download_biosample""")
+def download():
+    download_biosample()
+
+@cli.command("""biosample_to_json""")
+@click.argument('biosample_file')
+def to_json(biosample_file):
+    biosample_to_json(biosample_file)
+
 if __name__ == '__main__':
     cli()

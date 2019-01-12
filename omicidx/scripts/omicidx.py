@@ -2,8 +2,8 @@ import click
 import omicidx.biosample
 
 
+
 @click.group('biosample')
-@click.pass_context
 def biosample():
     pass
 
@@ -44,12 +44,13 @@ def sra_load2postgres():
 def sra_load2bigquery():
     print("Load to bigquery")
 
-@click.group('omicidx')
-def omicidx():
+@click.group()
+def omicidx_cli():
     pass
 
-omicidx.add_command(biosample)
-omicidx.add_command(sra)
+omicidx_cli.add_command(biosample)
+omicidx_cli.add_command(sra)
+
     
 if __name__ == '__main__':
-    omicidx()
+    omicidx_cli()

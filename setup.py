@@ -16,7 +16,8 @@ setup(name='omicidx',
       ],
       entry_points = {
           "console_scripts":[ 
-              "omicidx=omicidx.scripts.omicidx:omicidx_cli" 
+              #"omicidx=omicidx.scripts.omicidx:omicidx_cli",
+              "omicidx-cli=omicidx.scripts.cli:cli" 
           ]
       }
      )

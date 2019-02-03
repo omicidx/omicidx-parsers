@@ -1,99 +1,120 @@
 from Bio import Entrez
 import logging
-
+import collections
+import re
+import datetime
+import urllib
+from xml import etree
+import xml
+from io import StringIO
 
 try:
     from urllib.error import HTTPError  # for Python 3
 except ImportError:
     from urllib2 import HTTPError  # for Python 2
 
-import urllib
-from xml import etree
-import xml
-from io import StringIO
+ETYP = ['GSE', 'GSM', 'GPL', 'GDS']
 
-available_etyp = ['GSE', 'GSM', 'GPL', 'GDS']
+def get_entrez_instance(email = 'user@example.com'):
+    """Return a Bio::Entrez object
+    
+    Parameters
+    ==========
+    email: str the email to be used with the Entrez instance
+    
+    Returns
+    =======
+    A Bio::Entrez instance
+    """
+    ret = Entrez
+    ret.email = email
+    return ret
 
-class GEOMeta(object):
-    def __init__(self,email = 'user@example.com'):
-        self.Entrez = Entrez
-        self.Entrez.email = email
 
-    @staticmethod
-    def get_geo_accessions(etyp='GSE', batch_size = 25, add_term = None):
-        """get GEO accessions
-        """
-        if(etyp not in available_etyp):
-            raise Exception("etype {} not one of the accepted etyps {}".format(etyp, str(available_etyp)))
-        handle = self.Entrez.esearch(db='gds', term = etyp + '[ETYP]' + str(add_term), usehistory='y')
-        search_results = self.Entrez.read(handle)
-        webenv = search_results["WebEnv"]
-        query_key = search_results["QueryKey"]
-        count = int(search_results['Count'])
-        data = []
-        logging.info('found {} records for {} database'.format(count,etyp))
-        from IPython.core.debugger import set_trace
-        n = 0
-        for start in range(0, count, batch_size):
-            end = min(count, start+batch_size)
-            attempt = 0
-            fetch_handle = None
-            while attempt < 10:
-                attempt += 1
-                try:
-                    fetch_handle = self.Entrez.esummary(db="gds",
-                                                 rettype="acc", retmode="xml",
-                                                 retstart=start, retmax=batch_size,
-                                                 webenv=webenv, query_key=query_key)
-                    break
-                except HTTPError as err:
-                    print("Received error from server %s" % err)
-                    print("Attempt %i of 10" % attempt)
-                    import time
-                    time.sleep(1*attempt*attempt)
-                else:
-                    raise
-            for g in self.Entrez.read(fetch_handle):
-                n+=1
-                yield(g['Accession'])
-            print(n)
-
-    @staticmethod
-    def get_geo_accession_xml(accession):
-        url = "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?targ=self&acc={}&form=xml&view=quick".format(accession)
+def get_geo_accessions(etyp='GSE', batch_size = 25, add_term = None, email = "user@example.com"):
+    """get GEO accessions
+    """
+    entrez = get_entrez_instance(email)
+    if(etyp not in ETYP):
+        raise Exception("etype {} not one of the accepted etyps {}".format(etyp, str(ETYP)))
+    handle = entrez.esearch(db='gds', term = etyp + '[ETYP]' + str(add_term), usehistory='y')
+    search_results = entrez.read(handle)
+    webenv = search_results["WebEnv"]
+    query_key = search_results["QueryKey"]
+    count = int(search_results['Count'])
+    data = []
+    logging.info('found {} records for {} database'.format(count,etyp))
+    from IPython.core.debugger import set_trace
+    n = 0
+    for start in range(0, count, batch_size):
+        end = min(count, start+batch_size)
         attempt = 0
-        while attempt < 3:
-            attempt += 1
-            try:
-                with urllib.request.urlopen(url) as res:
-                    return("".join([line.decode() for line in res.readlines()]))
-            except Exception as err:
-                print("Received error from server %s" % err)
-                print("Attempt %i of 3" % attempt)
-                import time
-                time.sleep(1*attempt)
-
-    @staticmethod
-    def get_geo_accession_soft(accession, targ = 'all'):
-        url = ("https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?targ={}&acc={}&form=text&view=quick"
-               .format(targ, accession))
-        attempt = 0
+        fetch_handle = None
         while attempt < 10:
             attempt += 1
             try:
-                with urllib.request.urlopen(url) as res:
-                    return list([line.strip() for line in res.readlines()])
+                fetch_handle = entrez.esummary(db="gds",
+                                             rettype="acc", retmode="xml",
+                                             retstart=start, retmax=batch_size,
+                                             webenv=webenv, query_key=query_key)
                 break
-            except Exception as err:
+            except HTTPError as err:
                 print("Received error from server %s" % err)
                 print("Attempt %i of 10" % attempt)
                 import time
-                time.sleep(1*attempt)
+                time.sleep(1*attempt*attempt)
+            else:
+                raise
+        for g in entrez.read(fetch_handle):
+            n+=1
+            yield(g['Accession'])
+        print(n)
+
+def get_geo_accession_xml(accession):
+    url = "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?targ=self&acc={}&form=xml&view=quick".format(accession)
+    attempt = 0
+    while attempt < 10:
+        attempt += 1
+        try:
+            return urllib.request.urlopen(url)
+            break
+        except Exception as err:
+            print("Received error from server %s" % err)
+            print("Attempt %i of 3" % attempt)
+            import time
+            time.sleep(1*attempt)
+
+def get_geo_accession_soft(accession, targ = 'all'):
+    """Open a connection to get the GEO SOFT for an accession
+
+    Parameters
+    ==========
+    accession: str the GEO accesssion
+    targ: str what to fetch. One of "all", "series", "platform", 
+        "samples", "self"
+
+    Returns
+    =======
+    A file-like object for reading or readlines
+    
+    >>> handle = get_geo_accession_soft('GSE2553')
+    >>> handle.readlines()
+    """
+    url = ("https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?targ={}&acc={}&form=text&view=quick"
+           .format(targ, accession))
+    attempt = 0
+    while attempt < 10:
+        attempt += 1
+        try:
+            return urllib.request.urlopen(url)
+            break
+        except Exception as err:
+            print("Received error from server %s" % err)
+            print("Attempt %i of 10" % attempt)
+            import time
+            time.sleep(1*attempt)
 
 
-import collections
-import re
-import datetime
 def split_on_first(line,split = ' = '):
     l = line.split(split)
     return (l[0], split.join(l[1:]))
@@ -133,7 +154,6 @@ def get_SRA_from_relations(relation_list):
             ret.append(i.replace('SRA: https://www.ncbi.nlm.nih.gov/sra?term=', ''))
     return ret
 
-ABC=2
 ###############################################
 # Parse a single entity of SOFT format,       #
 # generically. Then pass along to             #

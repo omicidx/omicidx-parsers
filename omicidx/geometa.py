@@ -147,6 +147,7 @@ def get_bioprojects_from_relations(relation_list):
             ret.append(i.replace('BioProject: https://www.ncbi.nlm.nih.gov/bioproject/', ''))
     return ret
 
+
 def get_SRA_from_relations(relation_list):
     ret = []
     for i in relation_list:
@@ -154,25 +155,105 @@ def get_SRA_from_relations(relation_list):
             ret.append(i.replace('SRA: https://www.ncbi.nlm.nih.gov/sra?term=', ''))
     return ret
 
+
+def get_biosample_from_relations(relation_list):
+    ret = []
+    for i in relation_list:
+        if(i.startswith("BioSample: https://www.ncbi.nlm.nih.gov/biosample/")):
+            ret.append(i.replace('BioSample: https://www.ncbi.nlm.nih.gov/biosample/', ''))
+    return ret
+
+
 ###############################################
 # Parse a single entity of SOFT format,       #
 # generically. Then pass along to             #
 # GSE, GSM, or GPL specific parser and return #
 # appropriate class.                          #
 ###############################################
-def _parse_single_entity_soft():
-    pass
-
+def _parse_single_entity_soft(entity_txt):
+    # Deal with common stuff first:
+    tups = [split_on_first(line) for line in entity_txt]
+    accession = tups[0][1]
+    entity_type = tups[0][0].replace('^','')
+    tups = [(re.sub('![^_]+_', '',tup[0]), tup[1]) for tup in tups]
+    d = collections.defaultdict(list)
+    for tup in tups[1:]:
+        d[tup[0]].append(tup[1])
+    d2 = dict((k,v) for k, v in d.items())
+    # int fields
+    INT_FIELDS = ['pubmed_id', 'sample_taxid', 'platform_taxid']
+    for i in INT_FIELDS:
+        if(i in d2):
+            d2[i] = list(map(lambda x: int(x), d2[i]))
+    # change "geo_accesion = [...]" to "accession = ..."
+    d2['accession'] = d2['geo_accession'][0]
+    del(d2['geo_accession'])
+    if('description =' in d2):
+        del(d2['description ='])
+    for k in ['status',
+              'description',
+              'data_processing',
+              'title',
+              'summary', # GSE only?
+              'submission_date',  # to fix later
+              'last_update_date', # to fix later
+              'overall_design']: #GSE only ]:
+        try:
+            d2[k] = "\n".join(d2[k])
+        except KeyError:
+            d2[k] = None
+    if(entity_type=='SERIES'):
+        return(_parse_single_gse_soft(d2))
+    if(entity_type=='SAMPLE'):
+        return(_parse_single_gsm_soft(d2))
+    return(d2)
+    
 #######################################
 # Parse the GSE entity in SOFT format #
 #######################################
-def _parse_single_gse_soft():
-    pass
+def _parse_single_gse_soft(d2):
+    try:
+        d2['subseries'] = get_subseries_from_relations(d2['relation'])
+        d2['bioprojects'] = get_bioprojects_from_relations(d2['relation'])
+        d2['sra_studies'] = get_SRA_from_relations(d2['relation'])
+    except KeyError:
+        d2['subseries']=[]
+        d2['bioprojects']=[]
+        d2['sra_studies']=[]
+    return(d2)
 
+    
 #######################################
 # Parse the GSM entity in SOFT format #
 #######################################
-def _parse_single_gsm_soft():
+def _parse_single_gsm_soft(d2):
+    # to singular:
+    for k in ['platform_id',
+              'channel_count',
+              'library_strategy',
+              'library_source',
+              'library_selection',
+              'instrument_model',
+              'data_row_count',
+              'anchor',
+              'tag_length',
+              'type',
+              'tag_count']:
+        try:
+            d2[k] = "\n".join(d2[k])
+        except KeyError:
+            d2[k] = None
+    return(d2)
+              
+    # remember to deal with extra 'description =' tag
+    try:
+        d2['biosample'] = get_biosample_from_relations(d2['relation'])[0]
+        d2['sra_experiment'] = get_SRA_from_relations(d2['relation'])[0]
+    except KeyError:
+        d2['biosample']=None
+        d2['sra_experiment']=None
+    d2['type'] = d2['type'][0]
+    return(d2)
     pass
 
 #######################################
@@ -182,6 +263,46 @@ def _parse_single_gpl_soft():
     pass
 
 
+def geo_soft_entity_iterator(fh):
+    """Returns an iterator of GEO entities
+
+    Given a GEO accession (typically a GSE,
+    will return an iterator of the GEO entities
+    associated with the record, including all
+    GSMs, GPLs, and the GSE record itself
+
+    Parameters
+    ----------
+    fh: anything that can iterate over lines of text
+       Could be a list of text lines, a file handle, or
+       an open url.
+    
+    Yields
+    ------
+    Iterator of GEO entities
+
+
+    >>> for i in geo_soft_entity_iterator(get_geo_accession_soft('GSE2553')):
+    ...     print(i)
+    """
+    entity = []
+    accession = None
+    for line in fh:
+        try:
+            if(isinstance(line, bytes)):
+                line = line.decode()
+        except:
+            pass
+        line = line.strip()
+        if(line.startswith('^')):
+            if(accession is not None):
+                yield(_parse_single_entity_soft(entity))
+            accession = split_on_first(line)[1]
+            entity = []
+        entity.append(line)
+     
+
+
 ##############################################
 # This function takes the entire SOFT        #
 # format output from a call to the           #
@@ -189,7 +310,7 @@ def _parse_single_gpl_soft():
 # breaks up into individual entities         #
 # and then calls _parse_single_entity_soft() #
 ##############################################
-def parse_geo_soft(self,txt):
+def geo_soft_iterator(self,txt):
     tups = [split_on_first(line) for line in txt]
     tups = [(re.sub('![^_]+_', '',tup[0]), tup[1]) for tup in tups]
     d = collections.defaultdict(list)

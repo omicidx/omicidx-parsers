@@ -7,6 +7,41 @@ import urllib
 from xml import etree
 import xml
 from io import StringIO
+from marshmallow import Schema, fields
+
+class GEOContact(Schema):
+    class Meta:
+        fields=('contact_name',
+                'contact_country',
+                'contact_email',
+                'contact_fax',
+                'contact_phone',
+                'contact_laboratory',
+                'contact_institute',
+                'contact_department',
+                'contact_zip/postal_code',
+                'contact_address',
+                'contact_country',
+                'contact_state',
+                'contact_city',
+                'contact_web_link')
+
+class GEObase(Schema):
+    submission_date = fields.Date()
+    last_update_date = fields.Date()
+    channel_count = fields.Integer()
+    
+    class Meta:
+        fields= ('title',
+                 'status',
+                 'submission_date',
+                 'last_update_date',
+                 'type',
+                 'anchor',
+                 'tag_count',
+                 'channel_count')
+
+    
 
 try:
     from urllib.error import HTTPError  # for Python 3
@@ -70,6 +105,7 @@ def get_geo_accessions(etyp='GSE', batch_size = 25, add_term = None, email = "us
             yield(g['Accession'])
         print(n)
 
+        
 def get_geo_accession_xml(accession):
     url = "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?targ=self&acc={}&form=xml&view=quick".format(accession)
     attempt = 0
@@ -84,6 +120,7 @@ def get_geo_accession_xml(accession):
             import time
             time.sleep(1*attempt)
 
+            
 def get_geo_accession_soft(accession, targ = 'all'):
     """Open a connection to get the GEO SOFT for an accession
 
@@ -115,9 +152,22 @@ def get_geo_accession_soft(accession, targ = 'all'):
             time.sleep(1*attempt)
 
 
-def split_on_first(line,split = ' = '):
-    l = line.split(split)
-    return (l[0], split.join(l[1:]))
+def _split_on_first_equal(line):
+    """Split a line based on first occurrence of " ="
+
+    Parameters
+    ----------
+    line: str
+        string to split
+    split: str
+        split based on this. Can be multiple characters.
+    >>> _split_on_first_equal("this = abc = 1")
+    ('this', 'abc = 1')
+    """
+    l = line.split(" = ")
+    if(l[0].endswith(" =")):
+        l[0] = l[0].replace(' =','')
+    return (l[0], " = ".join(l[1:]))
 
 
 def get_geo_entities(txt):
@@ -128,10 +178,11 @@ def get_geo_entities(txt):
         if(line.startswith('^')):
             if(accession is not None):
                 entities[accession] = entity
-            accession = split_on_first(line)[1]
+            accession = _split_on_first_equal(line)[1]
             entity = []
         entity.append(line)
     return entities
+
 
 def get_subseries_from_relations(relation_list):
     ret = []
@@ -139,6 +190,7 @@ def get_subseries_from_relations(relation_list):
         if(i.startswith("SuperSeries of:")):
             ret.append(i.replace('SuperSeries of: ', ''))
     return ret
+
 
 def get_bioprojects_from_relations(relation_list):
     ret = []
@@ -164,6 +216,7 @@ def get_biosample_from_relations(relation_list):
     return ret
 
 
+
 ###############################################
 # Parse a single entity of SOFT format,       #
 # generically. Then pass along to             #
@@ -172,7 +225,7 @@ def get_biosample_from_relations(relation_list):
 ###############################################
 def _parse_single_entity_soft(entity_txt):
     # Deal with common stuff first:
-    tups = [split_on_first(line) for line in entity_txt]
+    tups = [_split_on_first_equal(line) for line in entity_txt]
     accession = tups[0][1]
     entity_type = tups[0][0].replace('^','')
     tups = [(re.sub('![^_]+_', '',tup[0]), tup[1]) for tup in tups]
@@ -207,7 +260,8 @@ def _parse_single_entity_soft(entity_txt):
     if(entity_type=='SAMPLE'):
         return(_parse_single_gsm_soft(d2))
     return(d2)
-    
+
+
 #######################################
 # Parse the GSE entity in SOFT format #
 #######################################
@@ -256,6 +310,7 @@ def _parse_single_gsm_soft(d2):
     return(d2)
     pass
 
+
 #######################################
 # Parse the GPL entity in SOFT format #
 #######################################
@@ -297,7 +352,7 @@ def geo_soft_entity_iterator(fh):
         if(line.startswith('^')):
             if(accession is not None):
                 yield(_parse_single_entity_soft(entity))
-            accession = split_on_first(line)[1]
+            accession = _split_on_first_equal(line)[1]
             entity = []
         entity.append(line)
      
@@ -311,7 +366,7 @@ def geo_soft_entity_iterator(fh):
 # and then calls _parse_single_entity_soft() #
 ##############################################
 def geo_soft_iterator(self,txt):
-    tups = [split_on_first(line) for line in txt]
+    tups = [_split_on_first_equal(line) for line in txt]
     tups = [(re.sub('![^_]+_', '',tup[0]), tup[1]) for tup in tups]
     d = collections.defaultdict(list)
     for tup in tups:

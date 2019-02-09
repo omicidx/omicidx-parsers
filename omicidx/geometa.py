@@ -30,6 +30,7 @@ class GEObase(Schema):
     submission_date = fields.Date()
     last_update_date = fields.Date()
     channel_count = fields.Integer()
+    contact = fields.Nested(GEOContact)
     
     class Meta:
         fields= ('title',
@@ -40,7 +41,7 @@ class GEObase(Schema):
                  'anchor',
                  'tag_count',
                  'channel_count')
-
+        
     
 
 try:
@@ -68,7 +69,28 @@ def get_entrez_instance(email = 'user@example.com'):
 
 def get_geo_accessions(etyp='GSE', batch_size = 25, add_term = None, email = "user@example.com"):
     """get GEO accessions
+
+    Useful for getting all the ETYP accessions for
+    later bulk processing
+
+    Parameters
+    ----------
+    etyp: str
+        One of GSE, GPL, GSM, GDS
+    batch_size: int 
+        the number of accessions to return in one batch. 
+        Transparent to the user, as this returns an iterator.
+    add_term: str
+        Add a search term for the query. Useful to limit
+        by date or search for specific text.
+    email: str
+        user email (not important)
+
+    Return
+    ------
+    an iterator of accessions, each as a string
     """
+    
     entrez = get_entrez_instance(email)
     if(etyp not in ETYP):
         raise Exception("etype {} not one of the accepted etyps {}".format(etyp, str(ETYP)))

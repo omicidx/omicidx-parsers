@@ -238,6 +238,44 @@ def get_biosample_from_relations(relation_list):
     return ret
 
 
+class GEOContact(object):
+    def __init__(self, kwargs):
+        """Create a new GEOContact
+
+        Generally will not be called by a user, but when
+        the parsing occurs by the parser itself.
+        
+        * filters to include any fields starting with "contact"
+        * strips off "contact_" from key names
+        * converts values to scalar strings from list
+        * converts empty values to `None`
+        
+        Parameters
+        ----------
+        kwargs: dict
+            A dict as created by parsing the key/value
+            pairs of a GEO accession header. 
+        
+        Returns
+        -------
+        A GEOContact object
+        """
+        for k, v in kwargs.items():
+            # convert to scalar for all keys
+            v = v[0]
+            # And empty string to None
+            if(v == ''):
+                v = None 
+            self.__setattr__(k, v)
+
+    
+
+def _create_contacts_from_parsed(d):
+    contact_dict = {}
+    for k, v in d.items():
+        if(k.startswith('contact')):
+            contact_dict[k.replace('contact_','')] = v
+    return GEOContact(contact_dict)
 
 ###############################################
 # Parse a single entity of SOFT format,       #
@@ -259,10 +297,16 @@ def _parse_single_entity_soft(entity_txt):
     INT_FIELDS = ['pubmed_id', 'sample_taxid', 'platform_taxid']
     for i in INT_FIELDS:
         if(i in d2):
-            d2[i] = list(map(lambda x: int(x), d2[i]))
+            try:
+                d2[i] = list(map(lambda x: int(x), d2[i]))
+            except:
+                d2[i] = []
     # change "geo_accesion = [...]" to "accession = ..."
-    d2['accession'] = d2['geo_accession'][0]
-    del(d2['geo_accession'])
+    try:
+        d2['accession'] = d2['accession'][0]
+    except KeyError:
+        d2['accession'] = d2['geo_accession'][0]
+        del(d2['geo_accession'])
     if('description =' in d2):
         del(d2['description ='])
     for k in ['status',
@@ -281,6 +325,14 @@ def _parse_single_entity_soft(entity_txt):
         return(_parse_single_gse_soft(d2))
     if(entity_type=='SAMPLE'):
         return(_parse_single_gsm_soft(d2))
+    if(entity_type=='PLATFORM'):
+        return(_parse_single_gsm_soft(d2))
+    # contact details as object
+    contact = _create_contacts_from_parsed(d2)
+    for k in list(d2.keys()):
+        if k.startswith('contact'):
+            del(d2[k])
+    d2['contact'] = contact
     return(d2)
 
 
@@ -321,7 +373,6 @@ def _parse_single_gsm_soft(d2):
             d2[k] = None
     return(d2)
               
-    # remember to deal with extra 'description =' tag
     try:
         d2['biosample'] = get_biosample_from_relations(d2['relation'])[0]
         d2['sra_experiment'] = get_SRA_from_relations(d2['relation'])[0]
@@ -337,7 +388,20 @@ def _parse_single_gsm_soft(d2):
 # Parse the GPL entity in SOFT format #
 #######################################
 def _parse_single_gpl_soft():
-    pass
+    for k in ['technology',
+              'distribution',
+              'organism',
+              'taxid',
+              'sample_id',
+              'series_id',
+              'data_row_count']:
+        try:
+            d2[k] = "\n".join(d2[k])
+        except KeyError:
+            d2[k] = None
+    return(d2)
+              
+    
 
 
 def geo_soft_entity_iterator(fh):

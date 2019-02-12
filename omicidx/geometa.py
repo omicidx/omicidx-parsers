@@ -239,7 +239,7 @@ def get_biosample_from_relations(relation_list):
 
 
 class GEOContact(object):
-    def __init__(self, kwargs):
+    def __init__(self, d):
         """Create a new GEOContact
 
         Generally will not be called by a user, but when
@@ -252,7 +252,7 @@ class GEOContact(object):
         
         Parameters
         ----------
-        kwargs: dict
+        d: dict
             A dict as created by parsing the key/value
             pairs of a GEO accession header. 
         
@@ -260,7 +260,7 @@ class GEOContact(object):
         -------
         A GEOContact object
         """
-        for k, v in kwargs.items():
+        for k, v in d.items():
             # convert to scalar for all keys
             v = v[0]
             # And empty string to None
@@ -268,9 +268,47 @@ class GEOContact(object):
                 v = None 
             self.__setattr__(k, v)
 
+
+
+class GEOEnitity(object):
+    def __init__(self, d):
+        """Create a new GEOContact
+
+        Generally will not be called by a user, but when
+        the parsing occurs by the parser itself.
+        
+        * filters to include any fields starting with "contact"
+        * strips off "contact_" from key names
+        * converts values to scalar strings from list
+        * converts empty values to `None`
+        
+        Parameters
+        ----------
+        d: dict
+            A dict as created by parsing the key/value
+            pairs of a GEO accession header. 
+        
+        Returns
+        -------
+        A GEOContact object
+        """
+        for k, v in d.items():
+            self.__setattr__(k, v)
+
+    def __repr__(self):
+        return "<GEO {}>".format(self.accession)
+
+class GEO_Series(GEOEnitity):
+    pass
+class GEO_Sample(GEOEnitity):
+    pass
+class GEO_Platform(GEOEnitity):
+    pass
     
 
-def _create_contacts_from_parsed(d):
+
+
+def _create_contact_from_parsed(d):
     contact_dict = {}
     for k, v in d.items():
         if(k.startswith('contact')):
@@ -321,21 +359,20 @@ def _parse_single_entity_soft(entity_txt):
             d2[k] = "\n".join(d2[k])
         except KeyError:
             d2[k] = None
+    # contact details as object
+    contact = _create_contact_from_parsed(d2)
+    for k in list(d2.keys()):
+        if k.startswith('contact'):
+            del(d2[k])
+    d2['contact'] = contact
     if(entity_type=='SERIES'):
         return(_parse_single_gse_soft(d2))
     if(entity_type=='SAMPLE'):
         return(_parse_single_gsm_soft(d2))
     if(entity_type=='PLATFORM'):
-        return(_parse_single_gsm_soft(d2))
-    # contact details as object
-    contact = _create_contacts_from_parsed(d2)
-    for k in list(d2.keys()):
-        if k.startswith('contact'):
-            del(d2[k])
-    d2['contact'] = contact
-    return(d2)
+        return(_parse_single_gpl_soft(d2))
 
-
+    
 #######################################
 # Parse the GSE entity in SOFT format #
 #######################################
@@ -348,7 +385,26 @@ def _parse_single_gse_soft(d2):
         d2['subseries']=[]
         d2['bioprojects']=[]
         d2['sra_studies']=[]
-    return(d2)
+    return GEO_Series(d2)
+
+class GEOChannel(object):
+    def __init__(self, d, ch):
+        ch_items = list([k for k in d.keys() if k.endswith('ch{}'.format(ch))])
+        characteristics = []
+        for k in ch_items:
+            if(k.startswith('characteristics')):
+                for characteristic in d[k]:
+                    characteristics.append(tuple(characteristic.split(': ')))
+                continue
+            self.__setattr__(k.replace("_ch{}".format(ch), ""), "\n".join(d[k]))
+        self.characteristics = dict(characteristics)
+            
+def _create_gsm_channel_data(d):
+    ch_count = int(d['channel_count'])
+    ch_recs = []
+    for i in range(0, ch_count):
+        ch_recs.append(GEOChannel(d, i+1))
+    return ch_recs
 
     
 #######################################
@@ -371,8 +427,6 @@ def _parse_single_gsm_soft(d2):
             d2[k] = "\n".join(d2[k])
         except KeyError:
             d2[k] = None
-    return(d2)
-              
     try:
         d2['biosample'] = get_biosample_from_relations(d2['relation'])[0]
         d2['sra_experiment'] = get_SRA_from_relations(d2['relation'])[0]
@@ -380,28 +434,27 @@ def _parse_single_gsm_soft(d2):
         d2['biosample']=None
         d2['sra_experiment']=None
     d2['type'] = d2['type'][0]
-    return(d2)
-    pass
+    d2['channels'] = _create_gsm_channel_data(d2)
+    for k in list(d2.keys()):
+        if k.endswith(r'_ch\d+'):
+            del(d2[k])
+    return GEO_Sample(d2)
 
 
 #######################################
 # Parse the GPL entity in SOFT format #
 #######################################
-def _parse_single_gpl_soft():
+def _parse_single_gpl_soft(d2):
     for k in ['technology',
               'distribution',
               'organism',
               'taxid',
-              'sample_id',
-              'series_id',
               'data_row_count']:
         try:
             d2[k] = "\n".join(d2[k])
         except KeyError:
             d2[k] = None
-    return(d2)
-              
-    
+    return GEO_Platform(d2)
 
 
 def geo_soft_entity_iterator(fh):

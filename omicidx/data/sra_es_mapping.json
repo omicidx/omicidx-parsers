@@ -1,0 +1,87 @@
+{
+    "index_patterns": ["sra_*"],
+    {
+	"mappings": {
+	    "doc": {
+		"dynamic_templates": [
+		    {
+			"runs": {
+			    "match":   "runs",
+			    "mapping": {
+				"type":       "nested",
+				"include_in_parent": true
+			    }
+			}
+		    },
+		    {
+			"identifiers": {
+			    "match": "identifiers",
+			    "mapping": {
+				"type":       "nested",
+				"include_in_parent": true
+			    }
+			}
+		    },
+		    {
+			"attributes": {
+			    "match": "attributes",
+			    "mapping": {
+				"type":       "nested",
+				"include_in_parent": true
+			    }
+			}
+		    },
+		    {
+			"attribute_values": {
+			    "path_match": "attributes.value",
+			    "mapping": {
+				"fields": {
+				    "keyword": {
+					"ignore_above": 256,
+					"type": "keyword"
+				    }
+				},
+				"type": "text"
+			    }
+			}
+		    },
+		    {
+			"dates": {
+			    "match":   "*date",
+			    "mapping": {
+				"type":       "date"
+			    }
+			}
+		    },
+		    {
+			"xrefs": {
+			    "match": "xrefs",
+			    "mapping": {
+				"type":       "nested",
+				"include_in_parent": true
+			    }
+			}
+		    },
+		    {
+			"file_addons": {
+			    "match": "file_addons",
+			    "mapping": {
+				"type":       "nested",
+				"include_in_parent": true
+			    }
+			}
+		    },
+		    {
+			"reads": {
+			    "match": "reads",
+			    "mapping": {
+				"type":       "nested",
+				"include_in_parent": true
+			    }
+			}
+		    }
+		]
+	    }
+	}
+    }
+}

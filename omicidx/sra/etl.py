@@ -418,4 +418,4 @@ def do_all_join_tables():
     run_join_accessions()
 
 if __name__ == '__main__':
-    
+    pass

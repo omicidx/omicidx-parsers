@@ -590,3 +590,15 @@ class GEOSeries(GEOEntity):
                      'summary',
                      'overall_design']
 
+import click
+import json
+
+@click.command()
+@click.option('--gse', prompt='A GEO series accession',
+              help='The person to greet.')
+def main(gse):
+    for z in geo_soft_entity_iterator(get_geo_accession_soft(gse)):
+        print(json.dumps(z.as_dict()))
+
+if __name__ == '__main__':
+    main()

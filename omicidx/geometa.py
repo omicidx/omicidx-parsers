@@ -33,6 +33,7 @@ class GEObase(Schema):
     contact = fields.Nested(GEOContact)
     
     class Meta:
+        dateformat = "%b %d %Y"
         fields= ('title',
                  'status',
                  'submission_date',
@@ -238,7 +239,11 @@ def get_biosample_from_relations(relation_list):
     return ret
 
 
-class GEOContact(object):
+class GEOBase(object):
+    def as_dict(self):
+        return self.__dict__
+
+class GEOContact(GEOBase):
     def __init__(self, d):
         """Create a new GEOContact
 
@@ -265,12 +270,12 @@ class GEOContact(object):
             v = v[0]
             # And empty string to None
             if(v == ''):
-                v = None 
+                v = None
             self.__setattr__(k, v)
 
 
 
-class GEOEnitity(object):
+class GEOEnitity(GEOBase):
     def __init__(self, d):
         """Create a new GEOContact
 
@@ -298,10 +303,27 @@ class GEOEnitity(object):
     def __repr__(self):
         return "<GEO {}>".format(self.accession)
 
+    def as_dict(self):
+        d = {}
+        for k, v in self.__dict__.items():
+            if(isinstance(v, GEOBase)):
+                d[k] = v.as_dict()
+            else:
+                d[k] = v
+        return(d)
+
 class GEO_Series(GEOEnitity):
     pass
 class GEO_Sample(GEOEnitity):
-    pass
+
+    def as_dict(self):
+        res = super().as_dict()
+        chdata = []
+        for i in res['channels']:
+            chdata.append(i.as_dict())
+        res['channels'] = chdata
+        return(res)
+
 class GEO_Platform(GEOEnitity):
     pass
     
@@ -387,7 +409,7 @@ def _parse_single_gse_soft(d2):
         d2['sra_studies']=[]
     return GEO_Series(d2)
 
-class GEOChannel(object):
+class GEOChannel(GEOEnitity):
     def __init__(self, d, ch):
         ch_items = list([k for k in d.keys() if k.endswith('ch{}'.format(ch))])
         characteristics = []
@@ -396,7 +418,10 @@ class GEOChannel(object):
                 for characteristic in d[k]:
                     characteristics.append(tuple(characteristic.split(': ')))
                 continue
+            newk = k.replace("_ch{}".format(ch), "")
             self.__setattr__(k.replace("_ch{}".format(ch), ""), "\n".join(d[k]))
+            if(newk == 'taxid'):
+                self.__setattr__(newk, int(self.__getattribute__(newk)))
         self.characteristics = dict(characteristics)
             
 def _create_gsm_channel_data(d):

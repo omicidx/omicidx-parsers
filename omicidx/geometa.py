@@ -133,7 +133,6 @@ def get_geo_accessions(etyp='GSE', batch_size = 25, add_term = None, email = "us
         for g in entrez.read(fetch_handle):
             n+=1
             yield(g['Accession'])
-        print(n)
 
         
 def get_geo_accession_xml(accession):
@@ -182,7 +181,7 @@ def get_geo_accession_soft(accession, targ = 'all'):
             time.sleep(1*attempt)
 
 
-def _split_on_first_equal(line):
+def _split_on_first_equal(line, val='='):
     """Split a line based on first occurrence of " ="
 
     Parameters
@@ -194,10 +193,10 @@ def _split_on_first_equal(line):
     >>> _split_on_first_equal("this = abc = 1")
     ('this', 'abc = 1')
     """
-    l = line.split(" = ")
-    if(l[0].endswith(" =")):
-        l[0] = l[0].replace(' =','')
-    return (l[0], " = ".join(l[1:]))
+    l = line.split(" {} ".format(val))
+    if(l[0].endswith(" {}".format(val))):
+        l[0] = l[0].replace(' {}'.format(val),'')
+    return (l[0], " {} ".format(val).join(l[1:]))
 
 
 def get_geo_entities(txt):
@@ -319,9 +318,11 @@ class GEOEnitity(GEOBase):
                 d[k] = v
         return(d)
 
-class GEO_Series(GEOEnitity):
+class GEOSeries(GEOEnitity):
     pass
-class GEO_Sample(GEOEnitity):
+
+
+class GEOSample(GEOEnitity):
 
     def as_dict(self):
         res = super().as_dict()
@@ -331,7 +332,8 @@ class GEO_Sample(GEOEnitity):
         res['channels'] = chdata
         return(res)
 
-class GEO_Platform(GEOEnitity):
+
+class GEOPlatform(GEOEnitity):
     pass
     
 
@@ -390,7 +392,8 @@ def _parse_single_entity_soft(entity_txt):
             d2[k] = None
     # contact details as object
     contact = _create_contact_from_parsed(d2)
-    for k in list(d2.keys()):
+    dkeys = d2.keys()
+    for k in list(dkeys):
         if k.startswith('contact'):
             del(d2[k])
     d2['contact'] = contact
@@ -414,9 +417,10 @@ def _parse_single_gse_soft(d2):
         d2['subseries']=[]
         d2['bioprojects']=[]
         d2['sra_studies']=[]
-    return GEO_Series(d2)
+    d2['_entity'] = 'GSE'
+    return GEOSeries(d2)
 
-class GEOChannel(GEOEnitity):
+class GEOChannel(GEOBase):
     def __init__(self, d, ch):
         ch_items = list([k for k in d.keys() if k.endswith('ch{}'.format(ch))])
         characteristics = []
@@ -438,6 +442,9 @@ def _create_gsm_channel_data(d):
         ch_recs.append(GEOChannel(d, i+1))
     return ch_recs
 
+# Search for fields like _ch1 and _ch2 ....
+import re
+r1 = re.compile(r'_ch\d+$')
     
 #######################################
 # Parse the GSM entity in SOFT format #
@@ -468,9 +475,10 @@ def _parse_single_gsm_soft(d2):
     d2['type'] = d2['type'][0]
     d2['channels'] = _create_gsm_channel_data(d2)
     for k in list(d2.keys()):
-        if k.endswith(r'_ch\d+'):
-            del(d2[k])
-    return GEO_Sample(d2)
+        if r1.search(k): # have to use search here because endswith does not take regex
+            del d2[k]
+    d2['_entity'] = 'GSM'
+    return GEOSample(d2)
 
 
 #######################################
@@ -486,7 +494,8 @@ def _parse_single_gpl_soft(d2):
             d2[k] = "\n".join(d2[k])
         except KeyError:
             d2[k] = None
-    return GEO_Platform(d2)
+    d2['_entity'] = 'GPL'
+    return GEOPlatform(d2)
 
 
 def geo_soft_entity_iterator(fh):
@@ -513,6 +522,7 @@ def geo_soft_entity_iterator(fh):
     """
     entity = []
     accession = None
+    in_table = False
     for line in fh:
         try:
             if(isinstance(line, bytes)):
@@ -520,11 +530,21 @@ def geo_soft_entity_iterator(fh):
         except:
             pass
         line = line.strip()
+        if(line.endswith('table_begin')):
+            in_table=True
+        if(line.endswith('table_end')):
+            in_table=False
+            continue
+        if(line.startswith('#')):
+            continue
+        if(in_table):
+            continue
         if(line.startswith('^')):
             if(accession is not None):
                 yield(_parse_single_entity_soft(entity))
             accession = _split_on_first_equal(line)[1]
             entity = []
+            
         entity.append(line)
      
 
@@ -586,26 +606,42 @@ def geo_soft_iterator(self,txt):
         del(d2[k])
     return(d2)
 
-class GEOEntity(dict):
-    def __init__(self):
-        super().__init__()
-        return self
-
-class GEOSeries(GEOEntity):
-    SCALAR_FIELDS = ['status',
-                     'title',
-                     'summary',
-                     'overall_design']
 
 import click
 import json
 
-@click.command()
-@click.option('--gse', prompt='A GEO series accession',
-              help='The person to greet.')
-def main(gse):
+@click.group()
+def cli():
+    pass
+
+def _gse_to_json(gse):
+    res = []
+    for z in geo_soft_entity_iterator(get_geo_accession_soft(gse)):
+        res.append(json.dumps(z.as_dict()))
+    return("\n".join(res))
+
+@cli.command()
+@click.option('--gse',
+              help='A single GSE accession')
+def gse_to_json(gse):
     for z in geo_soft_entity_iterator(get_geo_accession_soft(gse)):
         print(json.dumps(z.as_dict()))
 
+@cli.command()
+@click.option('--term',
+              help='something like "2019/01/28:2019/02/28[PDAT]"')
+@click.option("--outfile", type=click.File('w'),
+              help="output file name, default is stdout")
+def bulk_gse(term, outfile):
+    for gse in get_geo_accessions(add_term = term):
+        if(outfile is not None):
+            logging.info("writing accession {}".format(gse))
+            res = _gse_to_json(gse)
+            if(res is not None):
+                outfile.write(res + "\n")
+            else:
+                logging.warning("Accession {} not found, it appears.".format(gse))
+                
+
 if __name__ == '__main__':
-    main()
+    cli()

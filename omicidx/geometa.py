@@ -1,3 +1,10 @@
+"""Usage
+
+python -m omicidx.geometa --gse=GSE10
+
+will print json records for each entity to stdout.
+"""
+
 from Bio import Entrez
 import logging
 import collections

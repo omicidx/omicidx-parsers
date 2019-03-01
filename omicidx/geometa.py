@@ -15,6 +15,7 @@ from xml import etree
 import xml
 from io import StringIO
 from marshmallow import Schema, fields
+import requests
 
 class GEOContact(Schema):
     class Meta:
@@ -432,8 +433,20 @@ class GEOChannel(GEOBase):
             newk = k.replace("_ch{}".format(ch), "")
             self.__setattr__(k.replace("_ch{}".format(ch), ""), "\n".join(d[k]))
             if(newk == 'taxid'):
-                self.__setattr__(newk, int(self.__getattribute__(newk)))
-        self.characteristics = dict(characteristics)
+                self.__setattr__(newk, list([int(x) for x in self.__getattribute__(newk).split('\n')]))
+        char = []
+        for v in characteristics:
+            if(len(v)==1):
+                tag = v[0]
+                val = None
+            elif(len(v)==2):
+                tag = v[0]
+                val = v[1]
+            elif(len(v)>2):
+                tag = v[0]
+                val = ":".join(v[1:])
+            char.append({"tag": tag, "value": val})
+        self.characteristics = char
             
 def _create_gsm_channel_data(d):
     ch_count = int(d['channel_count'])
@@ -469,14 +482,18 @@ def _parse_single_gsm_soft(d2):
     try:
         d2['biosample'] = get_biosample_from_relations(d2['relation'])[0]
         d2['sra_experiment'] = get_SRA_from_relations(d2['relation'])[0]
-    except KeyError:
+    except:
         d2['biosample']=None
         d2['sra_experiment']=None
-    d2['type'] = d2['type'][0]
     d2['channels'] = _create_gsm_channel_data(d2)
+    supp_files = []
     for k in list(d2.keys()):
         if r1.search(k): # have to use search here because endswith does not take regex
             del d2[k]
+        if(k.startswith('supplementa')):
+            supp_files += d2[k]
+            del d2[k]
+    d2['supplemental_files']=supp_files
     d2['_entity'] = 'GSM'
     return GEOSample(d2)
 
@@ -624,8 +641,7 @@ def _gse_to_json(gse):
 @click.option('--gse',
               help='A single GSE accession')
 def gse_to_json(gse):
-    for z in geo_soft_entity_iterator(get_geo_accession_soft(gse)):
-        print(json.dumps(z.as_dict()))
+    print(_gse_to_json(gse))
 
 @cli.command()
 @click.option('--term',
@@ -642,6 +658,20 @@ def bulk_gse(term, outfile):
             else:
                 logging.warning("Accession {} not found, it appears.".format(gse))
                 
+@cli.command()
+@click.option('--term',
+              help='something like "2019/01/28:2019/02/28[PDAT]"')
+@click.option("--outfile",
+              help="output file name, default is stdout")
+def gse_accessions(term, outfile):
+    with open(outfile, 'w') as ofile:
+        n = 0
+        for gse in get_geo_accessions(add_term = term, batch_size=1000):
+            n+=1
+            if(n % 5000 ==0):
+                print(n)
+            ofile.write(gse + "\n")
+        print(n)
 
 if __name__ == '__main__':
     cli()

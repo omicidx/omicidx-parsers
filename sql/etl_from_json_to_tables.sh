@@ -141,7 +141,7 @@ with tbl as
 	doc->>'sample_accession' as sample_accession,
 	doc->>'study_accession' as study_accession,
 	doc->>'title' as title,
-	doc->>'xrefs' as xrefs
+	doc->'xrefs' as xrefs
 from etl.experiment_jsonb
 ),
 b as 

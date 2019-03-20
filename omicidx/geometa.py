@@ -1,8 +1,6 @@
 """Usage
 
-python -m omicidx.geometa --gse=GSE10
-
-will print json records for each entity to stdout.
+python -m omicidx.geometa --help
 """
 
 from Bio import Entrez
@@ -14,42 +12,43 @@ import urllib
 from xml import etree
 import xml
 from io import StringIO
-from marshmallow import Schema, fields
 import requests
 
-class GEOContact(Schema):
-    class Meta:
-        fields=('contact_name',
-                'contact_country',
-                'contact_email',
-                'contact_fax',
-                'contact_phone',
-                'contact_laboratory',
-                'contact_institute',
-                'contact_department',
-                'contact_zip/postal_code',
-                'contact_address',
-                'contact_country',
-                'contact_state',
-                'contact_city',
-                'contact_web_link')
+# from marshmallow import Schema, fields
 
-class GEObase(Schema):
-    submission_date = fields.Date()
-    last_update_date = fields.Date()
-    channel_count = fields.Integer()
-    contact = fields.Nested(GEOContact)
+# class GEOContact(Schema):
+#     class Meta:
+#         fields=('contact_name',
+#                 'contact_country',
+#                 'contact_email',
+#                 'contact_fax',
+#                 'contact_phone',
+#                 'contact_laboratory',
+#                 'contact_institute',
+#                 'contact_department',
+#                 'contact_zip/postal_code',
+#                 'contact_address',
+#                 'contact_country',
+#                 'contact_state',
+#                 'contact_city',
+#                 'contact_web_link')
+
+# class GEObase(Schema):
+#     submission_date = fields.Date()
+#     last_update_date = fields.Date()
+#     channel_count = fields.Integer()
+#     contact = fields.Nested(GEOContact)
     
-    class Meta:
-        dateformat = "%b %d %Y"
-        fields= ('title',
-                 'status',
-                 'submission_date',
-                 'last_update_date',
-                 'type',
-                 'anchor',
-                 'tag_count',
-                 'channel_count')
+#     class Meta:
+#         dateformat = "%b %d %Y"
+#         fields= ('title',
+#                  'status',
+#                  'submission_date',
+#                  'last_update_date',
+#                  'type',
+#                  'anchor',
+#                  'tag_count',
+#                  'channel_count')
         
     
 
@@ -76,7 +75,7 @@ def get_entrez_instance(email = 'user@example.com'):
     return ret
 
 
-def get_geo_accessions(etyp='GSE', batch_size = 25, add_term = None, email = "user@example.com"):
+def get_geo_accessions(etyp='GSE', batch_size = 1000, add_term = None, email = "user@example.com"):
     """get GEO accessions
 
     Useful for getting all the ETYP accessions for
@@ -173,7 +172,8 @@ def get_geo_accession_soft(accession, targ = 'all'):
     while attempt < 10:
         attempt += 1
         try:
-            return urllib.request.urlopen(url)
+            resp = requests.get(url)
+            return(StringIO(resp.text))
             break
         except Exception as err:
             print("Received error from server %s" % err)

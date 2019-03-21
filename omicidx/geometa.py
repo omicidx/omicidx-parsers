@@ -14,44 +14,6 @@ import xml
 from io import StringIO
 import requests
 
-# from marshmallow import Schema, fields
-
-# class GEOContact(Schema):
-#     class Meta:
-#         fields=('contact_name',
-#                 'contact_country',
-#                 'contact_email',
-#                 'contact_fax',
-#                 'contact_phone',
-#                 'contact_laboratory',
-#                 'contact_institute',
-#                 'contact_department',
-#                 'contact_zip/postal_code',
-#                 'contact_address',
-#                 'contact_country',
-#                 'contact_state',
-#                 'contact_city',
-#                 'contact_web_link')
-
-# class GEObase(Schema):
-#     submission_date = fields.Date()
-#     last_update_date = fields.Date()
-#     channel_count = fields.Integer()
-#     contact = fields.Nested(GEOContact)
-    
-#     class Meta:
-#         dateformat = "%b %d %Y"
-#         fields= ('title',
-#                  'status',
-#                  'submission_date',
-#                  'last_update_date',
-#                  'type',
-#                  'anchor',
-#                  'tag_count',
-#                  'channel_count')
-        
-    
-
 try:
     from urllib.error import HTTPError  # for Python 3
 except ImportError:
@@ -173,7 +135,7 @@ def get_geo_accession_soft(accession, targ = 'all'):
         attempt += 1
         try:
             resp = requests.get(url)
-            return(StringIO(resp.text))
+            return StringIO(resp.text)
             break
         except Exception as err:
             print("Received error from server %s" % err)

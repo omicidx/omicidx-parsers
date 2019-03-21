@@ -162,7 +162,18 @@ def _split_on_first_equal(line, val='='):
     return (l[0], " {} ".format(val).join(l[1:]))
 
 
+
 def get_geo_entities(txt):
+    """Get the text associated with each entity from a block of text
+
+    Parameters
+    ----------
+    txt: list(str)
+    
+    Returns
+    -------
+    A dict of entities keyed by accession and values a list of txt lines
+    """
     entities = {}
     accession = None
     for line in txt:
@@ -175,6 +186,10 @@ def get_geo_entities(txt):
         entity.append(line)
     return entities
 
+
+#####################################
+# Utility functions for GSE parsing #
+#####################################
 
 def get_subseries_from_relations(relation_list):
     ret = []
@@ -209,7 +224,10 @@ def get_biosample_from_relations(relation_list):
 
 
 class GEOBase(object):
+    """GEO Base class
+    """
     def as_dict(self):
+        """Return object as a dict"""
         return self.__dict__
 
 class GEOContact(GEOBase):
@@ -246,7 +264,7 @@ class GEOContact(GEOBase):
 
 class GEOEnitity(GEOBase):
     def __init__(self, d):
-        """Create a new GEOContact
+        """Create a new GEO Entity
 
         Generally will not be called by a user, but when
         the parsing occurs by the parser itself.
@@ -264,7 +282,7 @@ class GEOEnitity(GEOBase):
         
         Returns
         -------
-        A GEOContact object
+        A GEO Entity object
         """
         for k, v in d.items():
             self.__setattr__(k, v)
@@ -280,6 +298,36 @@ class GEOEnitity(GEOBase):
             else:
                 d[k] = v
         return(d)
+
+
+class GEOChannel(GEOBase):
+    """Captures a single channel from a GSM"""
+    
+    def __init__(self, d, ch):
+        ch_items = list([k for k in d.keys() if k.endswith('ch{}'.format(ch))])
+        characteristics = []
+        for k in ch_items:
+            if(k.startswith('characteristics')):
+                for characteristic in d[k]:
+                    characteristics.append(tuple(characteristic.split(': ')))
+                continue
+            newk = k.replace("_ch{}".format(ch), "")
+            self.__setattr__(k.replace("_ch{}".format(ch), ""), "\n".join(d[k]))
+            if(newk == 'taxid'):
+                self.__setattr__(newk, list([int(x) for x in self.__getattribute__(newk).split('\n')]))
+        char = []
+        for v in characteristics:
+            if(len(v)==1):
+                tag = v[0]
+                val = None
+            elif(len(v)==2):
+                tag = v[0]
+                val = v[1]
+            elif(len(v)>2):
+                tag = v[0]
+                val = ":".join(v[1:])
+            char.append({"tag": tag, "value": val})
+        self.characteristics = char
 
 class GEOSeries(GEOEnitity):
     pass
@@ -298,8 +346,6 @@ class GEOSample(GEOEnitity):
 
 class GEOPlatform(GEOEnitity):
     pass
-    
-
 
 
 def _create_contact_from_parsed(d):
@@ -383,32 +429,6 @@ def _parse_single_gse_soft(d2):
     d2['_entity'] = 'GSE'
     return GEOSeries(d2)
 
-class GEOChannel(GEOBase):
-    def __init__(self, d, ch):
-        ch_items = list([k for k in d.keys() if k.endswith('ch{}'.format(ch))])
-        characteristics = []
-        for k in ch_items:
-            if(k.startswith('characteristics')):
-                for characteristic in d[k]:
-                    characteristics.append(tuple(characteristic.split(': ')))
-                continue
-            newk = k.replace("_ch{}".format(ch), "")
-            self.__setattr__(k.replace("_ch{}".format(ch), ""), "\n".join(d[k]))
-            if(newk == 'taxid'):
-                self.__setattr__(newk, list([int(x) for x in self.__getattribute__(newk).split('\n')]))
-        char = []
-        for v in characteristics:
-            if(len(v)==1):
-                tag = v[0]
-                val = None
-            elif(len(v)==2):
-                tag = v[0]
-                val = v[1]
-            elif(len(v)>2):
-                tag = v[0]
-                val = ":".join(v[1:])
-            char.append({"tag": tag, "value": val})
-        self.characteristics = char
             
 def _create_gsm_channel_data(d):
     ch_count = int(d['channel_count'])

@@ -12,7 +12,10 @@ setup(name='omicidx',
                 'omicidx.scripts',
                 'omicidx.sra'],
       install_requires = [
-          "click"
+          "click",
+          "biopython",
+          "sqlalchemy",
+          "psycopg2"
       ],
       entry_points = {
           "console_scripts":[ 

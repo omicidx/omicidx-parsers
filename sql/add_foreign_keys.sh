@@ -7,6 +7,10 @@ psql -h $PG_HOST -U $PG_USER $PG_DB <<EOF
 --
 
 
+create index expt_study_accession on sra_experiment(study_accession);
+create index run_experiment_accession on sra_run(experiment_accession);
+create index expt_sample_accession on sra_experiment(sample_accession);
+
 insert into etl.sra_experiment (accession, status)
   (select distinct(r.experiment_accession),'[added by omicidx]' 
       from etl.sra_run r 
@@ -40,6 +44,16 @@ alter table etl.sra_experiment
 add constraint fk_sra_experiment_sra_study 
 foreign key (study_accession) 
 references etl.sra_study(accession);
+
+drop table public.sra_study cascade;
+drop table public.sra_experiment cascade;
+drop table public.sra_run cascade;
+drop table public.sra_sample cascade;
+alter table etl.sra_study set schema public;
+alter table etl.sra_sample set schema public;
+alter table etl.sra_run set schema public;
+alter table etl.sra_experiment set schema public;
+
 
 EOF
 2>&1 | tee add_foreign_keys.out

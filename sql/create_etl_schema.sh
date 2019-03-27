@@ -2,6 +2,8 @@
 psql -h $PG_HOST -U $PG_USER $PG_DB <<EOF
 create schema etl;
 
+create table etl.biosample_jsonb(doc jsonb);
+
 create table etl.run_jsonb(doc jsonb);
 
 create table etl.experiment_jsonb(doc jsonb);

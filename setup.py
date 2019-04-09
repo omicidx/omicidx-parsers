@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-
-from distutils.core import setup
+from setuptools import setup
 
 setup(name='omicidx',
       version='0.1.0',
@@ -20,7 +19,8 @@ setup(name='omicidx',
       entry_points = {
           "console_scripts":[ 
               #"omicidx=omicidx.scripts.omicidx:omicidx_cli",
-              "omicidx-cli=omicidx.scripts.cli:cli" 
+              "omicidx-cli=omicidx.scripts.cli:cli",
+              "biosample-cli=omicidx.biosample:cli" 
           ]
       }
      )

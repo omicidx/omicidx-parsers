@@ -1,0 +1,32 @@
+digraph dfd2{
+	sra_raw [label="SRA metadata\nSource: NCBI"]      // node T
+	geo_raw [label="GEO metadata\nSource: NCBI"]      // node T
+	biosample_raw [label="BioSample metadata\nSource: NCBI"]      // node T
+        tojson [label="{<f0>Convert to JSON|<f1>Process: python\nEnv: local}" shape=Mrecord];
+        dataflow [label="{<f0>ETL|<f1>Process: python\nEnv: DataFlow}" shape=Mrecord];
+	bigquery [label="BigQuery" shape=box,peripheries=3]
+	denorm [label="Denormalized JSON"]
+	elasticsearch [label="Elasticsearch" shape=box]
+	postgres [label="PostgreSQL" shape=box]
+	api [label="Serverless Lambda API" shape=box]
+
+	sra_raw -> tojson
+	geo_raw -> tojson
+	biosample_raw -> tojson
+
+	gcs [label="Google Cloud Storage" shape=box]
+	aws_s3 [label="AWS s3" shape=box]
+
+	tojson -> gcs
+	tojson -> aws_s3
+
+	gcs -> dataflow
+	dataflow -> bigquery
+	dataflow -> denorm
+	denorm -> gcs
+	denorm -> postgres
+	dataflow -> elasticsearch
+	api -> elasticsearch [style="dotted"]
+	
+        {rank=same; gcs, aws_s3}
+}

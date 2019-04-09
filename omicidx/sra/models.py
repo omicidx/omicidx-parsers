@@ -1,5 +1,5 @@
-from sqlalchemy import Integer, String, Column, Boolean, BigInteger, ForeignKey, Numeric
-from sqlalchemy.dialects.postgresql import JSONB, insert
+from sqlalchemy import Integer, String, Column, Boolean, BigInteger, ForeignKey, Numeric, TIMESTAMP
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -19,7 +19,7 @@ def upsert(session, model, rows, no_update_cols=[]):
     print(rows)
     print(model)
     
-    stmt = insert(table).values(**rows[0])
+    #stmt = insert(table).values(**rows[0])
 
     #print(stmt)
     #print(stmt.excluded)
@@ -42,76 +42,80 @@ def upsert(session, model, rows, no_update_cols=[]):
 
     session.execute(on_conflict_stmt)
 
-class SRAStudy(Base):
+class SRAProvenance(Base):
+    __abstract__ = True
+    
+    status             = Column(String)
+    updated            = Column(TIMESTAMP, index=True)
+    published          = Column(TIMESTAMP, index=True)
+    received           = Column(TIMESTAMP, index=True)
+    visibility         = Column(String)
+    replaced_by        = Column(String)
+    
+    
+class SRAStudy(SRAProvenance):
     __tablename__ = 'sra_study'
 
-    BioProject         = Column(String)
-    GEO                = Column(String)
+    bio_project        = Column(String, index=True)
+    gse                = Column(String, index=True)
     abstract           = Column(String)
     accession          = Column(String, primary_key = True)
-    alias              = Column(String)
+    alias              = Column(String, index=True)
     attributes         = Column(JSONB)
     broker_name        = Column(String)
     center_name        = Column(String)
     description        = Column(String)
-    external_id        = Column(JSONB)
-    study_type         = Column(String)
-    submitter_id       = Column(JSONB)
-    secondary_id       = Column(JSONB)
-    study_accession    = Column(String)
-    title              = Column(String)
+    study_type         = Column(String, index=True)
+    title              = Column(String, index=True)
+    xrefs              = Column(JSONB)
 
 #    experiments        = relationship('SRAExperiment')
 
 
-class SRAExperiment(Base):
+class SRAExperiment(SRAProvenance):
     __tablename__ = 'sra_experiment'
     
     accession          = Column(String, primary_key=True)
+    alias              = Column(String, index=True)
     attributes         = Column(JSONB)
-    alias              = Column(String)
+    broker_name        = Column(String)
     center_name        = Column(String)
-    design             = Column(String)
     description        = Column(String)
-    experiment_accession = Column(String)
-    instrument_model   = Column(String)
-    library_name       = Column(String)
+    design             = Column(String, index=True)
+    identifiers        = Column(JSONB)
+    instrument_model   = Column(String, index=True)
     library_construction_protocol = Column(String)
-    library_layout_orientation = Column(String)
-    library_layout_length = Column(Numeric)
-    library_layout_sdev = Column(Numeric)
-    library_strategy   = Column(String)
-    library_source     = Column(String)
-    library_selection  = Column(String)
-    library_layout     = Column(String)
-    platform           = Column(String)
-    study_accession    = Column(String) #, ForeignKey('sra_study.accession'))
-    submitter_id       = Column(JSONB)
-    title              = Column(String)
+    library_layout     = Column(String, index=True)
+    library_layout_orientation = Column(String, index=True)
+    library_layout_length = Column(String, index=True)
+    library_layout_sdev = Column(String)
+    library_name       = Column(String)
+    library_selection  = Column(String, index=True)
+    library_source     = Column(String, index=True)
+    library_strategy   = Column(String, index=True)
+    platform           = Column(String, index=True)
+    study_accession    = Column(String, index=True) #, ForeignKey('sra_study.accession'))
+#    submitter_id       = Column(JSONB)
+    title              = Column(String, index=True)
 
 #    study              = relationship("SRAStudy", back_populates="experiments")
 #    runs               = relationship('SRARun')
 
-class SRARun(Base):
+class SRARun(SRAProvenance):
     __tablename__ = 'sra_run'
 
     accession = Column(String, primary_key = True)
     attributes         = Column(JSONB)
-    alias              = Column(String)
-    center_name        = Column(String)
-    cluster_name       = Column(String)
+    alias              = Column(String, index=True)
+    center_name        = Column(String, index=True)
     description        = Column(String)
     experiment_accession = Column(String) #, ForeignKey('sra_experiment.accession'))
-    is_public          = Column(String)
-    load_done          = Column(String)
     nreads             = Column(Integer)
     published          = Column(String)
     reads              = Column(JSONB)
-    run_accession      = Column(String)
     run_center         = Column(String)
     run_date           = Column(String)
     size               = Column(BigInteger)
-    static_data_available = Column(String)
     submitter_id       = Column(JSONB)
     title              = Column(String)
     tax_analysis       = Column(JSONB)
@@ -120,7 +124,7 @@ class SRARun(Base):
 
 #    experiment         = relationship("SRAExperiment", back_populates="runs")
     
-class SRASample(Base):
+class SRASample(SRAProvenance):
     __tablename__ = 'sra_sample'
 
     BioSample          = Column(String)

@@ -24,9 +24,8 @@ ETYP = ['GSE', 'GSM', 'GPL', 'GDS']
 def get_entrez_instance(email = 'user@example.com'):
     """Return a Bio::Entrez object
     
-    Parameters
-    ==========
-    email: str the email to be used with the Entrez instance
+    # Arguments
+    email (str): the email to be used with the Entrez instance
     
     Returns
     =======

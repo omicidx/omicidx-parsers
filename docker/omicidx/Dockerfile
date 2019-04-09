@@ -22,4 +22,5 @@ RUN /bin/bash -c "source py2/bin/activate && pip install gsutil && deactivate"
 RUN pip install awscli google
 
 RUN echo "alias gsutil='/data/py2/bin/gsutil'" > /root/.bashrc
-CMD ['/bin/bash']
+
+CMD ["/bin/bash"]

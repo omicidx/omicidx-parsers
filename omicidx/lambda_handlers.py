@@ -60,6 +60,7 @@ def full_experiment_package(accession):
     return s
 
 
+
 def create_dynamodb_table(tname):
     table = dynamodb.create_table(
         TableName = tname,
@@ -85,6 +86,7 @@ def create_dynamodb_table(tname):
 
 def insert_to_dynamo(expt_pkg):
     for expt in expt_pkg:
+        logger.info('inserting {} to dynamodb'.format(expt['experiment']['accession']))
         with run_table.batch_writer() as batch:
             for run in expt['runs']:
                 batch.put_item(Item=replace_floats(run))
@@ -93,8 +95,9 @@ def insert_to_dynamo(expt_pkg):
         del(expt['runs'])
         del(expt['sample'])
         del(expt['study'])
-        logger.info(expt['experiment']['accession'])
+        logger.info("inserted runs from {} to dynamodb".format(expt['experiment']['accession']))
         experiment_table.put_item(Item = replace_floats(expt['experiment']))
+        logger.info("inserted experiment from {} to dynamodb".format(expt['experiment']['accession']))
 
 def lambda_return_full_experiment_json(event, context):
     accession = event['accession']
@@ -104,10 +107,12 @@ def lambda_return_full_experiment_json(event, context):
 
 
 def insert_if_empty(accession):
+    logger.info('checking for accession {} in dynamodb'.format(accession))
     response = experiment_table.query(KeyConditionExpression=Key('accession').eq(accession))
     if(len(response['Items'])==0):
-        logger.info(accession)
-        insert_to_dynamo(full_experiment_package(accession))
+        expt_pkg = full_experiment_package(accession)
+        logger.info('expt_pkg for accession {} obtained'.format(accession))
+        insert_to_dynamo(expt_pkg)
         return(True)
     logger.info("skipped: {}".format(accession))
 
@@ -117,6 +122,13 @@ def lambda_insert_to_dynamo(event, context):
     logger.info('processing accession: {}'.format(accession))
     insert_if_empty(accession)
     return accession
+
+def lambda_insert_from_sqs_to_dynamo(event, context):
+    accession = event['Records'][0]['body']
+    logger.info('processing accession: {}'.format(accession))
+    insert_if_empty(accession)
+    return accession
+    
 
 
 def main():

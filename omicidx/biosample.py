@@ -98,7 +98,6 @@ class BioSampleParser(object):
                 #res = es.index(index="bioes", doc_type='biosample', id=bios['id'], body=bios)
                 elem.clear()
                 return bios
-        return StopIteration
 
 
 @click.group()

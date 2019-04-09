@@ -1,1 +1,0 @@
-cat part-00001-e2638a46-c751-48b3-a618-291a527bb0bd-c000.json | jq -c '. | {"index": {"_index": "sra_full", "_type": "doc", "_id": .accession}}, .' | http -a 'omicidx:Asdf1234%' POST https://c0b1083b4d78495d3b29a72d74fcea41.us-east-1.aws.found.io:9243/_bulk

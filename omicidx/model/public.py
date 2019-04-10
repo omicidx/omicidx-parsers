@@ -27,30 +27,6 @@ class AttributesMixin(object):
     tag = Column(Text)
     value = Column(Text)
 
-
-t_biosample_test = Table(
-    'biosample_test', metadata,
-    Column('id', Integer),
-    Column('gsm', Text),
-    Column('dbgap', Text),
-    Column('model', Text),
-    Column('title', Text),
-    Column('access', Text),
-    Column('id_recs', JSONB(astext_type=Text())),
-    Column('ids', JSONB(astext_type=Text())),
-    Column('taxon_id', Integer),
-    Column('accession', Text),
-    Column('attributes', JSONB(astext_type=Text())),
-    Column('sra_sample', Text),
-    Column('description', Text),
-    Column('last_update', DateTime),
-    Column('publication_date', DateTime),
-    Column('submission_date', DateTime),
-    Column('is_reference', Text),
-    Column('taxonomy_name', Text),
-    Column('textsearchable_index_col', TSVECTOR, index=True),
-)
-
 def to_tsvector_ix(*columns):
     """create tsvector string from column names"""
     s = " || ' ' || ".join(columns)
@@ -278,6 +254,68 @@ class SraPlatform(Base):
     __tablename__ = 'sra_platform'
     
     value = Column(Text, primary_key=True)
+
+
+
+#############
+# Biosample #
+#############
+
+class BiosampleIdRec(Base):
+    __tablename__ = 'biosample_idrec'
+
+
+    id = Column(Integer, primary_key=True)
+    biosample_accession = Column(Text, index = True)
+    identifier = Column(Text, index = True)
+    db = Column(Text, index = True)
+    label = Column(Text)
+
+class BiosampleAttribute(Base):
+
+    __tablename__ = 'biosample_attribute'
+    __table_args__ = (
+        UniqueConstraint('name', 'harmonized_name', 'value'),
+    )
+
+    id = Column(Integer, primary_key=True)
+    name = Column(Text, index=True)
+    harmonized_name = Column(Text)
+    display_name = Column(Text)
+    value = Column(Text)
+
+biosample2attribute = Table('biosample2attribute', Base.metadata,
+    Column('accession', Text, ForeignKey('biosample.accession'), index=True),
+    Column('attribute_id', Integer, ForeignKey('biosample_attribute.id'), index=True),
+    UniqueConstraint('accession', 'attribute_id')                          
+)
+
+
+
+class Biosample(Base):
+    __tablename__ = 'biosample'
+    
+    accession = Column(Text, primary_key=True)
+    gsm = Column(Text, index=True)
+    dbgap = Column(Text, index=True)
+    model = Column(Text)
+    title = Column(Text)
+    access = Column(Text, index=True)
+    taxon_id = Column(Integer, index=True)
+    sra_sample = Column(Text, index=True)
+    description = Column(Text)
+    last_update = Column(DateTime)
+    publication_date = Column(DateTime)
+    submission_date = Column(DateTime)
+    is_reference = Column(Text)
+    taxonomy_name = Column(Text)
+    textsearchable_index_col = Column(TSVECTOR, index=True)
+
+    attributes = relationship("BiosampleAttribute",
+                              secondary=sra_sample2attribute)
+
+    identifiers = relationship("BiosampleIdRec")
+
 
 
 def create_all_in_schema(schema='public2'):

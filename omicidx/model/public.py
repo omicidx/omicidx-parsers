@@ -148,7 +148,7 @@ class SraExperiment(Base):
     sample_accession = Column(ForeignKey('sra_sample.accession'))
     study_accession = Column(ForeignKey('sra_study.accession'))
     title = Column(Text)
-    xrefs = Column(Text)
+    xrefs = Column(JSONB(astext_type=Text()))
     status = Column(Text)
     updated = Column(DateTime)
     published = Column(DateTime)
@@ -302,7 +302,7 @@ class Biosample(Base):
     title = Column(Text)
     access = Column(Text, index=True)
     taxon_id = Column(Integer, index=True)
-    sra_sample = Column(Text, index=True)
+    sra_sample = Column(Text, ForeignKey('sra_sample.accession'), index=True)
     description = Column(Text)
     last_update = Column(DateTime)
     publication_date = Column(DateTime)
@@ -321,7 +321,7 @@ class Biosample(Base):
 def create_all_in_schema(schema='public2'):
     from sqlalchemy import create_engine
     dbschema = schema
-    local_engine = create_engine('postgresql://bigrna@omicidx-aurora-cluster.cluster-cpmth1vkdqqx.us-east-1.rds.amazonaws.com/bigrna', 
+    local_engine = create_engine('postgresql://postgres@a13711b55674d11e9a61612ccd5a2372-f6d212fe2c2a4217.elb.us-east-1.amazonaws.com:5434/bigrna', 
                                  connect_args={'options': '-c search_path={}'.format(dbschema)})
     Base.metadata.create_all(local_engine)
     print(Base.metadata.tables.keys())

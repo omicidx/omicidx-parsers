@@ -261,34 +261,34 @@ class SraPlatform(Base):
 # Biosample #
 #############
 
-class BiosampleIdRec(Base):
-    __tablename__ = 'biosample_idrec'
+# class BiosampleIdRec(Base):
+#     __tablename__ = 'biosample_idrec'
 
 
-    id = Column(Integer, primary_key=True)
-    biosample_accession = Column(Text, index = True)
-    identifier = Column(Text, index = True)
-    db = Column(Text, index = True)
-    label = Column(Text)
+#     id = Column(Integer, primary_key=True)
+#     biosample_accession = Column(Text, index = True)
+#     identifier = Column(Text, index = True)
+#     db = Column(Text, index = True)
+#     label = Column(Text)
 
-class BiosampleAttribute(Base):
+# class BiosampleAttribute(Base):
 
-    __tablename__ = 'biosample_attribute'
-    __table_args__ = (
-        UniqueConstraint('name', 'harmonized_name', 'value'),
-    )
+#     __tablename__ = 'biosample_attribute'
+#     __table_args__ = (
+#         UniqueConstraint('name', 'harmonized_name', 'value'),
+#     )
 
-    id = Column(Integer, primary_key=True)
-    name = Column(Text, index=True)
-    harmonized_name = Column(Text)
-    display_name = Column(Text)
-    value = Column(Text)
+#     id = Column(Integer, primary_key=True)
+#     name = Column(Text, index=True)
+#     harmonized_name = Column(Text)
+#     display_name = Column(Text)
+#     value = Column(Text)
 
-biosample2attribute = Table('biosample2attribute', Base.metadata,
-    Column('accession', Text, ForeignKey('biosample.accession'), index=True),
-    Column('attribute_id', Integer, ForeignKey('biosample_attribute.id'), index=True),
-    UniqueConstraint('accession', 'attribute_id')                          
-)
+# biosample2attribute = Table('biosample2attribute', Base.metadata,
+#     Column('accession', Text, ForeignKey('biosample.accession'), index=True),
+#     Column('attribute_id', Integer, ForeignKey('biosample_attribute.id'), index=True),
+#     UniqueConstraint('accession', 'attribute_id')                          
+# )
 
 
 
@@ -296,6 +296,7 @@ class Biosample(Base):
     __tablename__ = 'biosample'
     
     accession = Column(Text, primary_key=True)
+    attributes = Column(JSONB, astext_type=Text())
     gsm = Column(Text, index=True)
     dbgap = Column(Text, index=True)
     model = Column(Text)
@@ -311,18 +312,23 @@ class Biosample(Base):
     taxonomy_name = Column(Text)
     textsearchable_index_col = Column(TSVECTOR, index=True)
 
-    attributes = relationship("BiosampleAttribute",
-                              secondary=sra_sample2attribute)
+#    attributes = relationship("BiosampleAttribute",
+#                              secondary=sra_sample2attribute)
 
-    identifiers = relationship("BiosampleIdRec")
+#    identifiers = relationship("BiosampleIdRec")
 
 
 
-def create_all_in_schema(schema='public2'):
+def create_all_in_schema(schema='public2', drop_schema=False):
     from sqlalchemy import create_engine
     dbschema = schema
     local_engine = create_engine('postgresql://postgres@a13711b55674d11e9a61612ccd5a2372-f6d212fe2c2a4217.elb.us-east-1.amazonaws.com:5434/bigrna', 
                                  connect_args={'options': '-c search_path={}'.format(dbschema)})
+    if(drop_schema):
+        try:
+            local_engine.execute('drop schema {} cascade'.format(schema))
+        except:
+            pass
     Base.metadata.create_all(local_engine)
     print(Base.metadata.tables.keys())
 

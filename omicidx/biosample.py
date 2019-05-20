@@ -108,7 +108,7 @@ def cli():
 def biosample_to_json(biosample_file):
     for i in BioSampleParser(biosample_file):
         if(i is None):
-            continue
+            break
         print(i.as_json())
 
 def download_biosample():

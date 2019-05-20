@@ -62,14 +62,14 @@ class BioSampleParser(object):
                     bios[k] = v
                 bios['id_recs'] = []
                 bios['ids'] = []
+                bios['sra_sample']=None
+                bios['dbgap']=None
+                bios['gsm']=None
                 for id in elem.iterfind('.//Id'):
                     idrec = {'db': id.get('db'), 'label': id.get('db_label'), 'id':id.text}
                     bios['ids'].append(idrec['id'])
                     bios['id_recs'].append(idrec)
                     # add xref fields for SRA, dbGaP, and GEO
-                    bios['sra_sample']=None
-                    bios['dbgap']=None
-                    bios['gsm']=None
                     
                     if(id.get('db')=='SRA'):
                         bios['sra_sample']=id.text
@@ -107,6 +107,8 @@ def cli():
     
 def biosample_to_json(biosample_file):
     for i in BioSampleParser(biosample_file):
+        if(i is None):
+            continue
         print(i.as_json())
 
 def download_biosample():

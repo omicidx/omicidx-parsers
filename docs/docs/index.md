@@ -1,17 +1,20 @@
-# Welcome to MkDocs
+# Welcome to OmicIDX
 
-For full documentation visit [mkdocs.org](https://mkdocs.org).
+The OmicIDX project aims to expose metadata associated with publicly
+available genomic data. 
 
-## Commands
+- Flexible search and query
+- Analytics and data mining
+- Data munging and mashups with other data resources (ontologies, for
+  example)
+- Performant bulk access via application programming interfaces
+- Computable formats (json, avro) for data scientists
+- Drive bulk processing of genomics datasets
 
-* `mkdocs new [dir-name]` - Create a new project.
-* `mkdocs serve` - Start the live-reloading docs server.
-* `mkdocs build` - Build the documentation site.
-* `mkdocs help` - Print this help message.
+## Ipython notebooks
 
-## Project layout
+- [intro](https://notebook.org)
 
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
+## Rmarkdown workbooks
+
+- [intro](https://rmarkdown.org)

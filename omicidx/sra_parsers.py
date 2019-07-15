@@ -179,6 +179,10 @@ def parse_run(xml):
     d.update(_process_path_map(xml, path_map))
     d.update(_parse_identifiers(xml.find("IDENTIFIERS"), "run"))
     d = try_update(d, _parse_attributes(xml.find("RUN_ATTRIBUTES")))
+    d = try_update(d, _parse_attributes(xml.find("RUN_ATTRIBUTES")))
+    d = try_update(d, _parse_run_files(xml.find("SRAFiles")))
+    d = try_update(d, _parse_run_stats(xml.find("Statistics")))
+    d = try_update(d, _parse_run_bases(xml.find("Bases")))
     d.update(_parse_run_qualities(xml))
     try:
         # already have accession, so no need for this
@@ -186,6 +190,45 @@ def parse_run(xml):
     except:
         pass
     return d
+
+
+def _parse_run_stats(xml):
+    stats = []
+    for read in xml.findall('Read'):
+        ret = {}
+        ret['index'] = int(read.get('index',0))
+        ret['count'] = int(read.get('count',0))
+        ret['mean_length'] = float(read.get('average',0.0))
+        ret['sd_length'] = float(read.get('stdev',0.0))
+        stats.append(ret)
+    return {"statistics": stats}
+
+def _parse_run_bases(xml):
+    bases = []
+    for base in xml.findall('Base'):
+        ret = {}
+        ret['base'] = base.get('value')
+        ret['count'] = int(base.get('count'))
+        bases.append(ret)
+    return {'base_counts':bases}
+
+
+
+def _parse_run_files(xml):
+    files = xml.findall('./SRAFile')
+    ret = []
+    for f in files:
+        retfile = {}
+        for k in f.keys():
+            retfile[k] = f.get(k)
+        retfile['alternatives'] = []
+        for alt in f.findall('Alternatives'):
+            altfile = {}
+            for k in alt.keys():
+                altfile[k] = alt.get(k)
+            retfile['alternatives'].append(altfile)
+        ret.append(retfile)
+    return({'files':ret})
 
 
 def parse_experiment(xml):
@@ -823,10 +866,13 @@ def results_from_runbrowser(accession):
     error = root.find('./ERROR')
     # This finds errors like "XXXXX has been removed"
     if(error is not None):
-        return(error.text)
+        return("ERROR: " + error.text)
     res = {}
+    try:
+        res['run'] = parse_run(root.find('.//RUN'))
+    except:
+        return('ERROR: Nothing found for accession {}'.format(accession))
     res['experiment'] = parse_experiment(root.find('.//EXPERIMENT'))
-    res['run'] = parse_run(root.find('.//RUN'))
     res['study'] = parse_study(root.find('.//STUDY'))
     res['sample'] = parse_sample(root.find('.//SAMPLE'))
     res['xml'] = runbrowser_xml
@@ -836,23 +882,21 @@ def results_from_runbrowser(accession):
 
 import json
 def get_accession_list(from_date="2001-01-01",to_date="2050-01-01",
-                       count = 50, offset = 0, type="EXPERIMENT"):
+                       count = 500, offset = 0, type="EXPERIMENT"):
     column_names = ["Accession", "Submission", "Type",
                     "Received", "Published", "LastUpdate", "Status", "Insdc"]
     url = "https://www.ncbi.nlm.nih.gov/Traces/sra/status/" + \
           "srastatrep.fcgi/acc-mirroring?" + \
           "from_date={}&to_date={}&count={}&type={}&offset={}"
     url = url.format(from_date, to_date, count, type, offset)
-    print(url)
+    logger.debug(url)
     res = None
     with urllib.request.urlopen(url) as response:
         res = json.loads(response.read().decode('UTF-8'))
         c = 0
-    print(res['fetched_count'], count, int(res['fetched_count']) == count)
     while(True):
         offset += 1
         c += 1
-        print(c, offset)
         if(c != int(res['fetched_count'])):
             retval = dict(zip(res['column_names'], res['rows'][c-1]))
             yield(retval)
@@ -866,7 +910,8 @@ def get_accession_list(from_date="2001-01-01",to_date="2050-01-01",
             url = url.format(from_date, count, type, offset)
             with urllib.request.urlopen(url) as response:
                 res = json.loads(response.read().decode('UTF-8'))
-            print(res['fetched_count'])
+            logger.info("fetched: " + res['fetched_count'])
+            logger.info("total: " + offset)
             c = 0
 
 

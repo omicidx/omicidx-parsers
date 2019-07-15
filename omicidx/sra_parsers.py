@@ -121,6 +121,11 @@ def parse_study(xml):
     d = try_update(d, _parse_attributes(xml.find("STUDY_ATTRIBUTES")))
     d.update(_parse_links(
         xml.find("STUDY_LINKS")))
+    pubmeds = []
+    for xref in d['xrefs']:
+        if(xref['db'] == 'pubmed'):
+            pubmeds.append(int(xref['id']))
+    d.update({'pubmed_ids':pubmeds})
     return(d)
 
 
@@ -269,6 +274,7 @@ def parse_experiment(xml):
         xml.find("EXPERIMENT_ATTRIBUTES")))
     d.update(_parse_links(
         xml.find("EXPERIMENT_LINKS")))
+    d = try_update(d, _parse_run_reads(xml.find(".//SPOT_DESCRIPTOR")))
     return d
 
 
@@ -749,6 +755,17 @@ def parse_addons_info(fname):
 
 
 def srastatrep(accessions):
+    """Access the SRA statrep api
+
+    Parameters
+    ----------
+    accessions: List[str]
+        A list (or can be single string) of accessions
+
+    Return
+    ------
+    A named tuple with statrep column names as field_names
+    """
     if(not isinstance(accessions, list)):
         accessions = [accessions]
     with urllib.request.urlopen('https://www.ncbi.nlm.nih.gov/Traces/sra/status/srastatrep.fcgi/acc-mirroring?acc={}'.format(",".join(accessions))) as response:
@@ -762,20 +779,53 @@ def srastatrep(accessions):
         return ret
 
 
+    
 def load_experiment_xml_by_accession(accession):
     with urllib.request.urlopen('https://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?save=efetch&db=sra&rettype=FullXml&term={}'.format(accession)) as response:
         xml = etree.parse(response)
         return xml
 
 
+    
 def load_runbrowser_xml_by_accession(accession):
     with urllib.request.urlopen("https://trace.ncbi.nlm.nih.gov/Traces/sra/?run={}&retmode=xml".format(accession)) as response:
         xml = etree.parse(response)
         return xml
 
+    
+
 def run_from_runbrowser(accession):
+    """Just the run part of runbrowser output"""
+    
     runbrowser_xml = load_runbrowser_xml_by_accession(accession)
     return parse_run(runbrowser_xml.getroot().find('.//RUN'))
+
+
+
+def results_from_runbrowser(accession):
+    """Return complete record from runbrowser
+
+    Parameters
+    ----------
+    accession: string
+        Any SRA accession, but the only one-to-one results are
+        for SRR records. 
+
+    Returns
+    -------
+    a dict with experiment, run, study, and sample records
+    """
+    
+    runbrowser_xml = load_runbrowser_xml_by_accession(accession)
+    res = {}
+    res['experiment'] = parse_experiment(runbrowser_xml.getroot().find('.//EXPERIMENT'))
+    res['run'] = parse_run(runbrowser_xml.getroot().find('.//RUN'))
+    res['study'] = parse_study(runbrowser_xml.getroot().find('.//STUDY'))
+    res['sample'] = parse_sample(runbrowser_xml.getroot().find('.//SAMPLE'))
+    res['xml'] = runbrowser_xml
+    return res
+    
+
 
 import json
 def get_accession_list(from_date="2004-01-01",

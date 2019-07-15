@@ -122,9 +122,10 @@ def parse_study(xml):
     d.update(_parse_links(
         xml.find("STUDY_LINKS")))
     pubmeds = []
-    for xref in d['xrefs']:
-        if(xref['db'] == 'pubmed'):
-            pubmeds.append(int(xref['id']))
+    if('xrefs' in d):
+        for xref in d['xrefs']:
+            if(xref['db'] == 'pubmed'):
+                pubmeds.append(int(xref['id']))
     d.update({'pubmed_ids':pubmeds})
     return(d)
 
@@ -790,6 +791,7 @@ def load_experiment_xml_by_accession(accession):
 def load_runbrowser_xml_by_accession(accession):
     with urllib.request.urlopen("https://trace.ncbi.nlm.nih.gov/Traces/sra/?run={}&retmode=xml".format(accession)) as response:
         xml = etree.parse(response)
+        
         return xml
 
     
@@ -817,32 +819,37 @@ def results_from_runbrowser(accession):
     """
     
     runbrowser_xml = load_runbrowser_xml_by_accession(accession)
+    root = runbrowser_xml.getroot()
+    error = root.find('./ERROR')
+    # This finds errors like "XXXXX has been removed"
+    if(error is not None):
+        return(error.text)
     res = {}
-    res['experiment'] = parse_experiment(runbrowser_xml.getroot().find('.//EXPERIMENT'))
-    res['run'] = parse_run(runbrowser_xml.getroot().find('.//RUN'))
-    res['study'] = parse_study(runbrowser_xml.getroot().find('.//STUDY'))
-    res['sample'] = parse_sample(runbrowser_xml.getroot().find('.//SAMPLE'))
+    res['experiment'] = parse_experiment(root.find('.//EXPERIMENT'))
+    res['run'] = parse_run(root.find('.//RUN'))
+    res['study'] = parse_study(root.find('.//STUDY'))
+    res['sample'] = parse_sample(root.find('.//SAMPLE'))
     res['xml'] = runbrowser_xml
     return res
     
 
 
 import json
-def get_accession_list(from_date="2004-01-01",
+def get_accession_list(from_date="2001-01-01",to_date="2050-01-01",
                        count = 50, offset = 0, type="EXPERIMENT"):
     column_names = ["Accession", "Submission", "Type",
                     "Received", "Published", "LastUpdate", "Status", "Insdc"]
     url = "https://www.ncbi.nlm.nih.gov/Traces/sra/status/" + \
           "srastatrep.fcgi/acc-mirroring?" + \
-          "from_date={}&count={}&type={}&offset={}"
-    url = url.format(from_date, count, type, offset)
+          "from_date={}&to_date={}&count={}&type={}&offset={}"
+    url = url.format(from_date, to_date, count, type, offset)
     print(url)
     res = None
     with urllib.request.urlopen(url) as response:
         res = json.loads(response.read().decode('UTF-8'))
         c = 0
     print(res['fetched_count'], count, int(res['fetched_count']) == count)
-    while(int(res['fetched_count']) == count):
+    while(True):
         offset += 1
         c += 1
         print(c, offset)
@@ -850,6 +857,8 @@ def get_accession_list(from_date="2004-01-01",
             retval = dict(zip(res['column_names'], res['rows'][c-1]))
             yield(retval)
         else:
+            if(c != count):
+                break
             print(c, offset)
             url = "https://www.ncbi.nlm.nih.gov/Traces/sra/" +\
                 "status/srastatrep.fcgi/acc-mirroring" + \
@@ -859,7 +868,6 @@ def get_accession_list(from_date="2004-01-01",
                 res = json.loads(response.read().decode('UTF-8'))
             print(res['fetched_count'])
             c = 0
-    raise(StopIteration)
 
 
 def sra_object_generator(fname):

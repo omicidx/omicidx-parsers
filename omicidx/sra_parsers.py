@@ -175,7 +175,7 @@ def parse_run(xml):
     }
 
     d = try_update(d, _parse_taxon(xml.find("tax_analysis")))
-    d = try_update(d, _parse_run_reads(xml.find(".//SPOT_DESCRIPTOR")))
+    # d = try_update(d, _parse_run_reads(xml.find(".//SPOT_DESCRIPTOR")))
     d.update(_process_path_map(xml, path_map))
     d.update(_parse_identifiers(xml.find("IDENTIFIERS"), "run"))
     d = try_update(d, _parse_attributes(xml.find("RUN_ATTRIBUTES")))
@@ -201,7 +201,7 @@ def _parse_run_stats(xml):
         ret['mean_length'] = float(read.get('average',0.0))
         ret['sd_length'] = float(read.get('stdev',0.0))
         stats.append(ret)
-    return {"statistics": stats}
+    return {"reads": stats}
 
 def _parse_run_bases(xml):
     bases = []

@@ -27,9 +27,10 @@ class FileAlternative(BaseModel):
 class FileSet(BaseModel):
     cluster: str = "public"
     filename: str
+    url: str
     size: int = 0
     date: datetime = None
-    md5: str
+    md5: str = None
     sratoolkit: str = '1'
     alternatives: List[FileAlternative]
 
@@ -46,10 +47,10 @@ class TaxCountEntry(BaseModel):
     tax_id: int
 
 class TaxCountAnalysis(BaseModel):
-    nspots_analyze: int
-    total_spots: int
-    mapped_spots: int
-    tax_counts: Dict[str, List[TaxCountEntry]]
+    nspot_analyze: int = None
+    total_spots: int = None
+    mapped_spots: int = None
+    tax_counts: Dict[str, List[TaxCountEntry]] = None
 
 class RunRead(BaseModel):
     index: int
@@ -78,12 +79,12 @@ class SraRun(BaseModel):
     static_data_available: str = "1"
     avg_length: float = 0.0
     experiment_accession: str
-    attributes: List[Attribute]
+    attributes: List[Attribute] = None
     files: List[FileSet] = None
     qualities: BaseQualities = None
     base_counts: BaseCounts = None
     reads: List[RunRead] = None
-    tax_analysis: TaxCountLevels = None
+    tax_analysis: TaxCountAnalysis = None
 
 
 class SraStudy(BaseModel):
@@ -99,7 +100,7 @@ class SraStudy(BaseModel):
     title: str = None
     identifiers: List[Identifier] = None
     attributes: List[Attribute] = None
-    pubmed_ids: List[int]
+    pubmed_ids: List[int] = None
 
 
 class SraExperiment(BaseModel):

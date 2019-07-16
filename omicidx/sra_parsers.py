@@ -22,6 +22,10 @@ import urllib.request
 import xml.etree.ElementTree as etree
 import io
 import gzip
+from .sra import pydantic_models
+import logging
+
+logger = logging.getLogger('sra_parser')
 
 def parse_xml_file(xmlfilename):
     """Parse an NCBI SRA mirroring XML file
@@ -204,13 +208,10 @@ def _parse_run_stats(xml):
     return {"reads": stats}
 
 def _parse_run_bases(xml):
-    bases = []
+    ret = {}
     for base in xml.findall('Base'):
-        ret = {}
-        ret['base'] = base.get('value')
-        ret['count'] = int(base.get('count'))
-        bases.append(ret)
-    return {'base_counts':bases}
+        ret[base.get('value')] = int(base.get('count'))
+    return {'base_counts':ret}
 
 
 
@@ -877,10 +878,24 @@ def results_from_runbrowser(accession):
     res['sample'] = parse_sample(root.find('.//SAMPLE'))
     res['xml'] = runbrowser_xml
     return res
-    
+
+def models_from_runbrowser(accession):
+    res = results_from_runbrowser(accession)
+    if(not isinstance(res, dict)):
+        return "error"
+    mapper = {'experiment': pydantic_models.SraExperiment,
+              'run': pydantic_models.SraRun,
+              'sample': pydantic_models.SraSample,
+              'study': pydantic_models.SraStudy}
+    ret = {}
+    for k in res.keys():
+        if(k in mapper):
+            ret[k] = mapper[k](**res[k])
+    return ret
+              
+              
 
 
-import json
 def get_accession_list(from_date="2001-01-01",to_date="2050-01-01",
                        count = 500, offset = 0, type="EXPERIMENT"):
     column_names = ["Accession", "Submission", "Type",
@@ -906,12 +921,12 @@ def get_accession_list(from_date="2001-01-01",to_date="2050-01-01",
             print(c, offset)
             url = "https://www.ncbi.nlm.nih.gov/Traces/sra/" +\
                 "status/srastatrep.fcgi/acc-mirroring" + \
-                "?from_date={}&count={}&type={}&offset={}"
-            url = url.format(from_date, count, type, offset)
+                "?from_date={}&to_date={}&count={}&type={}&offset={}"
+            url = url.format(from_date, to_date, count, type, offset)
             with urllib.request.urlopen(url) as response:
                 res = json.loads(response.read().decode('UTF-8'))
-            logger.info("fetched: " + res['fetched_count'])
-            logger.info("total: " + offset)
+            logger.info("fetched: " + str(res['fetched_count']))
+            logger.info("total: " + str(offset))
             c = 0
 
 

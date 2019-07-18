@@ -27,14 +27,14 @@ setup(
     package_data={
         'omicidx.schema': ['*.schema'],
         'omicidx': [
-            '*.py~', 'data/*.json', 'data/*.json~', 'processing/*.py~',
-            'pydantic/*.py~'
+            '*.py', 'data/*.json', 'data/*.json', 'processing/*.py',
+            'pydantic/*.py'
         ],
         'omicidx.sra': ['*.py~']
     },
     install_requires=[
         'boto3==1.*,>=1.9.0', 'pydantic==0.*,>=0.30.0',
-        'requests==2.*,>=2.22.0', 'click'
+        'requests==2.*,>=2.22.0', 'click==*'
     ],
     extras_require={
         'dev': [

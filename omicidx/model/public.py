@@ -120,8 +120,8 @@ class SraSample(Base):
     replaced_by = Column(Text)
     study_accession = Column(ForeignKey('sra_study.accession'))
 
-    attributes = relationship("SraSampleAttribute",
-                              secondary=sra_sample2attribute)
+    #attributes = relationship("SraSampleAttribute",
+    #                          secondary=sra_sample2attribute)
     
 class SraExperiment(Base):
     __tablename__ = 'sra_experiment'
@@ -172,9 +172,7 @@ class SraRun(Base):
     nreads = Column(Integer)
     alias = Column(Text)
     spot_length = Column(Integer)
-    experiment_accession = Column(ForeignKey('sra_experiment.accession'))
-    study_accession = Column(ForeignKey('sra_study.accession'))
-    sample_accession = Column(ForeignKey('sra_sample.accession'))
+    experiment_accession = Column(ForeignKey('sra_experiment.accession'), index=True)
     reads = Column(JSONB(astext_type=Text()))
     status = Column(Text)
     updated = Column(DateTime)
@@ -296,7 +294,8 @@ class Biosample(Base):
     __tablename__ = 'biosample'
     
     accession = Column(Text, primary_key=True)
-    attributes = Column(JSONB, astext_type=Text())
+    attributes = Column(JSONB(astext_type=Text()))
+    identifiers = Column(JSONB(astext_type=Text()))
     gsm = Column(Text, index=True)
     dbgap = Column(Text, index=True)
     model = Column(Text)
@@ -319,14 +318,19 @@ class Biosample(Base):
 
 
 
-def create_all_in_schema(schema='public2', drop_schema=False):
+def create_all_in_schema(schema='public2', drop_schema=True):
     from sqlalchemy import create_engine
     dbschema = schema
-    local_engine = create_engine('postgresql://postgres@a13711b55674d11e9a61612ccd5a2372-f6d212fe2c2a4217.elb.us-east-1.amazonaws.com:5434/bigrna', 
+    local_engine = create_engine('postgresql://bigrna@omicidx-aurora-cluster.cluster-ro-cpmth1vkdqqx.us-east-1.rds.amazonaws.com:5432/bigrna', 
                                  connect_args={'options': '-c search_path={}'.format(dbschema)})
+    import logging
+    logging.basicConfig()
+    logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+
     if(drop_schema):
         try:
-            local_engine.execute('drop schema {} cascade'.format(schema))
+            local_engine.execute('drop schema if exists {} cascade'.format(schema))
+            local_engine.execute('create schema {}'.format(schema))
         except:
             pass
     Base.metadata.create_all(local_engine)

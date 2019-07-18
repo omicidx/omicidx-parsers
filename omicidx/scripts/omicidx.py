@@ -1,6 +1,6 @@
 import click
 import omicidx.biosample
-import sd_cloud_utils.aws.sqs as sqs
+from sd_cloud_utils.aws.sqs import SQS
 import omicidx.sra_parsers as sp
 import logging
 import json
@@ -88,7 +88,7 @@ def admin():
 @admin.command()
 @click.option('--queue')
 def create_queue(queue):
-    sqs = sqs.SQS(queuename=queue)
+    sqs = SQS(queuename=queue)
     sqs.get_queue()
     return True
 
@@ -98,7 +98,7 @@ def create_queue(queue):
 @click.option('--to_date')
 def send_message(queue, from_date, to_date):
     n = 0
-    q = sqs.SQS(queue)
+    q = SQS(queue)
     msg = []
     for rec in sp.get_accession_list(
             from_date = from_date,
@@ -118,7 +118,7 @@ def send_message(queue, from_date, to_date):
 
 async def produce(queue, queuename):
     while True:
-        vals = sqs.SQS(queuename=queuename).receive_message()
+        vals = SQS(queuename=queuename).receive_message()
         if(len(vals)==0):
             logger.info('nothing to retrieve')
             queue.close()

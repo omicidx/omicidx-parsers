@@ -4,30 +4,30 @@ from pydantic import BaseModel
 from pydantic.types import UrlStr
 
 class Attribute(BaseModel):
-    tag: str
-    value: str
+    tag: str = None
+    value: str = None
 
 
 class Xref(BaseModel):
-    namespace: str
-    id: str
+    db: str = None
+    id: str = None
 
 class Identifier(BaseModel):
-    namespace: str
-    id: str
+    namespace: str = None
+    id: str = None
 
 
 class FileAlternative(BaseModel):
-    url: str
-    free_egress: str
-    access_type: str
-    org: str
+    url: str = None
+    free_egress: str = None
+    access_type: str = None
+    org: str = None
     
 
 class FileSet(BaseModel):
     cluster: str = "public"
-    filename: str
-    url: str
+    filename: str = None
+    url: str = None
     size: int = 0
     date: datetime = None
     md5: str = None

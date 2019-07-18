@@ -94,10 +94,9 @@ def create_queue(queue):
 
 @admin.command()
 @click.option('--queue')
-@click.option('--message')
 @click.option('--from_date')
 @click.option('--to_date')
-def send_message(queue, message, from_date, to_date):
+def send_message(queue, from_date, to_date):
     n = 0
     q = sqs.SQS(queue)
     msg = []
@@ -126,38 +125,6 @@ async def produce(queue, queuename):
         for val in vals:
             logger.info('Message:' + val.body)
             await queue.put(val)
-
-
-def accession_iterator(queuename):
-    n = 0
-    while n<10:
-        n+=1
-        vals = sqs.SQS(queuename=queuename).receive_message()
-        if(len(vals)==0):
-            logger.info('nothing to retrieve')
-            return
-        for val in vals:
-            logger.info('Message: ' + val.body)
-            yield(val)
-
-
-def process_one_accession(val):
-    models = sp.models_from_runbrowser(val.body)
-    if(isinstance(models, dict)):
-        res = {}
-        for k in models.keys():
-            res[k] = models[k].dict()
-        val.delete()
-        print(json.dumps(res, default = dateconverter))
-
-@admin.command()
-@click.option('--cpus', type=int)
-@click.option('--queue')
-def process_accessions(queue, cpus):
-    from multiprocessing import Pool
-    pool = Pool(cpus)
-    pool.map(process_one_accession, accession_iterator(queue))
-    
 
 
 async def consume(queue):
@@ -193,12 +160,40 @@ async def run(queuename):
 
 
 
-
+@admin.command(help='write out livelist results to stdout')
+@click.option('--from_date', default = "2001-01-01",
+              help = "records from date (default '2001-01-01')")
+@click.option('--to_date',default=None, type=str)
+@click.option('--entity',
+              help = 'type of record to return',
+              type = click.Choice(['RUN', 'EXPERIMENT', 'SAMPLE', 'STUDY']),
+              default="RUN")
+@click.option('--count',
+              help="records to retrieve in each call (default 1000)",
+              default = 1000,
+              type=int)
+@click.option('--offset',
+              help="start at offset (default 0)",
+              default = 0,
+              type=int)
+@click.option('--header', flag_value='header',
+              help="include header (default False)",
+              default = False)
+def livelist(from_date, to_date, entity, count, offset, header):
+    ll = sp.LiveList(from_date = from_date,
+                     to_date = to_date, offset = offset,
+                     count = count, entity = entity)
+    if(header):
+        print("\t".join(row))
+    for row in ll:
+        print('\t'.join(row.values()))
+    
+                     
 
             
 @admin.command()
 @click.option('--queue')
-def process_accessions_asyncio(queue):
+def process_accessions(queue):
     loop = asyncio.get_event_loop()
     loop.run_until_complete(run(queue))
     loop.close()

@@ -63,7 +63,14 @@ class BaseCounts(Dict[str, int]):
     pass
 
 
-class SraRun(BaseModel):
+class LiveList(BaseModel):
+    lastupdate: datetime = None
+    published: datetime = None
+    received: datetime = None
+    status: str = "live"
+    insdc: bool = True
+
+class SraRun(LiveList, BaseModel):
     alias: str = None
     run_date: datetime = None
     run_center: str = None
@@ -87,7 +94,7 @@ class SraRun(BaseModel):
     tax_analysis: TaxCountAnalysis = None
 
 
-class SraStudy(BaseModel):
+class SraStudy(LiveList, BaseModel):
     abstract: str = None
     BioProject: str = None
     Geo: str = None
@@ -103,7 +110,7 @@ class SraStudy(BaseModel):
     pubmed_ids: List[int] = None
 
 
-class SraExperiment(BaseModel):
+class SraExperiment(LiveList, BaseModel):
     accession: str
     attributes: List[Attribute] = None
     alias: str = None
@@ -128,7 +135,7 @@ class SraExperiment(BaseModel):
     title: str = None
 
 
-class SraSample(BaseModel):
+class SraSample(LiveList, BaseModel):
     accession: str
     geo: str = None
     BioSample: str = None

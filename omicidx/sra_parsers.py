@@ -24,6 +24,7 @@ import io
 import gzip
 from .sra import pydantic_models
 import logging
+from typing import Iterator, List, Dict, Iterable
 
 logger = logging.getLogger('sra_parser')
 
@@ -154,6 +155,19 @@ def parse_submission(xml):
     return d
 
 
+def dict_from_single_xml(txt):
+    xml = etree.fromstring(txt)
+    entity = xml.tag.lower()
+    vals = globals()['parse_'+entity](xml)
+    vals['entity_type'] = xml.tag.lower()
+    return vals
+
+def model_from_single_xml(txt):
+    xml = etree.fromstring(txt)
+    entity = xml.tag.lower()
+    et = globals()['parse_'+entity](xml)
+    return getattr(pydantic_models, 'Sra'+entity.capitalize())(**et)
+
 def parse_run(xml):
     """Parse an SRA xml RUN element
 
@@ -178,7 +192,8 @@ def parse_run(xml):
     except:
         pass
     path_map = {
-        'experiment_accession': ("EXPERIMENT_REF", "accession")
+        'experiment_accession': ("EXPERIMENT_REF", "accession"),
+        'title': ("TITLE", 'text'),
     }
 
     d = try_update(d, _parse_taxon(xml.find("tax_analysis")))
@@ -200,6 +215,8 @@ def parse_run(xml):
 
 
 def _parse_run_stats(xml):
+    if(xml is None):
+        return None
     stats = []
     for read in xml.findall('Read'):
         ret = {}
@@ -211,6 +228,8 @@ def _parse_run_stats(xml):
     return {"reads": stats}
 
 def _parse_run_bases(xml):
+    if(xml is None):
+        return None
     ret = {}
     for base in xml.findall('Base'):
         ret[base.get('value')] = int(base.get('count'))
@@ -219,6 +238,8 @@ def _parse_run_bases(xml):
 
 
 def _parse_run_files(xml):
+    if(xml is None):
+        return None
     files = xml.findall('./SRAFile')
     ret = []
     for f in files:
@@ -834,7 +855,7 @@ def load_experiment_xml_by_accession(accession):
         return xml
 
 
-    
+
 def load_runbrowser_xml_by_accession(accession):
     with urllib.request.urlopen("https://trace.ncbi.nlm.nih.gov/Traces/sra/?run={}&retmode=xml".format(accession)) as response:
         xml = etree.parse(response)
@@ -943,8 +964,8 @@ def get_accession_list(from_date="2001-01-01",to_date="2050-01-01",
             logger.info("fetched: " + str(res['fetched_count']))
             logger.info("total: " + str(offset))
             c = 0
-
-
+            
+            
 def sra_object_generator(fname):
     """Iterate over objects in an SRA meta_XXX_set xml file
     
@@ -963,7 +984,7 @@ def sra_object_generator(fname):
         if((element.tag.lower() in validClasses) and (event == "end")):
             yield getattr(s, "SRA" + element.tag.title() + "Record")(element)
 
-class LiveList(object):
+class LiveList(Iterable):
     def __init__(self, from_date="2004-01-01",
                  to_date=None, count=2500,
                  offset=0, entity="EXPERIMENT"):
@@ -978,10 +999,10 @@ class LiveList(object):
         self.to_date = to_date
         self._fill_buffer()
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[pydantic_models.LiveList]:
         return self
 
-    def __next__(self):
+    def __next__(self) -> pydantic_models.LiveList:
         if(not self.done):
             retval = self.buffer[self.counter]
             self.counter += 1
@@ -991,13 +1012,13 @@ class LiveList(object):
                 self._fill_buffer()
             return retval
         else:
-            raise(StopIteration)
+            return None
 
-    def _url(self):
+    def _url(self) -> str:
         logger.info("current offset: " + str(self.offset))
         columns = ",".join(["Accession", "Submission", "Type",
                             "Received", "Published", "LastUpdate",
-                            "Status", "Insdc", "ReplacedBy"])
+                            "Status", "Insdc", "ReplacedBy", "Meta"])
         url = "https://www.ncbi.nlm.nih.gov/Traces/" \
               "sra/status/srastatrep.fcgi/acc-mirroring?" \
               "from_date={}&count={}&offset={}&columns={}" \
@@ -1007,16 +1028,38 @@ class LiveList(object):
                          self.entity)
         if(self.to_date is not None):
             url += "&to_date={}".format(self.to_date)
+        logger.info('url:' + url)
         return(url)
 
-    def _fill_buffer(self):
+
+    def _prep_records(self, reader):
+        ret = []
+        for row in reader:
+            if("Meta" in row and row['Meta']!=''):
+                d = dict_from_single_xml(row['Meta'])
+                model_type = d['entity_type']
+                d['published'] = row['Published']
+                d['lastupdate'] = row['LastUpdate']
+                d['received'] = row['Received']
+                d['status'] = row['Status']
+                d['insdc'] = False
+                if(row['Insdc']=='True'):
+                    d['insdc'] = True
+
+                pydantic_model = getattr(pydantic_models, 'Sra'+model_type.capitalize())(**d)
+                
+                ret.append(pydantic_model)
+                
+        return ret
+
+    def _fill_buffer(self) -> None:
         if(not self.done):
             url = self._url()
             try:
                 with io.StringIO(urllib.request.urlopen(url)
                                  .read().decode()) as response:
                     reader = csv.DictReader(response, delimiter="\t")
-                    self.buffer = list([row for row in reader])
+                    self.buffer = self._prep_records(reader)
                     if(len(self.buffer) == 0):
                         self.done = True
                     self.retries = 0

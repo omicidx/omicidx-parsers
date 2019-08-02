@@ -34,7 +34,7 @@ setup(
     },
     install_requires=[
         'boto3==1.*,>=1.9.0', 'pydantic==0.*,>=0.30.0',
-        'requests==2.*,>=2.22.0', 'Click'
+        'requests==2.*,>=2.22.0', 'Click', 'sd_cloud_utils'
     ],
     extras_require={
         'dev': [

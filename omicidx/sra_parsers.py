@@ -13,11 +13,13 @@ function.
 
 """
 
-import json
+import ujson
 import csv
 import re
+import requests
 from collections import defaultdict
 import urllib
+import urllib.error
 import urllib.request
 import xml.etree.ElementTree as etree
 import io
@@ -419,11 +421,11 @@ def _parse_run_reads(node):
 def _parse_run_qualities(node):
     """Parse the quality stats, if available, from RUN"""
     d = dict()
-    d['qualities'] = dict()
+    d['qualities'] = []
     qualrecs = node.findall(".//Quality")
     for qual in qualrecs:
         try:
-            d['qualities'][qual.get('value')] = int(qual.get('count'))
+            d['qualities'].append({qual.get('value'), int(qual.get('count'))})
         except:
             pass
 
@@ -433,17 +435,18 @@ def _parse_run_qualities(node):
 def _parse_taxon(node):
     """Parse taxonomy informaiton."""
 
-    def crawl(node, d=defaultdict(list)):
+    def crawl(node, d=[]):
         for i in node:
             rank = i.get('rank', 'Unkown')
-            d[rank].append({
+            d.append({
+                'rank': rank,
                 'name': i.get('name').replace('.', '_').replace('$', ''),
                 'parent': node.get('name'),
                 'total_count': int(i.get('total_count')),
                 'self_count': int(i.get('self_count')),
                 'tax_id': int(i.get('tax_id')),
                 })
-            if i.getchildren():
+            if(len(list(i))>0):
                 d.update(crawl(i, d))
         return d
     try:
@@ -625,7 +628,7 @@ def _process_path_map(xml, path_map):
                 # use the name of the attribute to
                 # get a specific attribute
             elif(v[1] == 'child'):
-                child = xml.find(v[0]).getchildren()
+                child = list(xml.find(v[0]))
 
                 if len(child) > 1:
                     raise Exception(
@@ -838,7 +841,7 @@ def srastatrep(accessions):
     if(not isinstance(accessions, list)):
         accessions = [accessions]
     with urllib.request.urlopen('https://www.ncbi.nlm.nih.gov/Traces/sra/status/srastatrep.fcgi/acc-mirroring?acc={}'.format(",".join(accessions))) as response:
-        vals = json.load(response)
+        vals = ujson.load(response)
         cnames = vals['column_names']
         StatRep = namedtuple("StatRep", field_names = list([cname.lower() for cname in cnames]))
         ret = {}
@@ -940,7 +943,7 @@ def get_accession_list(from_date="2001-01-01",to_date="2050-01-01",
     logger.debug(url)
     res = None
     with urllib.request.urlopen(url) as response:
-        res = json.loads(response.read().decode('UTF-8'))
+        res = ujson.loads(response.read().decode('UTF-8'))
         c = 0
     while True :
         offset += 1
@@ -958,7 +961,7 @@ def get_accession_list(from_date="2001-01-01",to_date="2050-01-01",
             url = url.format(from_date, to_date, count, type, offset)
             try:
                 with urllib.request.urlopen(url) as response:
-                    res = json.loads(response.read().decode('UTF-8'))
+                    res = ujson.loads(response.read().decode('UTF-8'))
             except urllib.error.HTTPError:
                 continue
             logger.info("fetched: " + str(res['fetched_count']))
@@ -984,25 +987,32 @@ def sra_object_generator(fname):
         if((element.tag.lower() in validClasses) and (event == "end")):
             yield getattr(s, "SRA" + element.tag.title() + "Record")(element)
 
+
 class LiveList(Iterable):
+    """Return an iterator of pydantic_models"""
+    
     def __init__(self, from_date="2004-01-01",
                  to_date=None, count=2500,
-                 offset=0, entity="EXPERIMENT"):
+                 offset=0, entity="EXPERIMENT", status="live",
+                 max_retries = 5
+                 ):
         self.from_date = from_date
         self.offset = offset
         self.count = count
         self.retries = 0
-        self.max_retries = 5
+        self.max_retries = max_retries
         self.counter = 0
         self.entity = entity
+        self.status = status
         self.done = False
         self.to_date = to_date
+        #self.pool = multiprocessing.Pool(8)
         self._fill_buffer()
 
-    def __iter__(self) -> Iterator[pydantic_models.LiveList]:
+    def __iter__(self):
         return self
 
-    def __next__(self) -> pydantic_models.LiveList:
+    def __next__(self):
         if(not self.done):
             retval = self.buffer[self.counter]
             self.counter += 1
@@ -1012,7 +1022,7 @@ class LiveList(Iterable):
                 self._fill_buffer()
             return retval
         else:
-            return None
+            raise(StopIteration)
 
     def _url(self) -> str:
         logger.info("current offset: " + str(self.offset))
@@ -1022,19 +1032,17 @@ class LiveList(Iterable):
         url = "https://www.ncbi.nlm.nih.gov/Traces/" \
               "sra/status/srastatrep.fcgi/acc-mirroring?" \
               "from_date={}&count={}&offset={}&columns={}" \
-              "&format=tsv&type={}"
+              "&format=json&type={}&status={}"
         url = url.format(self.from_date, self.count,
                          self.offset, columns,
-                         self.entity)
+                         self.entity, self.status)
         if(self.to_date is not None):
             url += "&to_date={}".format(self.to_date)
         logger.info('url:' + url)
         return(url)
 
-
-    def _prep_records(self, reader):
-        ret = []
-        for row in reader:
+    @staticmethod
+    def _process_row(row):
             if("Meta" in row and row['Meta']!=''):
                 d = dict_from_single_xml(row['Meta'])
                 model_type = d['entity_type']
@@ -1045,30 +1053,51 @@ class LiveList(Iterable):
                 d['insdc'] = False
                 if(row['Insdc']=='True'):
                     d['insdc'] = True
-
                 pydantic_model = getattr(pydantic_models, 'Sra'+model_type.capitalize())(**d)
-                
+                return pydantic_model
+            else:
+                return None
+
+    def _prep_records(self,reader):
+        ret = []
+        for row in reader:
+            pydantic_model = LiveList._process_row(row)
+        #for pydantic_model in self.pool.imap_unordered(LiveList._process_row, reader):
+            if(pydantic_model is not None):
                 ret.append(pydantic_model)
+            else:
+                logger.debug(row)
                 
         return ret
 
     def _fill_buffer(self) -> None:
         if(not self.done):
             url = self._url()
+            import json
             try:
-                with io.StringIO(urllib.request.urlopen(url)
-                                 .read().decode()) as response:
-                    reader = csv.DictReader(response, delimiter="\t")
+                response = requests.get(url)
+                if(response.status_code == 200):
+                    #reader = csv.DictReader(response, delimiter="\t")
+                    vals = response.json()
+                    reader = []
+                    if('column_names' not in vals):
+                        raise urllib.error.HTTPError
+                    colnames = vals['column_names']
+                    for row in vals['rows']:
+                        reader.append(dict(zip(colnames,[val for val in row])))
                     self.buffer = self._prep_records(reader)
                     if(len(self.buffer) == 0):
                         self.done = True
                     self.retries = 0
-            except urllib.error.HTTPError:
+                else:
+                    raise Exception
+            except:
+                logger.exception(f'url {url} :: retries {self.retries}')
                 import time
-                time.sleep(5)
+                time.sleep(2^self.retries)
                 self.retries += 1
                 if(self.retries > self.max_retries):
-                    raise(urllib.error.HTTPError)
+                    raise Exception
                 self._fill_buffer()
                 
 

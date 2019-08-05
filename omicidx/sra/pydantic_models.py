@@ -35,11 +35,12 @@ class FileSet(BaseModel):
     alternatives: List[FileAlternative]
 
 
-class BaseQualities(Dict[int, int]):
+class BaseQualities(List[Dict[int, int]]):
     pass
     
 
 class TaxCountEntry(BaseModel):
+    rank: str
     name: str
     parent: str = None
     total_count: int = 0
@@ -50,7 +51,7 @@ class TaxCountAnalysis(BaseModel):
     nspot_analyze: int = None
     total_spots: int = None
     mapped_spots: int = None
-    tax_counts: Dict[str, List[TaxCountEntry]] = None
+    tax_counts: List[TaxCountEntry] = None
 
 class RunRead(BaseModel):
     index: int
@@ -130,8 +131,8 @@ class SraExperiment(LiveList, BaseModel):
     library_layout: str = None
     xrefs: List[Xref] = None
     platform: str = None
-    sample_accession: str
-    study_accession: str
+    sample_accession: str = None
+    study_accession: str = None
     title: str = None
 
 

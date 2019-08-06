@@ -135,7 +135,8 @@ def parse_study(xml):
     if('xrefs' in d):
         for xref in d['xrefs']:
             if(xref['db'] == 'pubmed'):
-                pubmeds.append(int(xref['id']))
+                if(xref['id'] is not None):
+                    pubmeds.append(int(xref['id']))
     d.update({'pubmed_ids':pubmeds})
     return(d)
 
@@ -447,7 +448,7 @@ def _parse_taxon(node):
                 'tax_id': int(i.get('tax_id')),
                 })
             if(len(list(i))>0):
-                d.update(crawl(i, d))
+                d = d + crawl(i)
         return d
     try:
         d = {'tax_analysis': {'nspot_analyze': node.get('analyzed_spot_count'),

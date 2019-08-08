@@ -48,7 +48,7 @@
                     "match": ".*date",
 		    "mapping": {
 			"type":       "date",
-			"format": "yyyy-MM-dd HH:mm:ss"
+			"format": "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd HH:mm:ss+00:00"
 		    }
 		}
 	    },

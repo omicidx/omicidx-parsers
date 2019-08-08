@@ -16,11 +16,14 @@ requests = "^2.22"
 boto3 = "^1.9"
 Click = "*"
 sd_cloud_utils = "*"
+ujson = "^1.35"
+psycopg2 = "^2.8"
+google-bigquery = "^0.14.0"
 
 [tool.poetry.dev-dependencies]
 jupyter = "^1.0"
 jupyterlab = "^1.0"
-psycopg2 = "^2.8"
+mypy = "^0.720.0"
 
 [build-system]
 requires = ["poetry>=0.12"]

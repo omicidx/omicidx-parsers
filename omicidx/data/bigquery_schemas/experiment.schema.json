@@ -1,0 +1,173 @@
+[
+    {
+      "mode": "NULLABLE",
+      "name": "study_accession",
+      "type": "STRING"
+    },
+    {
+      "mode": "NULLABLE",
+      "name": "library_source",
+      "type": "STRING"
+    },
+    {
+      "mode": "NULLABLE",
+      "name": "library_layout_length",
+      "type": "FLOAT64"
+    },
+    {
+      "fields": [
+        {
+          "mode": "NULLABLE",
+          "name": "id",
+          "type": "STRING"
+        },
+        {
+          "mode": "NULLABLE",
+          "name": "namespace",
+          "type": "STRING"
+        }
+      ],
+      "mode": "REPEATED",
+      "name": "identifiers",
+      "type": "RECORD"
+    },
+    {
+      "mode": "NULLABLE",
+      "name": "library_layout_orientation",
+      "type": "STRING"
+    },
+    {
+      "mode": "NULLABLE",
+      "name": "library_construction_protocol",
+      "type": "STRING"
+    },
+    {
+      "mode": "NULLABLE",
+      "name": "library_layout_sdev",
+      "type": "FLOAT64"
+    },
+    {
+      "mode": "NULLABLE",
+      "name": "instrument_model",
+      "type": "STRING"
+    },
+    {
+      "mode": "NULLABLE",
+      "name": "library_selection",
+      "type": "STRING"
+    },
+    {
+      "mode": "NULLABLE",
+      "name": "sample_accession",
+      "type": "STRING"
+    },
+    {
+      "mode": "NULLABLE",
+      "name": "design",
+      "type": "STRING"
+    },
+    {
+      "mode": "NULLABLE",
+      "name": "alias",
+      "type": "STRING"
+    },
+    {
+      "mode": "NULLABLE",
+      "name": "description",
+      "type": "STRING"
+    },
+    {
+      "fields": [
+        {
+          "mode": "NULLABLE",
+          "name": "id",
+          "type": "STRING"
+        },
+        {
+          "mode": "NULLABLE",
+          "name": "db",
+          "type": "STRING"
+        }
+      ],
+      "mode": "REPEATED",
+      "name": "xrefs",
+      "type": "RECORD"
+    },
+    {
+      "mode": "NULLABLE",
+      "name": "center_name",
+      "type": "STRING"
+    },
+    {
+      "mode": "NULLABLE",
+      "name": "accession",
+      "type": "STRING"
+    },
+    {
+      "mode": "NULLABLE",
+      "name": "library_name",
+      "type": "STRING"
+    },
+    {
+      "mode": "NULLABLE",
+      "name": "platform",
+      "type": "STRING"
+    },
+    {
+      "mode": "NULLABLE",
+      "name": "status",
+      "type": "STRING"
+    },
+    {
+      "mode": "NULLABLE",
+      "name": "title",
+      "type": "STRING"
+    },
+    {
+      "mode": "NULLABLE",
+      "name": "library_layout",
+      "type": "STRING"
+    },
+    {
+      "mode": "NULLABLE",
+      "name": "library_strategy",
+      "type": "STRING"
+    },
+    {
+      "fields": [
+        {
+          "mode": "NULLABLE",
+          "name": "value",
+          "type": "STRING"
+        },
+        {
+          "mode": "NULLABLE",
+          "name": "tag",
+          "type": "STRING"
+        }
+      ],
+      "mode": "REPEATED",
+      "name": "attributes",
+      "type": "RECORD"
+    },
+    {
+      "mode": "NULLABLE",
+      "name": "lastupdate",
+      "type": "DATETIME"
+    },
+    {
+      "mode": "NULLABLE",
+      "name": "published",
+      "type": "DATETIME"
+    },
+    {
+      "mode": "NULLABLE",
+      "name": "insdc",
+      "type": "BOOLEAN"
+    },
+    {
+      "mode": "NULLABLE",
+      "name": "received",
+      "type": "DATETIME"
+    }
+]

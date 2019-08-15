@@ -34,13 +34,19 @@ def download_mirror_files(mirrordir):
     logger.info('getting SRA Accessions file')
     subprocess.run("wget ftp://ftp.ncbi.nlm.nih.gov/sra/reports/Metadata/SRA_Accessions.tab -P {}".format(mirrordir),
                    shell = True)
-
+        
 import argparse
 import omicidx.sra_parsers
 import json
 import logging
 import collections
 from xml.etree import ElementTree as et
+
+import datetime
+
+def dateconverter(o):
+    if isinstance(o, (datetime.datetime)):
+        return o.__str__()
 
 @cli.command(help="""SRA XML to JSON
 
@@ -62,6 +68,15 @@ def process_xml_entity(entity):
     }
     sra_parser = parsers[entity]
 
+    import omicidx.sra.pydantic_models as p
+    parsers = {
+        'study': p.SraStudy,
+        'sample': p.SraSample,
+        'run': p.SraRun,
+        'experiment': p.SraExperiment
+    }
+    pydantic_model = parsers[entity]
+
     logger.info('using {} entity type'.format(entity))
     logger.info('parsing {} records'.format(entity))
     n = 0
@@ -75,7 +90,7 @@ def process_xml_entity(entity):
                     n+=1
                     if((n % 100000)==0):
                         logger.info('parsed {} {} entries'.format(entity, n))
-                    outfile.write(json.dumps(rec) + "\n")
+                    outfile.write(json.dumps(pydantic_model(**rec).dict(), default=dateconverter) + "\n")
                     element.clear()
             logger.info('parsed {} entity entries'.format(n))
 

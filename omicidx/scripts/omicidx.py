@@ -26,7 +26,7 @@ def biosample_to_json(xmlfile):
     omicidx.biosample.biosample_to_json(xmlfile)
 
 @click.group('sra')
-@click.pass_context
+#@click.pass_context
 def sra():
     pass
 

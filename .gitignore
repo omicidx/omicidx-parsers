@@ -23,3 +23,6 @@ report.htm*
 work*
 *~
 timeline.htm*
+pip-wheel-metadata
+config.ini
+.mypy*

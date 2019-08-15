@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import List, Dict
 from pydantic import BaseModel
 from pydantic.types import UrlStr
+import json
 
 class Attribute(BaseModel):
     tag: str = None
@@ -60,7 +61,7 @@ class RunRead(BaseModel):
     sd_length: float = 0.0
 
 
-class BaseCounts(Dict[str, int]):
+class BaseCounts(List[Dict[str, int]]):
     pass
 
 

@@ -44,5 +44,3 @@ def test_runbrowser_livelist_entries(example_runbrowser_model):
     assert isinstance(run.lastupdate, datetime.datetime) or run.lastupdate is None 
     assert isinstance(run.insdc, bool)
     assert isinstance(run.status, str)
-
-    

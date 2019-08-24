@@ -17,17 +17,17 @@
   {
     "mode": "NULLABLE", 
     "name": "Updated", 
-    "type": "TIMESTAMP"
+    "type": "DATETIME"
   }, 
   {
     "mode": "NULLABLE", 
     "name": "Published", 
-    "type": "TIMESTAMP"
+    "type": "DATETIME"
   }, 
   {
     "mode": "NULLABLE", 
     "name": "Received", 
-    "type": "TIMESTAMP"
+    "type": "DATETIME"
   }, 
   {
     "mode": "NULLABLE", 

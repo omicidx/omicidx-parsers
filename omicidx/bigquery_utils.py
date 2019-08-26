@@ -110,7 +110,7 @@ def _load_file_to_bigquery(dataset, table, uri,
     
 
 
-def load_json(dataset, table, uri, schema = None, drop=True):
+def load_json_to_bigquery(dataset, table, uri, schema = None, drop=True):
     """Load a file from google cloud storage into BigQuery
 
     Parameters
@@ -136,7 +136,7 @@ def load_json(dataset, table, uri, schema = None, drop=True):
     _load_file_to_bigquery(dataset, table, uri, job_config, schema, drop)
 
 
-def load_csv(dataset, table, uri, schema = None, drop=True, **kwargs):
+def load_csv_to_bigquery(dataset, table, uri, schema = None, drop=True, **kwargs):
     """Load a file from google cloud storage into BigQuery
 
     Parameters
@@ -170,11 +170,11 @@ def main():
     # for i in 'study sample experiment run'.split():
     #     upload_blob('temp-testing', i + '.json', 'abc/' + i + '.json')
     #     with resources.path('omicidx.data.bigquery_schemas', f"{i}.schema.json") as schemafile:
-    #         load_json('omicidx_etl', f'sra_{i}', f'gs://temp-testing/abc/{i}.json',
+    #         load_json_to_bigquery('omicidx_etl', f'sra_{i}', f'gs://temp-testing/abc/{i}.json',
     #                   schema=parse_bq_json_schema(schemafile))
     
     # upload_blob('temp-testing', 'SRA_Accessions.tab', 'abc/SRA_Accessions.tab')
-    load_csv('omicidx_etl', 'sra_accessions', 'gs://temp-testing/abc/SRA_Accessions.tab',
+    load_csv_to_bigquery('omicidx_etl', 'sra_accessions', 'gs://temp-testing/abc/SRA_Accessions.tab',
              field_delimiter='\t', null_marker='-')
 
 

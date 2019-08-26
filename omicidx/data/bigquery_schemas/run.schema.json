@@ -17,7 +17,7 @@
   {
     "mode": "NULLABLE",
     "name": "run_date",
-    "type": "DATETIME"
+    "type": "TIMESTAMP"
   },
   {
     "fields": [

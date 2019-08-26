@@ -157,11 +157,9 @@ def load_csv(dataset, table, uri, schema = None, drop=True, **kwargs):
         job_config.schema = schema
     else:
         job_config.autodetect = True
-    job_config.source_format = bigquery.SourceFormat.NEWLINE_DELIMITED_JSON
+    job_config.source_format = bigquery.SourceFormat.CSV
 
-    _load_file_to_bigquery(dataset, table, uri, job_config, schema, drop,
-                           source_format = bigquery.SourceFormat.CSV
-    )
+    _load_file_to_bigquery(dataset, table, uri, job_config, schema, drop)
 
 
 
@@ -169,13 +167,15 @@ def load_csv(dataset, table, uri, schema = None, drop=True, **kwargs):
     
 def main():
     from importlib import resources
-    for i in 'study sample experiment run'.split():
-        upload_blob('temp-testing', i + '.json', 'abc/' + i + '.json')
-        with resources.path('omicidx.data.bigquery_schemas', f"{i}.schema.json") as schemafile:
-            load_json('omicidx_etl', f'{i}_test2', f'gs://temp-testing/abc/{i}.json',
-                      schema=parse_bq_json_schema(schemafile))
-    upload_blob('temp-testing', 'SRA_Accessions.tab', 'abc/SRA_Accessions.tab')
-    load_csv('omicidx_etl', 'sra_accessions_test2', 'gs://temp-testing/abc/SRA_Accessions.tab', field_delimiter='\t', null_marker='-')
+    # for i in 'study sample experiment run'.split():
+    #     upload_blob('temp-testing', i + '.json', 'abc/' + i + '.json')
+    #     with resources.path('omicidx.data.bigquery_schemas', f"{i}.schema.json") as schemafile:
+    #         load_json('omicidx_etl', f'sra_{i}', f'gs://temp-testing/abc/{i}.json',
+    #                   schema=parse_bq_json_schema(schemafile))
+    
+    # upload_blob('temp-testing', 'SRA_Accessions.tab', 'abc/SRA_Accessions.tab')
+    load_csv('omicidx_etl', 'sra_accessions', 'gs://temp-testing/abc/SRA_Accessions.tab',
+             field_delimiter='\t', null_marker='-')
 
 
 

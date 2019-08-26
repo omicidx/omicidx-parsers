@@ -233,9 +233,9 @@ def _parse_run_stats(xml):
 def _parse_run_bases(xml):
     if(xml is None):
         return None
-    ret = {}
+    ret = []
     for base in xml.findall('Base'):
-        ret[base.get('value')] = int(base.get('count'))
+        ret.append({base.get('value'): int(base.get('count'))})
     return {'base_counts':ret}
 
 
@@ -426,7 +426,7 @@ def _parse_run_qualities(node):
     qualrecs = node.findall(".//Quality")
     for qual in qualrecs:
         try:
-            d['qualities'].append({qual.get('value'), int(qual.get('count'))})
+            d['qualities'].append({int(qual.get('value')): int(qual.get('count'))})
         except:
             pass
 
@@ -930,6 +930,12 @@ def models_from_runbrowser(accession):
     return ret
               
               
+def run_iterator(from_date="2001-01-01",to_date="2050-01-01",
+                 count = 100, offset = 0):
+    for res in get_accession_list(from_date, to_date, type="RUN"):
+        yield(models_from_runbrowser(res['Accession']))
+
+
 
 
 def get_accession_list(from_date="2001-01-01",to_date="2050-01-01",

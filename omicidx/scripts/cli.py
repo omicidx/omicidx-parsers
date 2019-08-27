@@ -22,7 +22,8 @@ def cli():
 @cli.command(help = """Downloads the files necessary to build
 the SRA json conversions of the XML files.
 
-Files will be placed in the <mirrordir> directory.
+Files will be placed in the <mirrordir> directory. Mirrordirs
+have the format `NCBI_SRA_Mirroring_20190801_Full`.
 """)
 @click.argument('mirrordir')
 def download_mirror_files(mirrordir):
@@ -34,6 +35,7 @@ def download_mirror_files(mirrordir):
     logger.info('getting SRA Accessions file')
     subprocess.run("wget ftp://ftp.ncbi.nlm.nih.gov/sra/reports/Metadata/SRA_Accessions.tab -P {}".format(mirrordir),
                    shell = True)
+    
         
 import argparse
 import omicidx.sra_parsers
@@ -94,7 +96,41 @@ def process_xml_entity(entity):
                     element.clear()
             logger.info('parsed {} entity entries'.format(n))
 
+@cli.command(help="""Upload SRA json to GCS""")
+@click.argument('mirrordir')
+def upload_processed_sra_data(mirrordir):
+    from ..gcs_utils import upload_blob_to_gcs
 
+    for entity in 'study sample experiment run'.split():
+        fname = i + '.json'
+        loc_fname = os.path.join(mirrordir, fname)
+        upload_processed_sra_data('temp-testing', loc_fname, 'abc/' + fname)
+
+    fname = 'SRA_Accessions.tab'
+    loc_fname = os.path.join(mirrordir, fname)
+    upload_processed_sra_data('temp-testing', loc_fname, 'abc/' + fname)
+
+
+    
+@cli.command(help="""Load gcs files to Bigquery""")
+def load_sra_data_to_bigquery():
+    from ..bigquery_utils import (
+        load_csv_to_bigquery,
+        load_json_to_bigquery,
+        parse_bq_json_schema)
+    from importlib import resources
+
+    for i in 'study sample experiment run'.split():
+        with resources.path('omicidx.data.bigquery_schemas', f"{i}.schema.json") as schemafile:
+            load_json_to_bigquery('omicidx_etl',
+                                  f'sra_{i}',
+                                  f'gs://temp-testing/abc/{i}.json',
+                                  schema=parse_bq_json_schema(schemafile))
+    
+    load_csv_to_bigquery('omicidx_etl',
+                         'sra_accessions',
+                         'gs://temp-testing/abc/SRA_Accessions.tab',
+             field_delimiter='\t', null_marker='-')
 
     
 if __name__ == '__main__':

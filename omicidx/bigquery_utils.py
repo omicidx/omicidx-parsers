@@ -1,18 +1,21 @@
-from google.cloud import bigquery
-from google.cloud import storage
 import google
 import os
 import logging
 import json
+from google.cloud import bigquery
+from google.cloud import storage
+from google.cloud.bigquery import SchemaField
+
 logging.basicConfig(level=logging.INFO,
                     format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 
-client = bigquery.Client()
-
-from google.cloud.bigquery import SchemaField
-
 def _get_field_schema(field):
+    """convert bigquery field (dict) to SchemaField
+
+    Works recursively if necessary to deal with 
+    nested fields"""
+    
     name = field['name']
     field_type = field.get('type', 'STRING')
     mode = field.get('mode', 'NULLABLE')
@@ -35,6 +38,13 @@ def _get_field_schema(field):
 
 
 def parse_bq_json_schema(schema_filename):
+    """Convert bigquery JSON file to python Bigquery Schema
+    
+    Parameters
+    ----------
+    schema_filename: str
+        A json file with bigquery schema dump
+    """
     schema = []
     with open(schema_filename, 'r') as infile:
         jsonschema = json.load(infile)
@@ -43,30 +53,6 @@ def parse_bq_json_schema(schema_filename):
         schema.append(_get_field_schema(field))
 
     return schema
-
-
-
-def upload_blob(bucket_name, source_file_name, destination_blob_name):
-    """Uploads a file to the bucket.
-
-    Parameters
-    ----------
-    bucket name: str
-    source_file_name: str
-        A local filename
-    destination_blob_name: str
-        The ``path`` of the object in storage
-    """
-    storage_client = storage.Client()
-    bucket = storage_client.get_bucket(bucket_name)
-    blob = bucket.blob(destination_blob_name)
-
-    logging.info(f'Uploading file {source_file_name} to gs://{bucket_name}/{destination_blob_name}.')
-
-    
-    blob.upload_from_filename(source_file_name)
-
-    logging.info(f'File {source_file_name} uploaded to gs://{bucket_name}/{destination_blob_name}.')
 
 
 
@@ -163,22 +149,3 @@ def load_csv_to_bigquery(dataset, table, uri, schema = None, drop=True, **kwargs
 
 
 
-
-    
-def main():
-    from importlib import resources
-    # for i in 'study sample experiment run'.split():
-    #     upload_blob('temp-testing', i + '.json', 'abc/' + i + '.json')
-    #     with resources.path('omicidx.data.bigquery_schemas', f"{i}.schema.json") as schemafile:
-    #         load_json_to_bigquery('omicidx_etl', f'sra_{i}', f'gs://temp-testing/abc/{i}.json',
-    #                   schema=parse_bq_json_schema(schemafile))
-    
-    # upload_blob('temp-testing', 'SRA_Accessions.tab', 'abc/SRA_Accessions.tab')
-    load_csv_to_bigquery('omicidx_etl', 'sra_accessions', 'gs://temp-testing/abc/SRA_Accessions.tab',
-             field_delimiter='\t', null_marker='-')
-
-
-
-
-if __name__ == '__main__':
-    main()

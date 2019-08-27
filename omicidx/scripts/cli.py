@@ -145,7 +145,7 @@ def load_sra_data_to_bigquery():
 # Biosample handling #
 ######################
 
-@cli.group()
+@cli.group(help="Use these commands to process biosample records.")
 def biosample():
     pass
 
@@ -163,7 +163,13 @@ def upload_biosample():
     from ..gcs_utils import upload_blob_to_gcs
 
     fname = 'biosample.json'
-    upload_processed_sra_data('temp-testing', fname, 'abc/' + fname)
+    upload_blob_to_gcs('temp-testing', fname, 'abc/' + fname)
+
+def load_biosample_from_gcs_to_bigquery():
+    from ..bigquery_utils import load_json_to_bigquery
+
+    load_json_to_bigquery('omicidx_etl', 'biosample',
+                          'gs://temp-testing/abc/biosample.json')
 
 
 @biosample.command("""download""",
@@ -183,6 +189,21 @@ def upload():
 @click.argument('biosample_file')
 def to_json(biosample_file):
     biosample_to_json(biosample_file)
+
+
+@biosample.command("""load""",
+                   help = "Load the gcs biosample.json file to bigquery")
+def load_biosample_to_bigquery():
+    load_biosample_from_gcs_to_bigquery()
+
+
+@biosample.command("""etl-to-public""",
+                   help = "ETL process (copy) from etl schema to public")
+def biosample_to_public():
+    from ..bigquery_utils import copy_table
+    copy_table('omicidx_etl','omicidx',
+               'biosample', 'biosample')
+
 
     
 if __name__ == '__main__':

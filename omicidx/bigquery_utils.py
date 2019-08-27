@@ -148,4 +148,36 @@ def load_csv_to_bigquery(dataset, table, uri, schema = None, drop=True, **kwargs
     _load_file_to_bigquery(dataset, table, uri, job_config, schema, drop)
 
 
+def copy_table(src_dataset: str, dest_dataset: str,
+               src_table: str, dest_table: str,
+               drop = True):
+    client = bigquery.Client()
+    source_dataset = client.dataset(src_dataset)
+    source_table_ref = source_dataset.table(src_table)
 
+    dest_dataset = client.dataset(dest_dataset)
+    dest_table_ref = dest_dataset.table(dest_table)
+
+    if(drop):
+        try:
+            client.delete_table(dest_table_ref)
+            logging.info(f'Table {dest_table} dropped from dataset {dest_dataset}')
+        except:
+            pass
+    job = client.copy_table(
+        source_table_ref,
+        dest_table_ref,
+        # Location must match that of the source and destination tables.
+        location="US",
+    )  # API request
+    
+    logging.info("Starting job {}".format(job.job_id))
+    logging.info(f"copying {src_dataset}.{src_table} to {dest_dataset}.{dest_table}")
+
+    try:
+        job.result()  # Waits for table load to complete.
+        logging.info("Job finished.")
+    except google.api_core.exceptions.BadRequest:
+        logging.error(f"Job copying {src_dataset}.{src_table} to {dest_dataset}.{dest_table} failed")
+        logging.error(load_job.errors)
+    

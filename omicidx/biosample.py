@@ -98,31 +98,3 @@ class BioSampleParser(object):
                 #res = es.index(index="bioes", doc_type='biosample', id=bios['id'], body=bios)
                 elem.clear()
                 return bios
-
-
-@click.group()
-def cli():
-    pass
-
-    
-def biosample_to_json(biosample_file):
-    for i in BioSampleParser(biosample_file):
-        if(i is None):
-            break
-        print(i.as_json())
-
-def download_biosample():
-    subprocess.run("wget ftp://ftp.ncbi.nlm.nih.gov/biosample/biosample_set.xml.gz", shell=True)
-
-
-@cli.command("""download_biosample""")
-def download():
-    download_biosample()
-
-@cli.command("""biosample_to_json""")
-@click.argument('biosample_file')
-def to_json(biosample_file):
-    biosample_to_json(biosample_file)
-
-if __name__ == '__main__':
-    cli()

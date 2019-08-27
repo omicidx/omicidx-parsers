@@ -19,12 +19,18 @@ And this will be wrapped.
 def cli():
     pass
 
-@cli.command(help = """Downloads the files necessary to build
-the SRA json conversions of the XML files.
 
-Files will be placed in the <mirrordir> directory. Mirrordirs
-have the format `NCBI_SRA_Mirroring_20190801_Full`.
-""")
+@cli.group()
+def sra():
+    pass
+
+@sra.command("download",
+             help = """Downloads the files necessary to build
+             the SRA json conversions of the XML files.
+
+             Files will be placed in the <mirrordir> directory. Mirrordirs
+             have the format `NCBI_SRA_Mirroring_20190801_Full`.
+             """)
 @click.argument('mirrordir')
 def download_mirror_files(mirrordir):
     logger.info('getting xml files')
@@ -50,11 +56,12 @@ def dateconverter(o):
     if isinstance(o, (datetime.datetime)):
         return o.__str__()
 
-@cli.command(help="""SRA XML to JSON
+@sra.command("parse-entity",
+             help="""SRA XML to JSON
 
-  Transforms an SRA XML mirroring metadata file into
-  corresponding JSON format files. JSON is line-delimited
-  JSON (not an array).""")
+             Transforms an SRA XML mirroring metadata file into
+             corresponding JSON format files. JSON is line-delimited
+             JSON (not an array).""")
 @click.argument('entity')
 def process_xml_entity(entity):
 
@@ -96,7 +103,8 @@ def process_xml_entity(entity):
                     element.clear()
             logger.info('parsed {} entity entries'.format(n))
 
-@cli.command(help="""Upload SRA json to GCS""")
+@sra.command('upload',
+             help="""Upload SRA json to GCS""")
 @click.argument('mirrordir')
 def upload_processed_sra_data(mirrordir):
     from ..gcs_utils import upload_blob_to_gcs
@@ -112,7 +120,7 @@ def upload_processed_sra_data(mirrordir):
 
 
     
-@cli.command(help="""Load gcs files to Bigquery""")
+@sra.command(help="""Load gcs files to Bigquery""")
 def load_sra_data_to_bigquery():
     from ..bigquery_utils import (
         load_csv_to_bigquery,
@@ -131,6 +139,50 @@ def load_sra_data_to_bigquery():
                          'sra_accessions',
                          'gs://temp-testing/abc/SRA_Accessions.tab',
              field_delimiter='\t', null_marker='-')
+
+
+######################
+# Biosample handling #
+######################
+
+@cli.group()
+def biosample():
+    pass
+
+from ..biosample import BioSampleParser
+def biosample_to_json(biosample_file):
+    for i in BioSampleParser(biosample_file):
+        if(i is None):
+            break
+        print(i.as_json())
+
+def download_biosample():
+    subprocess.run("wget ftp://ftp.ncbi.nlm.nih.gov/biosample/biosample_set.xml.gz", shell=True)
+
+def upload_biosample():
+    from ..gcs_utils import upload_blob_to_gcs
+
+    fname = 'biosample.json'
+    upload_processed_sra_data('temp-testing', fname, 'abc/' + fname)
+
+
+@biosample.command("""download""",
+                   help="Download biosample xml file from NCBI")
+def download():
+    download_biosample()
+
+
+@biosample.command("""upload""",
+                   help="Download biosample xml file from NCBI")
+def upload():
+    upload_biosample()
+
+    
+@biosample.command("""parse""",
+                   help = "Parse xml to json, output to stdout")
+@click.argument('biosample_file')
+def to_json(biosample_file):
+    biosample_to_json(biosample_file)
 
     
 if __name__ == '__main__':

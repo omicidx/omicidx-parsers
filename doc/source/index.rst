@@ -3,13 +3,35 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to OmicIDX's documentation!
-===================================
+Welcome to OmicIDX
+==================
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
 
+   Bigquery
+      
+
+The OmicIDX project aims to expose metadata associated with publicly
+available genomic data.
+
+-  Flexible search and query
+-  Analytics and data mining
+-  Data munging and mashups with other data resources (ontologies, for
+   example)
+-  Performant bulk access via application programming interfaces
+-  Computable formats (json, avro) for data scientists
+-  Drive bulk processing of genomics datasets
+
+Ipython notebooks
+-----------------
+
+-  `intro <https://notebook.org>`__
+
+Rmarkdown workbooks
+-------------------
+
+-  `intro <https://rmarkdown.org>`__
 
 
 Indices and tables

@@ -64,3 +64,22 @@ html_static_path = ['_static']
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = True
+
+
+html_theme_options = {
+    'github_user': 'seandavi',
+    'github_repo': 'omicidx',
+    'github_button': True,
+    'github_banner': True
+}
+
+
+html_sidebars = {
+    '**': [
+        'about.html',
+        'navigation.html',
+        'relations.html',
+        'searchbox.html',
+        'donate.html',
+    ]
+}

@@ -7,20 +7,13 @@ logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
 logger = logging.getLogger(__name__)
 
-@click.group(help="""Do things in this order:
-
-\b
-  1. download-mirror-files
-  2. process-xml-to-json
-  3. create on GCS
-
-And this will be wrapped.
+@click.group(help="""Command-line interface for omicidx processing
 """)
 def cli():
     pass
 
 
-@cli.group()
+@cli.group(help="Use these commands to process SRA metadata")
 def sra():
     pass
 
@@ -146,10 +139,11 @@ def sra_to_bigquery():
     from ..bigquery_utils import query
     sql = """CREATE OR REPLACE TABLE `isb-cgc-01-0006.omicidx.sra_run` AS
 SELECT 
-  run.* EXCEPT (published, lastupdate, received, total_spots, total_bases, avg_length),
+  run.* EXCEPT (published, lastupdate, received, total_spots, total_bases, avg_length, run_date),
   CAST(acc.Updated as DATETIME) as lastupdate,
   CAST(acc.Published as DATETIME) as published,
   CAST(acc.Received as DATETIME) as received,
+  CAST(acc.run_date as DATETIME) as run_date,
   CAST(acc.Spots as INT64) as total_spots,
   CAST(acc.Bases as INT64) as total_bases,
   CAST(acc.Bases AS NUMERIC)/CAST(acc.Spots AS NUMERIC) as avg_length,
@@ -218,6 +212,17 @@ FROM
     """
     query(sql)
 
+
+def _sra_gcs_to_elasticsearch(entity):
+    from ..elasticsearch_utils import bulk_index_from_gcs
+    
+    bulk_index_from_gcs('omicidx-cancerdatasci-org','exports/sra/{}-'.format(entity),'sra_'+entity)
+
+@sra.command(help="""ETL query to public schema for all SRA entities""")
+def sra_gcs_to_elasticsearch():
+    for entity in 'experiment study sample run'.split():
+        _sra_gcs_to_elasticsearch(entity)
+
 ######################
 # Biosample handling #
 ######################
@@ -281,6 +286,21 @@ def biosample_to_public():
     copy_table('omicidx_etl','omicidx',
                'biosample', 'biosample')
 
+@biosample.command("""gcs-dump""",
+                   help = "Write json.gz format of biosample to gcs")
+def biosample_to_gcs():
+    from ..bigquery_utils import table_to_gcs
+    table_to_gcs('omicidx','biosample', 'gs://omicidx-cancerdatasci-org/exports/biosample/json/biosample-*.json.gz')
+
+
+def _biosample_gcs_to_elasticsearch():
+    from ..elasticsearch_utils import bulk_index_from_gcs
+    bulk_index_from_gcs('omicidx-cancerdatasci-org', 'exports/biosample/json/biosample-', 'biosample',
+                        max_retries = 3, chunk_size=2000)
+
+@biosample.command("gcs-to-elasticsearch")
+def biosample_gcs_to_elasticsearch():
+    _biosample_gcs_to_elasticsearch()
 
     
 if __name__ == '__main__':

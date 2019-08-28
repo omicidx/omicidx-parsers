@@ -246,3 +246,49 @@ def query(sql: str):
         logging.error(f"query failed")
         logging.error(query_job.errors)
     
+
+def table_to_gcs(dataset, table, uri, gzip=True):
+    """Load a file from google cloud storage into BigQuery
+
+    Parameters
+    ----------
+    dataset: str
+        The Bigquery dataset
+    table: str
+        The Bigquery table
+    uri: str
+        The google cloud storage uri (``gs://....``)
+    gzip: bool
+        Compress output with gzip or not
+    """
+    client = bigquery.Client()
+
+    destination_uri = uri
+    dataset_ref = client.dataset(dataset)
+    table_ref = dataset_ref.table(table)
+
+
+    
+    logging.info("Exporting {}.{} to {}".format(dataset, table, destination_uri))
+
+    job_config = bigquery.ExtractJobConfig()
+
+    if(gzip):
+        job_config.compression = bigquery.Compression.GZIP
+        job_config.destination_format = bigquery.DestinationFormat.NEWLINE_DELIMITED_JSON
+    
+    extract_job = client.extract_table(
+        table_ref,
+        destination_uri,
+        # Location must match that of the source table.
+        location="US",
+        job_config = job_config
+    )  # API request
+    try:
+        extract_job.result()  # Waits for table load to complete.
+        logging.info("Extract completed")
+    except google.api_core.exceptions.BadRequest:
+        logging.error(f"extract failed")
+        logging.error(extract_job.errors)
+
+    logging.info("Exported {}.{} to {}".format(dataset, table, destination_uri))

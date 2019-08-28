@@ -141,6 +141,83 @@ def load_sra_data_to_bigquery():
              field_delimiter='\t', null_marker='-')
 
 
+@sra.command(help="""ETL query to public schema for all SRA entities""")
+def sra_to_bigquery():
+    from ..bigquery_utils import query
+    sql = """CREATE OR REPLACE TABLE `isb-cgc-01-0006.omicidx.sra_run` AS
+SELECT 
+  run.* EXCEPT (published, lastupdate, received, total_spots, total_bases, avg_length),
+  CAST(acc.Updated as DATETIME) as lastupdate,
+  CAST(acc.Published as DATETIME) as published,
+  CAST(acc.Received as DATETIME) as received,
+  CAST(acc.Spots as INT64) as total_spots,
+  CAST(acc.Bases as INT64) as total_bases,
+  CAST(acc.Bases AS NUMERIC)/CAST(acc.Spots AS NUMERIC) as avg_length,
+  acc.Sample as sample_accession,
+  acc.Study as study_accession
+FROM 
+    `isb-cgc-01-0006.omicidx_etl.sra_run` run
+  JOIN 
+    `isb-cgc-01-0006.omicidx_etl.sra_accessions` acc
+  ON acc.Accession = run.accession;
+"""
+    query(sql)
+
+    sql = """CREATE OR REPLACE TABLE `isb-cgc-01-0006.omicidx.sra_experiment` AS
+SELECT 
+  expt.* EXCEPT (published, lastupdate, received),
+  CAST(acc.Updated as DATETIME) as lastupdate,
+  CAST(acc.Published as DATETIME) as published,
+  CAST(acc.Received as DATETIME) as received
+FROM 
+    `isb-cgc-01-0006.omicidx_etl.sra_experiment` expt
+  JOIN 
+    `isb-cgc-01-0006.omicidx_etl.sra_accessions` acc
+  ON acc.Accession = expt.accession;
+    """
+    query(sql)
+
+    sql = """CREATE OR REPLACE TABLE `isb-cgc-01-0006.omicidx.sra_sample` AS
+SELECT 
+  sample.* EXCEPT (published, lastupdate, received),
+  CAST(acc.Updated as DATETIME) as lastupdate,
+  CAST(acc.Published as DATETIME) as published,
+  CAST(acc.Received as DATETIME) as received,
+  acc.Study as study_accession
+FROM 
+    `isb-cgc-01-0006.omicidx_etl.sra_sample` sample
+  JOIN 
+    `isb-cgc-01-0006.omicidx_etl.sra_accessions` acc
+  ON acc.Accession = sample.accession;
+    """
+    query(sql)
+
+    sql = """CREATE OR REPLACE TABLE `isb-cgc-01-0006.omicidx.sra_study` AS
+WITH stat_agg AS (
+SELECT
+  COUNT(a.Accession) as sample_count,
+  a.Study as study_accession
+FROM 
+  `isb-cgc-01-0006.omicidx_etl.sra_accessions` a
+WHERE
+  a.Type='SAMPLE'
+GROUP BY 
+  study_accession)
+SELECT 
+  study.* EXCEPT (published, lastupdate, received),
+  CAST(acc.Updated as DATETIME) as lastupdate,
+  CAST(acc.Published as DATETIME) as published,
+  CAST(acc.Received as DATETIME) as received
+FROM 
+    `isb-cgc-01-0006.omicidx_etl.study` study
+  JOIN 
+    `isb-cgc-01-0006.omicidx_etl.sra_accessions` acc
+  ON acc.Accession = study.accession
+  LEFT OUTER JOIN
+    stat_agg on stat_agg.study_accession=study.accession;
+    """
+    query(sql)
+
 ######################
 # Biosample handling #
 ######################

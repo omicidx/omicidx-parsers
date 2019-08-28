@@ -181,3 +181,68 @@ def copy_table(src_dataset: str, dest_dataset: str,
         logging.error(f"Job copying {src_dataset}.{src_table} to {dest_dataset}.{dest_table} failed")
         logging.error(load_job.errors)
     
+
+
+
+def query_to_destination(dest_dataset: str, dest_table: str,
+                         sql: str,
+                         drop = True):
+    client = bigquery.Client()
+    dest_dataset = client.dataset(dest_dataset)
+    dest_table_ref = dest_dataset.table(dest_table)
+
+    if(drop):
+        try:
+            client.delete_table(dest_table_ref)
+            logging.info(f'Table {dest_table} dropped from dataset {dest_dataset}')
+        except:
+            pass
+
+    job_config = bigquery.QueryJobConfig()
+    job_config.destination = dest_table_ref
+
+    # Start the query, passing in the extra configuration.
+    query_job = client.query(
+        sql,
+        # Location must match that of the dataset(s) referenced in the query
+        # and of the destination table.
+        location="US",
+        job_config=job_config,
+    )
+    
+    logging.info("Starting job {}".format(query_job.job_id))
+    logging.info(f"----------------------{sql}---------------------")
+    logging.info(f"querying to {dest_dataset}.{dest_table}")
+    
+    try:
+        query_job.result()  # Waits for table load to complete.
+        logging.info("Query results loaded to table {}".format(dest_table_ref.path))
+    except google.api_core.exceptions.BadRequest:
+        logging.error(f"querying to {dest_dataset}.{dest_table} failed")
+        logging.error(query_job.errors)
+    
+
+def query(sql: str):
+    client = bigquery.Client()
+
+    job_config = bigquery.QueryJobConfig()
+
+    # Start the query, passing in the extra configuration.
+    query_job = client.query(
+        sql,
+        # Location must match that of the dataset(s) referenced in the query
+        # and of the destination table.
+        location="US",
+        job_config=job_config,
+    )
+    
+    logging.info("Starting job {}".format(query_job.job_id))
+    logging.info(f"----------------------{sql}---------------------")
+    
+    try:
+        query_job.result()  # Waits for table load to complete.
+        logging.info("Query completed")
+    except google.api_core.exceptions.BadRequest:
+        logging.error(f"query failed")
+        logging.error(query_job.errors)
+    

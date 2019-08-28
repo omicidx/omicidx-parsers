@@ -143,7 +143,7 @@ SELECT
   CAST(acc.Updated as DATETIME) as lastupdate,
   CAST(acc.Published as DATETIME) as published,
   CAST(acc.Received as DATETIME) as received,
-  CAST(acc.run_date as DATETIME) as run_date,
+  CAST(run_date as DATETIME) as run_date,
   CAST(acc.Spots as INT64) as total_spots,
   CAST(acc.Bases as INT64) as total_bases,
   CAST(acc.Bases AS NUMERIC)/CAST(acc.Spots AS NUMERIC) as avg_length,
@@ -213,6 +213,112 @@ FROM
     query(sql)
 
 
+def _sra_bigquery_for_elasticsearch():
+    from ..bigquery_utils import query
+    sql = """CREATE OR REPLACE TABLE omicidx_etl.sra_experiment_for_es AS
+SELECT
+  expt.*,
+  STRUCT(samp).samp as sample,
+  STRUCT(study).study as study
+FROM 
+  `isb-cgc-01-0006.omicidx.sra_experiment` expt 
+  JOIN 
+  `isb-cgc-01-0006.omicidx.sra_sample` samp
+  ON samp.accession = expt.sample_accession
+  JOIN 
+  `isb-cgc-01-0006.omicidx.sra_study` study
+  ON study.accession = expt.study_accession
+    """
+    query(sql)
+
+
+    sql = """CREATE OR REPLACE TABLE omicidx_etl.sra_run_for_es AS
+create or replace table omicidx_etl.sra_run_for_es as
+SELECT
+  run.*,
+  STRUCT(expt).expt as experiment,
+  STRUCT(samp).samp as sample,
+  STRUCT(study).study as study
+FROM 
+  `isb-cgc-01-0006.omicidx.sra_run` run
+  LEFT OUTER JOIN
+  `isb-cgc-01-0006.omicidx.sra_experiment` expt
+  ON run.experiment_accession = expt.accession
+  JOIN 
+  `isb-cgc-01-0006.omicidx.sra_sample` samp
+  ON samp.accession = expt.sample_accession
+  JOIN 
+  `isb-cgc-01-0006.omicidx.sra_study` study
+  ON study.accession = expt.study_accession
+"""
+    query(sql)
+
+    sql = """CREATE OR REPLACE TABLE omicidx_etl.sra_sample_for_es AS
+    WITH agg_counts as
+(SELECT
+  sample.accession,
+  COUNT(DISTINCT expt.accession) as experiment_count,
+  COUNT(DISTINCT run.accession) as run_count,
+  SUM(CAST(run.total_bases as INT64)) as total_bases,
+  SUM(CAST(run.total_spots as INT64)) as total_spots,
+  AVG(CAST(run.total_bases as INT64)) as mean_bases_per_run
+FROM `isb-cgc-01-0006.omicidx.sra_study` study 
+JOIN `isb-cgc-01-0006.omicidx.sra_experiment` expt 
+  ON expt.study_accession = study.accession
+JOIN `isb-cgc-01-0006.omicidx.sra_run` run
+  ON run.experiment_accession = expt.accession
+JOIN `isb-cgc-01-0006.omicidx.sra_sample` sample
+  ON expt.sample_accession = sample.accession
+GROUP BY sample.accession
+) 
+SELECT 
+  sample.*,
+  STRUCT(study).study,
+  agg_counts.* EXCEPT(accession) 
+FROM `isb-cgc-01-0006.omicidx.sra_sample` sample
+JOIN agg_counts 
+  ON agg_counts.accession = sample.accession
+JOIN `isb-cgc-01-0006.omicidx.sra_experiment` expt 
+  ON expt.sample_accession = sample.accession
+JOIN `isb-cgc-01-0006.omicidx.sra_study` study
+  ON study.accession=expt.study_accession;
+"""
+    query(sql)
+
+    sql = """CREATE OR REPLACE TABLE omicidx_etl.sra_study_for_es AS
+WITH agg_counts as
+(SELECT
+  study.accession,
+  COUNT(DISTINCT expt.sample_accession) as sample_count,
+  COUNT(DISTINCT expt.accession) as experiment_count,
+  COUNT(DISTINCT run.accession) as run_count,
+  SUM(CAST(run.total_bases as INT64)) as total_bases,
+  SUM(CAST(run.total_spots as INT64)) as total_spots,
+  AVG(CAST(run.total_bases as INT64)) as mean_bases_per_run,
+  ARRAY_AGG(DISTINCT sample.taxon_id) as taxon_ids
+FROM `isb-cgc-01-0006.omicidx.sra_study` study 
+JOIN `isb-cgc-01-0006.omicidx.sra_experiment` expt 
+  ON expt.study_accession = study.accession
+JOIN `isb-cgc-01-0006.omicidx.sra_run` run
+  ON run.experiment_accession = expt.accession
+JOIN `isb-cgc-01-0006.omicidx.sra_sample` sample
+  ON expt.sample_accession = sample.accession
+GROUP BY study.accession
+) 
+SELECT 
+  study.*,
+  agg_counts.* EXCEPT(accession) 
+FROM agg_counts 
+JOIN `isb-cgc-01-0006.omicidx.sra_study` study
+  ON study.accession=agg_counts.accession;
+"""
+    query(sql)
+
+@sra.command(help="""ETL queries to create elasticsearch tables in bigquery""")
+def sra_bigquery_for_elasticsearch():
+    _sra_bigquery_for_elasticsearch()
+
+    
 def _sra_gcs_to_elasticsearch(entity):
     from ..elasticsearch_utils import bulk_index_from_gcs
     

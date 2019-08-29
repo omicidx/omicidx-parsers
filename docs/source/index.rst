@@ -10,7 +10,7 @@ Welcome to OmicIDX
    :maxdepth: 2
 
    Bigquery
-      
+   cli
 
 The OmicIDX project aims to expose metadata associated with publicly
 available genomic data.

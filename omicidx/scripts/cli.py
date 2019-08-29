@@ -322,12 +322,28 @@ def sra_bigquery_for_elasticsearch():
 def _sra_gcs_to_elasticsearch(entity):
     from ..elasticsearch_utils import bulk_index_from_gcs
     
-    bulk_index_from_gcs('omicidx-cancerdatasci-org','exports/sra/{}-'.format(entity),'sra_'+entity)
+    bulk_index_from_gcs('omicidx-cancerdatasci-org',
+                        'exports/sra/json/{}-'.format(entity),
+                        'sra_'+entity,
+                        id_field = 'accession'
+    )
 
 @sra.command(help="""ETL query to public schema for all SRA entities""")
 def sra_gcs_to_elasticsearch():
     for entity in 'experiment study sample run'.split():
         _sra_gcs_to_elasticsearch(entity)
+
+
+def _sra_to_gcs_for_elasticsearch():
+    from ..bigquery_utils import table_to_gcs
+    for entity in 'experiment study sample run'.split():
+        table_to_gcs('omicidx_etl',f'sra_{entity}_for_es', f'gs://omicidx-cancerdatasci-org/exports/sra/json/{entity}-*.json.gz')
+
+
+@sra.command("""gcs-dump""",
+                   help = "Write json.gz format of sra entities to gcs")
+def sra_to_gcs_for_elasticsearch():
+    _sra_to_gcs_for_elasticsearch()
 
 ######################
 # Biosample handling #

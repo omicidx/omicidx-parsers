@@ -32,7 +32,8 @@ extensions = [
     'sphinx.ext.todo',
     'sphinx.ext.viewcode',
     'sphinx.ext.autosummary',
-    'sphinx_click.ext'
+    'sphinx_click.ext',
+    'sphinx.ext.napoleon'
 ]
 
 autosummary_generate=True

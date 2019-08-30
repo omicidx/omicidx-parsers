@@ -1,0 +1,326 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>omicidx.geometa module &#8212; OmicIDX  documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="omicidx.lambda_handlers module" href="omicidx.lambda_handlers.html" />
+    <link rel="prev" title="omicidx.gcs_utils module" href="omicidx.gcs_utils.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-omicidx.geometa">
+<span id="omicidx-geometa-module"></span><h1>omicidx.geometa module<a class="headerlink" href="#module-omicidx.geometa" title="Permalink to this headline">¶</a></h1>
+<p>Usage</p>
+<p>python -m omicidx.geometa –help</p>
+<dl class="class">
+<dt id="omicidx.geometa.GEOBase">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.geometa.</code><code class="sig-name descname">GEOBase</code><a class="reference internal" href="_modules/omicidx/geometa.html#GEOBase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.geometa.GEOBase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>GEO Base class</p>
+<dl class="method">
+<dt id="omicidx.geometa.GEOBase.as_dict">
+<code class="sig-name descname">as_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/geometa.html#GEOBase.as_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.geometa.GEOBase.as_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return object as a dict</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="omicidx.geometa.GEOChannel">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.geometa.</code><code class="sig-name descname">GEOChannel</code><span class="sig-paren">(</span><em class="sig-param">d</em>, <em class="sig-param">ch</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/geometa.html#GEOChannel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.geometa.GEOChannel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#omicidx.geometa.GEOBase" title="omicidx.geometa.GEOBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">omicidx.geometa.GEOBase</span></code></a></p>
+<p>Captures a single channel from a GSM</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="omicidx.geometa.GEOContact">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.geometa.</code><code class="sig-name descname">GEOContact</code><span class="sig-paren">(</span><em class="sig-param">d</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/geometa.html#GEOContact"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.geometa.GEOContact" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#omicidx.geometa.GEOBase" title="omicidx.geometa.GEOBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">omicidx.geometa.GEOBase</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="omicidx.geometa.GEOEnitity">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.geometa.</code><code class="sig-name descname">GEOEnitity</code><span class="sig-paren">(</span><em class="sig-param">d</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/geometa.html#GEOEnitity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.geometa.GEOEnitity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#omicidx.geometa.GEOBase" title="omicidx.geometa.GEOBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">omicidx.geometa.GEOBase</span></code></a></p>
+<dl class="method">
+<dt id="omicidx.geometa.GEOEnitity.as_dict">
+<code class="sig-name descname">as_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/geometa.html#GEOEnitity.as_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.geometa.GEOEnitity.as_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return object as a dict</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="omicidx.geometa.GEOPlatform">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.geometa.</code><code class="sig-name descname">GEOPlatform</code><span class="sig-paren">(</span><em class="sig-param">d</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/geometa.html#GEOPlatform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.geometa.GEOPlatform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#omicidx.geometa.GEOEnitity" title="omicidx.geometa.GEOEnitity"><code class="xref py py-class docutils literal notranslate"><span class="pre">omicidx.geometa.GEOEnitity</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="omicidx.geometa.GEOSample">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.geometa.</code><code class="sig-name descname">GEOSample</code><span class="sig-paren">(</span><em class="sig-param">d</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/geometa.html#GEOSample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.geometa.GEOSample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#omicidx.geometa.GEOEnitity" title="omicidx.geometa.GEOEnitity"><code class="xref py py-class docutils literal notranslate"><span class="pre">omicidx.geometa.GEOEnitity</span></code></a></p>
+<dl class="method">
+<dt id="omicidx.geometa.GEOSample.as_dict">
+<code class="sig-name descname">as_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/geometa.html#GEOSample.as_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.geometa.GEOSample.as_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return object as a dict</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="omicidx.geometa.GEOSeries">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.geometa.</code><code class="sig-name descname">GEOSeries</code><span class="sig-paren">(</span><em class="sig-param">d</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/geometa.html#GEOSeries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.geometa.GEOSeries" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#omicidx.geometa.GEOEnitity" title="omicidx.geometa.GEOEnitity"><code class="xref py py-class docutils literal notranslate"><span class="pre">omicidx.geometa.GEOEnitity</span></code></a></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="omicidx.geometa.geo_soft_entity_iterator">
+<code class="sig-prename descclassname">omicidx.geometa.</code><code class="sig-name descname">geo_soft_entity_iterator</code><span class="sig-paren">(</span><em class="sig-param">fh</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/geometa.html#geo_soft_entity_iterator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.geometa.geo_soft_entity_iterator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an iterator of GEO entities</p>
+<p>Given a GEO accession (typically a GSE,
+will return an iterator of the GEO entities
+associated with the record, including all
+GSMs, GPLs, and the GSE record itself</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>fh</strong> (<em>anything that can iterate over lines of text</em>) – Could be a list of text lines, a file handle, or
+an open url.</p>
+</dd>
+<dt class="field-even">Yields</dt>
+<dd class="field-even"><p><em>Iterator of GEO entities</em></p>
+</dd>
+</dl>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">geo_soft_entity_iterator</span><span class="p">(</span><span class="n">get_geo_accession_soft</span><span class="p">(</span><span class="s1">&#39;GSE2553&#39;</span><span class="p">)):</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="omicidx.geometa.geo_soft_iterator">
+<code class="sig-prename descclassname">omicidx.geometa.</code><code class="sig-name descname">geo_soft_iterator</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">txt</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/geometa.html#geo_soft_iterator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.geometa.geo_soft_iterator" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="omicidx.geometa.get_SRA_from_relations">
+<code class="sig-prename descclassname">omicidx.geometa.</code><code class="sig-name descname">get_SRA_from_relations</code><span class="sig-paren">(</span><em class="sig-param">relation_list</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/geometa.html#get_SRA_from_relations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.geometa.get_SRA_from_relations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="omicidx.geometa.get_bioprojects_from_relations">
+<code class="sig-prename descclassname">omicidx.geometa.</code><code class="sig-name descname">get_bioprojects_from_relations</code><span class="sig-paren">(</span><em class="sig-param">relation_list</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/geometa.html#get_bioprojects_from_relations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.geometa.get_bioprojects_from_relations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="omicidx.geometa.get_biosample_from_relations">
+<code class="sig-prename descclassname">omicidx.geometa.</code><code class="sig-name descname">get_biosample_from_relations</code><span class="sig-paren">(</span><em class="sig-param">relation_list</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/geometa.html#get_biosample_from_relations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.geometa.get_biosample_from_relations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="omicidx.geometa.get_entrez_instance">
+<code class="sig-prename descclassname">omicidx.geometa.</code><code class="sig-name descname">get_entrez_instance</code><span class="sig-paren">(</span><em class="sig-param">email='user&#64;example.com'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/geometa.html#get_entrez_instance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.geometa.get_entrez_instance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a Bio::Entrez object</p>
+<p># Arguments
+email (str): the email to be used with the Entrez instance</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>A Bio::Entrez instance</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="omicidx.geometa.get_geo_accession_soft">
+<code class="sig-prename descclassname">omicidx.geometa.</code><code class="sig-name descname">get_geo_accession_soft</code><span class="sig-paren">(</span><em class="sig-param">accession</em>, <em class="sig-param">targ='all'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/geometa.html#get_geo_accession_soft"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.geometa.get_geo_accession_soft" title="Permalink to this definition">¶</a></dt>
+<dd><p>Open a connection to get the GEO SOFT for an accession</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>accession</strong> (<em>str the GEO accesssion</em>) – </p></li>
+<li><p><strong>targ</strong> (<em>str what to fetch. One of &quot;all&quot;</em><em>, </em><em>&quot;series&quot;</em><em>, </em><em>&quot;platform&quot;</em><em>,</em>) – “samples”, “self”</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>A file-like object for reading or readlines</em></p></li>
+<li><p><em>&gt;&gt;&gt; handle = get_geo_accession_soft(‘GSE2553’)</em></p></li>
+<li><p><em>&gt;&gt;&gt; handle.readlines()</em></p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="omicidx.geometa.get_geo_accession_xml">
+<code class="sig-prename descclassname">omicidx.geometa.</code><code class="sig-name descname">get_geo_accession_xml</code><span class="sig-paren">(</span><em class="sig-param">accession</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/geometa.html#get_geo_accession_xml"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.geometa.get_geo_accession_xml" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="omicidx.geometa.get_geo_accessions">
+<code class="sig-prename descclassname">omicidx.geometa.</code><code class="sig-name descname">get_geo_accessions</code><span class="sig-paren">(</span><em class="sig-param">etyp='GSE'</em>, <em class="sig-param">batch_size=1000</em>, <em class="sig-param">add_term=None</em>, <em class="sig-param">email='user&#64;example.com'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/geometa.html#get_geo_accessions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.geometa.get_geo_accessions" title="Permalink to this definition">¶</a></dt>
+<dd><p>get GEO accessions</p>
+<p>Useful for getting all the ETYP accessions for
+later bulk processing</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>etyp</strong> (<em>str</em>) – One of GSE, GPL, GSM, GDS</p></li>
+<li><p><strong>batch_size</strong> (<em>int</em>) – the number of accessions to return in one batch.
+Transparent to the user, as this returns an iterator.</p></li>
+<li><p><strong>add_term</strong> (<em>str</em>) – Add a search term for the query. Useful to limit
+by date or search for specific text.</p></li>
+<li><p><strong>email</strong> (<em>str</em>) – user email (not important)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>an iterator of accessions, each as a string</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="omicidx.geometa.get_geo_entities">
+<code class="sig-prename descclassname">omicidx.geometa.</code><code class="sig-name descname">get_geo_entities</code><span class="sig-paren">(</span><em class="sig-param">txt</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/geometa.html#get_geo_entities"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.geometa.get_geo_entities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the text associated with each entity from a block of text</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>txt</strong> (<em>list</em><em>(</em><em>str</em><em>)</em>) – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>A dict of entities keyed by accession and values a list of txt lines</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="omicidx.geometa.get_subseries_from_relations">
+<code class="sig-prename descclassname">omicidx.geometa.</code><code class="sig-name descname">get_subseries_from_relations</code><span class="sig-paren">(</span><em class="sig-param">relation_list</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/geometa.html#get_subseries_from_relations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.geometa.get_subseries_from_relations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">OmicIDX</a></h1>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=seandavi&repo=omicidx&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Bigquery.html">OmicIDX dataset on Bigquery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">Commandline Interface</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">omicidx</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="omicidx.html">omicidx package</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">omicidx</a><ul>
+  <li><a href="omicidx.html">omicidx package</a><ul>
+      <li>Previous: <a href="omicidx.gcs_utils.html" title="previous chapter">omicidx.gcs_utils module</a></li>
+      <li>Next: <a href="omicidx.lambda_handlers.html" title="next chapter">omicidx.lambda_handlers module</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Sean Davis.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/omicidx.geometa.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/seandavi/omicidx" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

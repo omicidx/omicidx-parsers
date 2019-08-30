@@ -1,0 +1,280 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>omicidx.schema_tools &#8212; OmicIDX  documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for omicidx.schema_tools</h1><div class="highlight"><pre>
+<div class="viewcode-block" id="BaseType"><a class="viewcode-back" href="../../omicidx.schema_tools.html#omicidx.schema_tools.BaseType">[docs]</a><span></span><span class="k">class</span> <span class="nc">BaseType</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">nullable</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nullable</span> <span class="o">=</span> <span class="n">nullable</span>
+    
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;&lt;</span><span class="si">{}</span><span class="s2"> class name:</span><span class="si">{}</span><span class="s2">&gt;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__type__</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<span class="c1">################################################</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#  Classes for simple entities:</span>
+<span class="c1">#</span>
+<span class="c1">#  Strings, Dates(timestamp), Boolean,</span>
+<span class="c1">#  Long, Integer</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">################################################</span>
+
+    
+<div class="viewcode-block" id="StringType"><a class="viewcode-back" href="../../omicidx.schema_tools.html#omicidx.schema_tools.StringType">[docs]</a><span class="k">class</span> <span class="nc">StringType</span><span class="p">(</span><span class="n">BaseType</span><span class="p">):</span>
+    <span class="n">__type__</span> <span class="o">=</span> <span class="s1">&#39;StringType&#39;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">nullable</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">nullable</span><span class="p">)</span>
+        
+<div class="viewcode-block" id="StringType.mapping"><a class="viewcode-back" href="../../omicidx.schema_tools.html#omicidx.schema_tools.StringType.mapping">[docs]</a>    <span class="k">def</span> <span class="nf">mapping</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span><span class="p">({</span>
+                    <span class="s2">&quot;fields&quot;</span><span class="p">:</span> <span class="p">{</span>
+                      <span class="s2">&quot;keyword&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s2">&quot;ignore_above&quot;</span><span class="p">:</span> <span class="mi">256</span><span class="p">,</span>
+                        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;keyword&quot;</span>
+                      <span class="p">}</span>
+                    <span class="p">},</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;text&quot;</span>
+        <span class="p">})</span></div></div>
+        
+<div class="viewcode-block" id="DateType"><a class="viewcode-back" href="../../omicidx.schema_tools.html#omicidx.schema_tools.DateType">[docs]</a><span class="k">class</span> <span class="nc">DateType</span><span class="p">(</span><span class="n">BaseType</span><span class="p">):</span>
+    <span class="n">__type__</span> <span class="o">=</span> <span class="s1">&#39;DateType&#39;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">nullable</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">nullable</span><span class="p">)</span>
+        
+<div class="viewcode-block" id="DateType.mapping"><a class="viewcode-back" href="../../omicidx.schema_tools.html#omicidx.schema_tools.DateType.mapping">[docs]</a>    <span class="k">def</span> <span class="nf">mapping</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span><span class="p">({</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;timestamp&quot;</span>
+          <span class="p">}</span>
+        <span class="p">)</span></div></div>
+
+<div class="viewcode-block" id="BooleanType"><a class="viewcode-back" href="../../omicidx.schema_tools.html#omicidx.schema_tools.BooleanType">[docs]</a><span class="k">class</span> <span class="nc">BooleanType</span><span class="p">(</span><span class="n">BaseType</span><span class="p">):</span>
+    <span class="n">__type__</span> <span class="o">=</span> <span class="s1">&#39;BooleanType&#39;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">nullable</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">nullable</span><span class="p">)</span>
+        
+<div class="viewcode-block" id="BooleanType.mapping"><a class="viewcode-back" href="../../omicidx.schema_tools.html#omicidx.schema_tools.BooleanType.mapping">[docs]</a>    <span class="k">def</span> <span class="nf">mapping</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span><span class="p">({</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;boolean&quot;</span>     
+        <span class="p">})</span></div></div>
+
+<div class="viewcode-block" id="LongType"><a class="viewcode-back" href="../../omicidx.schema_tools.html#omicidx.schema_tools.LongType">[docs]</a><span class="k">class</span> <span class="nc">LongType</span><span class="p">(</span><span class="n">BaseType</span><span class="p">):</span>
+    <span class="n">__type__</span> <span class="o">=</span> <span class="s1">&#39;LongType&#39;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">nullable</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">nullable</span><span class="p">)</span>
+    
+<div class="viewcode-block" id="LongType.mapping"><a class="viewcode-back" href="../../omicidx.schema_tools.html#omicidx.schema_tools.LongType.mapping">[docs]</a>    <span class="k">def</span> <span class="nf">mapping</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span><span class="p">({</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;long&quot;</span>
+          
+        <span class="p">})</span></div></div>
+        
+        
+<div class="viewcode-block" id="IntType"><a class="viewcode-back" href="../../omicidx.schema_tools.html#omicidx.schema_tools.IntType">[docs]</a><span class="k">class</span> <span class="nc">IntType</span><span class="p">(</span><span class="n">BaseType</span><span class="p">):</span>
+    <span class="n">__type__</span> <span class="o">=</span> <span class="s1">&#39;IntType&#39;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">nullable</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">nullable</span><span class="p">)</span>
+        
+<div class="viewcode-block" id="IntType.mapping"><a class="viewcode-back" href="../../omicidx.schema_tools.html#omicidx.schema_tools.IntType.mapping">[docs]</a>    <span class="k">def</span> <span class="nf">mapping</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span><span class="p">({</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;integer&quot;</span>
+          
+        <span class="p">})</span></div></div>
+
+<span class="c1">################################################</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#  Classes for complex entities:</span>
+<span class="c1">#</span>
+<span class="c1">#    Objects</span>
+<span class="c1">#    Nested (arrays)</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">################################################</span>
+
+<div class="viewcode-block" id="ObjectType"><a class="viewcode-back" href="../../omicidx.schema_tools.html#omicidx.schema_tools.ObjectType">[docs]</a><span class="k">class</span> <span class="nc">ObjectType</span><span class="p">(</span><span class="n">BaseType</span><span class="p">):</span>
+    <span class="c1"># spark type: struct</span>
+    <span class="c1"># ES type:    object</span>
+    <span class="n">__type__</span> <span class="o">=</span> <span class="s1">&#39;ObjectType&#39;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">nullable</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">nullable</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span> <span class="o">=</span> <span class="p">{}</span>
+
+<div class="viewcode-block" id="ObjectType.mapping"><a class="viewcode-back" href="../../omicidx.schema_tools.html#omicidx.schema_tools.ObjectType.mapping">[docs]</a>    <span class="k">def</span> <span class="nf">mapping</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span><span class="p">({</span>
+            <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">((</span><span class="n">k</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">mapping</span><span class="p">())</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="p">})</span>        </div></div>
+    
+        
+<div class="viewcode-block" id="NestedType"><a class="viewcode-back" href="../../omicidx.schema_tools.html#omicidx.schema_tools.NestedType">[docs]</a><span class="k">class</span> <span class="nc">NestedType</span><span class="p">(</span><span class="n">BaseType</span><span class="p">):</span>
+    <span class="c1"># spark type: array</span>
+    <span class="c1"># ES type:    nested</span>
+    <span class="n">__type__</span> <span class="o">=</span> <span class="s1">&#39;NestedType&#39;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">nullable</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">nullable</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fields</span> <span class="o">=</span> <span class="p">{}</span>
+        
+<div class="viewcode-block" id="NestedType.mapping"><a class="viewcode-back" href="../../omicidx.schema_tools.html#omicidx.schema_tools.NestedType.mapping">[docs]</a>    <span class="k">def</span> <span class="nf">mapping</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span><span class="p">({</span>
+            <span class="s2">&quot;include_in_parent&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;nested&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;properties&quot;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">((</span><span class="n">k</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">mapping</span><span class="p">())</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="p">})</span></div></div>
+
+<div class="viewcode-block" id="walk_schema"><a class="viewcode-back" href="../../omicidx.schema_tools.html#omicidx.schema_tools.walk_schema">[docs]</a><span class="k">def</span> <span class="nf">walk_schema</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">parent</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Walk a pyspark &quot;schema.jsonValue&quot; schema</span>
+
+<span class="sd">    This function converts a pyspark schema into</span>
+<span class="sd">    a set of classes that can then convert the schema</span>
+<span class="sd">    to an elasticsearch mapping.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    schema: a dict</span>
+<span class="sd">        Typically, this would come from `df.schema.jsonValue()`. It could</span>
+<span class="sd">        also be loaded from a string or file using the `json` library.</span>
+<span class="sd">    parent: a container class, so an `ObjectType` or a `NestedType`</span>
+<span class="sd">        If empty, will be initialized with an `ObjectType` with </span>
+<span class="sd">        name = &quot;root&quot;.</span>
+
+<span class="sd">    &gt;&gt;&gt; s = walk_schema(df.schema.jsonValue(), ObjectType(name=&#39;root&#39;))</span>
+<span class="sd">    &gt;&gt;&gt; s.mapping()</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span><span class="p">(</span><span class="n">parent</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="n">parent</span> <span class="o">=</span> <span class="n">ObjectType</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;root&#39;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">schema</span><span class="p">[</span><span class="s1">&#39;fields&#39;</span><span class="p">]:</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">field</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;string&#39;</span><span class="p">):</span>
+            <span class="n">parent</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]]</span><span class="o">=</span><span class="n">StringType</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">field</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">nullable</span><span class="o">=</span><span class="n">field</span><span class="p">[</span><span class="s1">&#39;nullable&#39;</span><span class="p">])</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">field</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;integer&#39;</span><span class="p">):</span>
+            <span class="n">parent</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]]</span><span class="o">=</span><span class="n">IntType</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">field</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">nullable</span><span class="o">=</span><span class="n">field</span><span class="p">[</span><span class="s1">&#39;nullable&#39;</span><span class="p">])</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">field</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;long&#39;</span><span class="p">):</span>
+            <span class="n">parent</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]]</span><span class="o">=</span><span class="n">LongType</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">field</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">nullable</span><span class="o">=</span><span class="n">field</span><span class="p">[</span><span class="s1">&#39;nullable&#39;</span><span class="p">])</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">field</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;timestamp&#39;</span><span class="p">):</span>
+            <span class="n">parent</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]]</span><span class="o">=</span><span class="n">DateType</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">field</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">nullable</span><span class="o">=</span><span class="n">field</span><span class="p">[</span><span class="s1">&#39;nullable&#39;</span><span class="p">])</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">field</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;boolean&#39;</span><span class="p">):</span>
+            <span class="n">parent</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]]</span><span class="o">=</span><span class="n">BooleanType</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">field</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">nullable</span><span class="o">=</span><span class="n">field</span><span class="p">[</span><span class="s1">&#39;nullable&#39;</span><span class="p">])</span>
+        <span class="k">if</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">field</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">n_field</span> <span class="o">=</span> <span class="n">field</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span>
+            <span class="k">if</span><span class="p">(</span><span class="n">n_field</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;struct&#39;</span><span class="p">):</span>
+                <span class="n">newp</span> <span class="o">=</span> <span class="n">ObjectType</span><span class="p">(</span><span class="n">field</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">field</span><span class="p">[</span><span class="s1">&#39;nullable&#39;</span><span class="p">])</span>
+                <span class="n">parent</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]]</span><span class="o">=</span><span class="n">walk_schema</span><span class="p">(</span><span class="n">n_field</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="n">newp</span><span class="p">)</span>
+
+            <span class="k">if</span><span class="p">(</span><span class="n">n_field</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;array&#39;</span><span class="p">):</span>
+                <span class="n">newp</span> <span class="o">=</span> <span class="n">NestedType</span><span class="p">(</span><span class="n">field</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">field</span><span class="p">[</span><span class="s1">&#39;nullable&#39;</span><span class="p">])</span>
+                <span class="n">parent</span><span class="o">.</span><span class="n">fields</span><span class="p">[</span><span class="n">field</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]]</span><span class="o">=</span><span class="n">walk_schema</span><span class="p">(</span><span class="n">n_field</span><span class="p">[</span><span class="s1">&#39;elementType&#39;</span><span class="p">],</span> <span class="n">parent</span><span class="o">=</span><span class="n">newp</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">parent</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">OmicIDX</a></h1>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=seandavi&repo=omicidx&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Bigquery.html">OmicIDX dataset on Bigquery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../cli.html">Commandline Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../genomic_metadata.html">Genomic metadata in OmicIDX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">omicidx</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Sean Davis.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/seandavi/omicidx" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

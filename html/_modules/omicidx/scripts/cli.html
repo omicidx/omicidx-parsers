@@ -1,0 +1,544 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>omicidx.scripts.cli &#8212; OmicIDX  documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for omicidx.scripts.cli</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="kn">import</span> <span class="nn">click</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span>
+                    <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(asctime)s</span><span class="s1"> </span><span class="si">%(name)-12s</span><span class="s1"> </span><span class="si">%(levelname)-8s</span><span class="s1"> </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="nd">@click</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="n">help</span><span class="o">=</span><span class="s2">&quot;&quot;&quot;Command-line interface for omicidx processing</span>
+<span class="s2">&quot;&quot;&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">cli</span><span class="p">():</span>
+    <span class="k">pass</span>
+
+
+<span class="nd">@cli</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="n">help</span><span class="o">=</span><span class="s2">&quot;Use these commands to process SRA metadata&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">sra</span><span class="p">():</span>
+    <span class="k">pass</span>
+
+<span class="nd">@sra</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s2">&quot;download&quot;</span><span class="p">,</span>
+             <span class="n">help</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;Downloads the files necessary to build</span>
+<span class="s2">             the SRA json conversions of the XML files.</span>
+
+<span class="s2">             Files will be placed in the &lt;mirrordir&gt; directory. Mirrordirs</span>
+<span class="s2">             have the format `NCBI_SRA_Mirroring_20190801_Full`.</span>
+<span class="s2">             &quot;&quot;&quot;</span><span class="p">)</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">argument</span><span class="p">(</span><span class="s1">&#39;mirrordir&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">download_mirror_files</span><span class="p">(</span><span class="n">mirrordir</span><span class="p">):</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;getting xml files&#39;</span><span class="p">)</span>
+    <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&quot;wget -nH -np --cut-dirs=3 -r -e robots=off </span><span class="si">{}</span><span class="s2">/</span><span class="si">{}</span><span class="s2">/&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="s2">&quot;http://ftp.ncbi.nlm.nih.gov/sra/reports/Mirroring&quot;</span><span class="p">,</span>
+        <span class="n">mirrordir</span><span class="p">),</span> <span class="n">shell</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;getting SRA Accessions file&#39;</span><span class="p">)</span>
+    <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&quot;wget ftp://ftp.ncbi.nlm.nih.gov/sra/reports/Metadata/SRA_Accessions.tab -P </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mirrordir</span><span class="p">),</span>
+                   <span class="n">shell</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+    
+        
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">omicidx.sra_parsers</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">from</span> <span class="nn">xml.etree</span> <span class="k">import</span> <span class="n">ElementTree</span> <span class="k">as</span> <span class="n">et</span>
+
+<span class="kn">import</span> <span class="nn">datetime</span>
+
+<div class="viewcode-block" id="dateconverter"><a class="viewcode-back" href="../../../omicidx.scripts.cli.html#omicidx.scripts.cli.dateconverter">[docs]</a><span class="k">def</span> <span class="nf">dateconverter</span><span class="p">(</span><span class="n">o</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="n">o</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span></div>
+
+<span class="nd">@sra</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s2">&quot;parse-entity&quot;</span><span class="p">,</span>
+             <span class="n">help</span><span class="o">=</span><span class="s2">&quot;&quot;&quot;SRA XML to JSON</span>
+
+<span class="s2">             Transforms an SRA XML mirroring metadata file into</span>
+<span class="s2">             corresponding JSON format files. JSON is line-delimited</span>
+<span class="s2">             JSON (not an array).&quot;&quot;&quot;</span><span class="p">)</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">argument</span><span class="p">(</span><span class="s1">&#39;entity&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">process_xml_entity</span><span class="p">(</span><span class="n">entity</span><span class="p">):</span>
+
+    <span class="n">fname</span> <span class="o">=</span> <span class="s2">&quot;meta_</span><span class="si">{}</span><span class="s2">_set.xml.gz&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">entity</span><span class="p">)</span>
+
+    <span class="n">entity</span><span class="o">=</span><span class="n">entity</span>
+
+    <span class="n">parsers</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;study&#39;</span><span class="p">:</span> <span class="n">omicidx</span><span class="o">.</span><span class="n">sra_parsers</span><span class="o">.</span><span class="n">SRAStudyRecord</span><span class="p">,</span>
+        <span class="s1">&#39;sample&#39;</span><span class="p">:</span> <span class="n">omicidx</span><span class="o">.</span><span class="n">sra_parsers</span><span class="o">.</span><span class="n">SRASampleRecord</span><span class="p">,</span>
+        <span class="s1">&#39;run&#39;</span><span class="p">:</span> <span class="n">omicidx</span><span class="o">.</span><span class="n">sra_parsers</span><span class="o">.</span><span class="n">SRARunRecord</span><span class="p">,</span>
+        <span class="s1">&#39;experiment&#39;</span><span class="p">:</span> <span class="n">omicidx</span><span class="o">.</span><span class="n">sra_parsers</span><span class="o">.</span><span class="n">SRAExperimentRecord</span>
+    <span class="p">}</span>
+    <span class="n">sra_parser</span> <span class="o">=</span> <span class="n">parsers</span><span class="p">[</span><span class="n">entity</span><span class="p">]</span>
+
+    <span class="kn">import</span> <span class="nn">omicidx.sra.pydantic_models</span> <span class="k">as</span> <span class="nn">p</span>
+    <span class="n">parsers</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;study&#39;</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">SraStudy</span><span class="p">,</span>
+        <span class="s1">&#39;sample&#39;</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">SraSample</span><span class="p">,</span>
+        <span class="s1">&#39;run&#39;</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">SraRun</span><span class="p">,</span>
+        <span class="s1">&#39;experiment&#39;</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">SraExperiment</span>
+    <span class="p">}</span>
+    <span class="n">pydantic_model</span> <span class="o">=</span> <span class="n">parsers</span><span class="p">[</span><span class="n">entity</span><span class="p">]</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;using </span><span class="si">{}</span><span class="s1"> entity type&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">entity</span><span class="p">))</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;parsing </span><span class="si">{}</span><span class="s1"> records&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">entity</span><span class="p">))</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">outfname</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">.json&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">entity</span><span class="p">)</span>
+    <span class="n">ENTITY</span> <span class="o">=</span> <span class="n">entity</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">outfname</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">outfile</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">omicidx</span><span class="o">.</span><span class="n">sra_parsers</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">event</span><span class="p">,</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">et</span><span class="o">.</span><span class="n">iterparse</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+                <span class="k">if</span><span class="p">(</span><span class="n">event</span> <span class="o">==</span> <span class="s1">&#39;end&#39;</span> <span class="ow">and</span> <span class="n">element</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="n">ENTITY</span><span class="p">):</span>
+                    <span class="n">rec</span> <span class="o">=</span> <span class="n">sra_parser</span><span class="p">(</span><span class="n">element</span><span class="p">)</span><span class="o">.</span><span class="n">data</span>
+                    <span class="n">n</span><span class="o">+=</span><span class="mi">1</span>
+                    <span class="k">if</span><span class="p">((</span><span class="n">n</span> <span class="o">%</span> <span class="mi">100000</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">):</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;parsed </span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1"> entries&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">entity</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
+                    <span class="n">outfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">pydantic_model</span><span class="p">(</span><span class="o">**</span><span class="n">rec</span><span class="p">)</span><span class="o">.</span><span class="n">dict</span><span class="p">(),</span> <span class="n">default</span><span class="o">=</span><span class="n">dateconverter</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="n">element</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;parsed </span><span class="si">{}</span><span class="s1"> entity entries&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>
+
+<span class="nd">@sra</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s1">&#39;upload&#39;</span><span class="p">,</span>
+             <span class="n">help</span><span class="o">=</span><span class="s2">&quot;&quot;&quot;Upload SRA json to GCS&quot;&quot;&quot;</span><span class="p">)</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">argument</span><span class="p">(</span><span class="s1">&#39;mirrordir&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">upload_processed_sra_data</span><span class="p">(</span><span class="n">mirrordir</span><span class="p">):</span>
+    <span class="kn">from</span> <span class="nn">..gcs_utils</span> <span class="k">import</span> <span class="n">upload_blob_to_gcs</span>
+
+    <span class="k">for</span> <span class="n">entity</span> <span class="ow">in</span> <span class="s1">&#39;study sample experiment run&#39;</span><span class="o">.</span><span class="n">split</span><span class="p">():</span>
+        <span class="n">fname</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="s1">&#39;.json&#39;</span>
+        <span class="n">loc_fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">mirrordir</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
+        <span class="n">upload_processed_sra_data</span><span class="p">(</span><span class="s1">&#39;temp-testing&#39;</span><span class="p">,</span> <span class="n">loc_fname</span><span class="p">,</span> <span class="s1">&#39;abc/&#39;</span> <span class="o">+</span> <span class="n">fname</span><span class="p">)</span>
+
+    <span class="n">fname</span> <span class="o">=</span> <span class="s1">&#39;SRA_Accessions.tab&#39;</span>
+    <span class="n">loc_fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">mirrordir</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
+    <span class="n">upload_processed_sra_data</span><span class="p">(</span><span class="s1">&#39;temp-testing&#39;</span><span class="p">,</span> <span class="n">loc_fname</span><span class="p">,</span> <span class="s1">&#39;abc/&#39;</span> <span class="o">+</span> <span class="n">fname</span><span class="p">)</span>
+
+
+    
+<span class="nd">@sra</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">help</span><span class="o">=</span><span class="s2">&quot;&quot;&quot;Load gcs files to Bigquery&quot;&quot;&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">load_sra_data_to_bigquery</span><span class="p">():</span>
+    <span class="kn">from</span> <span class="nn">..bigquery_utils</span> <span class="k">import</span> <span class="p">(</span>
+        <span class="n">load_csv_to_bigquery</span><span class="p">,</span>
+        <span class="n">load_json_to_bigquery</span><span class="p">,</span>
+        <span class="n">parse_bq_json_schema</span><span class="p">)</span>
+    <span class="kn">from</span> <span class="nn">importlib</span> <span class="k">import</span> <span class="n">resources</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="s1">&#39;study sample experiment run&#39;</span><span class="o">.</span><span class="n">split</span><span class="p">():</span>
+        <span class="k">with</span> <span class="n">resources</span><span class="o">.</span><span class="n">path</span><span class="p">(</span><span class="s1">&#39;omicidx.data.bigquery_schemas&#39;</span><span class="p">,</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{i}</span><span class="s2">.schema.json&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">schemafile</span><span class="p">:</span>
+            <span class="n">load_json_to_bigquery</span><span class="p">(</span><span class="s1">&#39;omicidx_etl&#39;</span><span class="p">,</span>
+                                  <span class="n">f</span><span class="s1">&#39;sra_</span><span class="si">{i}</span><span class="s1">&#39;</span><span class="p">,</span>
+                                  <span class="n">f</span><span class="s1">&#39;gs://temp-testing/abc/</span><span class="si">{i}</span><span class="s1">.json&#39;</span><span class="p">,</span>
+                                  <span class="n">schema</span><span class="o">=</span><span class="n">parse_bq_json_schema</span><span class="p">(</span><span class="n">schemafile</span><span class="p">))</span>
+    
+    <span class="n">load_csv_to_bigquery</span><span class="p">(</span><span class="s1">&#39;omicidx_etl&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;sra_accessions&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;gs://temp-testing/abc/SRA_Accessions.tab&#39;</span><span class="p">,</span>
+             <span class="n">field_delimiter</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">null_marker</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">)</span>
+
+
+<span class="nd">@sra</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">help</span><span class="o">=</span><span class="s2">&quot;&quot;&quot;ETL query to public schema for all SRA entities&quot;&quot;&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">sra_to_bigquery</span><span class="p">():</span>
+    <span class="kn">from</span> <span class="nn">..bigquery_utils</span> <span class="k">import</span> <span class="n">query</span>
+    <span class="n">sql</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;CREATE OR REPLACE TABLE `isb-cgc-01-0006.omicidx.sra_run` AS</span>
+<span class="s2">SELECT </span>
+<span class="s2">  run.* EXCEPT (published, lastupdate, received, total_spots, total_bases, avg_length, run_date),</span>
+<span class="s2">  CAST(acc.Updated as DATETIME) as lastupdate,</span>
+<span class="s2">  CAST(acc.Published as DATETIME) as published,</span>
+<span class="s2">  CAST(acc.Received as DATETIME) as received,</span>
+<span class="s2">  CAST(run_date as DATETIME) as run_date,</span>
+<span class="s2">  CAST(acc.Spots as INT64) as total_spots,</span>
+<span class="s2">  CAST(acc.Bases as INT64) as total_bases,</span>
+<span class="s2">  CAST(acc.Bases AS NUMERIC)/CAST(acc.Spots AS NUMERIC) as avg_length,</span>
+<span class="s2">  acc.Sample as sample_accession,</span>
+<span class="s2">  acc.Study as study_accession</span>
+<span class="s2">FROM </span>
+<span class="s2">    `isb-cgc-01-0006.omicidx_etl.sra_run` run</span>
+<span class="s2">  JOIN </span>
+<span class="s2">    `isb-cgc-01-0006.omicidx_etl.sra_accessions` acc</span>
+<span class="s2">  ON acc.Accession = run.accession;</span>
+<span class="s2">&quot;&quot;&quot;</span>
+    <span class="n">query</span><span class="p">(</span><span class="n">sql</span><span class="p">)</span>
+
+    <span class="n">sql</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;CREATE OR REPLACE TABLE `isb-cgc-01-0006.omicidx.sra_experiment` AS</span>
+<span class="s2">SELECT </span>
+<span class="s2">  expt.* EXCEPT (published, lastupdate, received),</span>
+<span class="s2">  CAST(acc.Updated as DATETIME) as lastupdate,</span>
+<span class="s2">  CAST(acc.Published as DATETIME) as published,</span>
+<span class="s2">  CAST(acc.Received as DATETIME) as received</span>
+<span class="s2">FROM </span>
+<span class="s2">    `isb-cgc-01-0006.omicidx_etl.sra_experiment` expt</span>
+<span class="s2">  JOIN </span>
+<span class="s2">    `isb-cgc-01-0006.omicidx_etl.sra_accessions` acc</span>
+<span class="s2">  ON acc.Accession = expt.accession;</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+    <span class="n">query</span><span class="p">(</span><span class="n">sql</span><span class="p">)</span>
+
+    <span class="n">sql</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;CREATE OR REPLACE TABLE `isb-cgc-01-0006.omicidx.sra_sample` AS</span>
+<span class="s2">SELECT </span>
+<span class="s2">  sample.* EXCEPT (published, lastupdate, received),</span>
+<span class="s2">  CAST(acc.Updated as DATETIME) as lastupdate,</span>
+<span class="s2">  CAST(acc.Published as DATETIME) as published,</span>
+<span class="s2">  CAST(acc.Received as DATETIME) as received,</span>
+<span class="s2">  acc.Study as study_accession</span>
+<span class="s2">FROM </span>
+<span class="s2">    `isb-cgc-01-0006.omicidx_etl.sra_sample` sample</span>
+<span class="s2">  JOIN </span>
+<span class="s2">    `isb-cgc-01-0006.omicidx_etl.sra_accessions` acc</span>
+<span class="s2">  ON acc.Accession = sample.accession;</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+    <span class="n">query</span><span class="p">(</span><span class="n">sql</span><span class="p">)</span>
+
+    <span class="n">sql</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;CREATE OR REPLACE TABLE `isb-cgc-01-0006.omicidx.sra_study` AS</span>
+<span class="s2">WITH stat_agg AS (</span>
+<span class="s2">SELECT</span>
+<span class="s2">  COUNT(a.Accession) as sample_count,</span>
+<span class="s2">  a.Study as study_accession</span>
+<span class="s2">FROM </span>
+<span class="s2">  `isb-cgc-01-0006.omicidx_etl.sra_accessions` a</span>
+<span class="s2">WHERE</span>
+<span class="s2">  a.Type=&#39;SAMPLE&#39;</span>
+<span class="s2">GROUP BY </span>
+<span class="s2">  study_accession)</span>
+<span class="s2">SELECT </span>
+<span class="s2">  study.* EXCEPT (published, lastupdate, received),</span>
+<span class="s2">  CAST(acc.Updated as DATETIME) as lastupdate,</span>
+<span class="s2">  CAST(acc.Published as DATETIME) as published,</span>
+<span class="s2">  CAST(acc.Received as DATETIME) as received</span>
+<span class="s2">FROM </span>
+<span class="s2">    `isb-cgc-01-0006.omicidx_etl.study` study</span>
+<span class="s2">  JOIN </span>
+<span class="s2">    `isb-cgc-01-0006.omicidx_etl.sra_accessions` acc</span>
+<span class="s2">  ON acc.Accession = study.accession</span>
+<span class="s2">  LEFT OUTER JOIN</span>
+<span class="s2">    stat_agg on stat_agg.study_accession=study.accession;</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+    <span class="n">query</span><span class="p">(</span><span class="n">sql</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_sra_bigquery_for_elasticsearch</span><span class="p">():</span>
+    <span class="kn">from</span> <span class="nn">..bigquery_utils</span> <span class="k">import</span> <span class="n">query</span>
+    <span class="n">sql</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;CREATE OR REPLACE TABLE omicidx_etl.sra_experiment_for_es AS</span>
+<span class="s2">SELECT</span>
+<span class="s2">  expt.*,</span>
+<span class="s2">  STRUCT(samp).samp as sample,</span>
+<span class="s2">  STRUCT(study).study as study</span>
+<span class="s2">FROM </span>
+<span class="s2">  `isb-cgc-01-0006.omicidx.sra_experiment` expt </span>
+<span class="s2">  LEFT OUTER JOIN </span>
+<span class="s2">  `isb-cgc-01-0006.omicidx.sra_sample` samp</span>
+<span class="s2">  ON samp.accession = expt.sample_accession</span>
+<span class="s2">  LEFT OUTER JOIN </span>
+<span class="s2">  `isb-cgc-01-0006.omicidx.sra_study` study</span>
+<span class="s2">  ON study.accession = expt.study_accession</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+    <span class="n">query</span><span class="p">(</span><span class="n">sql</span><span class="p">)</span>
+
+
+    <span class="n">sql</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;CREATE OR REPLACE TABLE omicidx_etl.sra_run_for_es AS</span>
+<span class="s2">SELECT</span>
+<span class="s2">  run.*,</span>
+<span class="s2">  STRUCT(expt).expt as experiment,</span>
+<span class="s2">  STRUCT(samp).samp as sample,</span>
+<span class="s2">  STRUCT(study).study as study</span>
+<span class="s2">FROM </span>
+<span class="s2">  `isb-cgc-01-0006.omicidx.sra_run` run</span>
+<span class="s2">  LEFT OUTER JOIN</span>
+<span class="s2">  `isb-cgc-01-0006.omicidx.sra_experiment` expt</span>
+<span class="s2">  ON run.experiment_accession = expt.accession</span>
+<span class="s2">  LEFT OUTER JOIN </span>
+<span class="s2">  `isb-cgc-01-0006.omicidx.sra_sample` samp</span>
+<span class="s2">  ON samp.accession = expt.sample_accession</span>
+<span class="s2">  LEFT OUTER JOIN </span>
+<span class="s2">  `isb-cgc-01-0006.omicidx.sra_study` study</span>
+<span class="s2">  ON study.accession = expt.study_accession</span>
+<span class="s2">&quot;&quot;&quot;</span>
+    <span class="n">query</span><span class="p">(</span><span class="n">sql</span><span class="p">)</span>
+
+    <span class="n">sql</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;CREATE OR REPLACE TABLE omicidx_etl.sra_sample_for_es AS</span>
+<span class="s2">    WITH agg_counts as</span>
+<span class="s2">(SELECT</span>
+<span class="s2">  sample.accession,</span>
+<span class="s2">  COUNT(DISTINCT expt.accession) as experiment_count,</span>
+<span class="s2">  COUNT(DISTINCT run.accession) as run_count,</span>
+<span class="s2">  SUM(CAST(run.total_bases as INT64)) as total_bases,</span>
+<span class="s2">  SUM(CAST(run.total_spots as INT64)) as total_spots,</span>
+<span class="s2">  AVG(CAST(run.total_bases as INT64)) as mean_bases_per_run</span>
+<span class="s2">FROM `isb-cgc-01-0006.omicidx.sra_study` study </span>
+<span class="s2">JOIN `isb-cgc-01-0006.omicidx.sra_experiment` expt </span>
+<span class="s2">  ON expt.study_accession = study.accession</span>
+<span class="s2">JOIN `isb-cgc-01-0006.omicidx.sra_run` run</span>
+<span class="s2">  ON run.experiment_accession = expt.accession</span>
+<span class="s2">JOIN `isb-cgc-01-0006.omicidx.sra_sample` sample</span>
+<span class="s2">  ON expt.sample_accession = sample.accession</span>
+<span class="s2">GROUP BY sample.accession</span>
+<span class="s2">) </span>
+<span class="s2">SELECT </span>
+<span class="s2">  sample.*,</span>
+<span class="s2">  STRUCT(study).study,</span>
+<span class="s2">  agg_counts.* EXCEPT(accession) </span>
+<span class="s2">FROM `isb-cgc-01-0006.omicidx.sra_sample` sample</span>
+<span class="s2">LEFT OUTER JOIN agg_counts </span>
+<span class="s2">  ON agg_counts.accession = sample.accession</span>
+<span class="s2">JOIN `isb-cgc-01-0006.omicidx.sra_experiment` expt </span>
+<span class="s2">  ON expt.sample_accession = sample.accession</span>
+<span class="s2">JOIN `isb-cgc-01-0006.omicidx.sra_study` study</span>
+<span class="s2">  ON study.accession=expt.study_accession;</span>
+<span class="s2">&quot;&quot;&quot;</span>
+    <span class="n">query</span><span class="p">(</span><span class="n">sql</span><span class="p">)</span>
+
+    <span class="n">sql</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;CREATE OR REPLACE TABLE omicidx_etl.sra_study_for_es AS</span>
+<span class="s2">WITH agg_counts as</span>
+<span class="s2">(SELECT</span>
+<span class="s2">  study.accession,</span>
+<span class="s2">  COUNT(DISTINCT expt.sample_accession) as sample_count,</span>
+<span class="s2">  COUNT(DISTINCT expt.accession) as experiment_count,</span>
+<span class="s2">  COUNT(DISTINCT run.accession) as run_count,</span>
+<span class="s2">  SUM(CAST(run.total_bases as INT64)) as total_bases,</span>
+<span class="s2">  SUM(CAST(run.total_spots as INT64)) as total_spots,</span>
+<span class="s2">  AVG(CAST(run.total_bases as INT64)) as mean_bases_per_run,</span>
+<span class="s2">  ARRAY_AGG(DISTINCT sample.taxon_id) as taxon_ids</span>
+<span class="s2">FROM `isb-cgc-01-0006.omicidx.sra_study` study </span>
+<span class="s2">JOIN `isb-cgc-01-0006.omicidx.sra_experiment` expt </span>
+<span class="s2">  ON expt.study_accession = study.accession</span>
+<span class="s2">JOIN `isb-cgc-01-0006.omicidx.sra_run` run</span>
+<span class="s2">  ON run.experiment_accession = expt.accession</span>
+<span class="s2">JOIN `isb-cgc-01-0006.omicidx.sra_sample` sample</span>
+<span class="s2">  ON expt.sample_accession = sample.accession</span>
+<span class="s2">GROUP BY study.accession</span>
+<span class="s2">) </span>
+<span class="s2">SELECT </span>
+<span class="s2">  study.*,</span>
+<span class="s2">  agg_counts.* EXCEPT(accession) </span>
+<span class="s2">FROM agg_counts </span>
+<span class="s2">RIGHT OUTER JOIN `isb-cgc-01-0006.omicidx.sra_study` study</span>
+<span class="s2">  ON study.accession=agg_counts.accession;</span>
+<span class="s2">&quot;&quot;&quot;</span>
+    <span class="n">query</span><span class="p">(</span><span class="n">sql</span><span class="p">)</span>
+
+<span class="nd">@sra</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">help</span><span class="o">=</span><span class="s2">&quot;&quot;&quot;ETL queries to create elasticsearch tables in bigquery&quot;&quot;&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">sra_bigquery_for_elasticsearch</span><span class="p">():</span>
+    <span class="n">_sra_bigquery_for_elasticsearch</span><span class="p">()</span>
+
+    
+<span class="k">def</span> <span class="nf">_sra_gcs_to_elasticsearch</span><span class="p">(</span><span class="n">entity</span><span class="p">):</span>
+    <span class="kn">from</span> <span class="nn">..elasticsearch_utils</span> <span class="k">import</span> <span class="n">bulk_index_from_gcs</span>
+    
+    <span class="n">bulk_index_from_gcs</span><span class="p">(</span><span class="s1">&#39;omicidx-cancerdatasci-org&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;exports/sra/json/</span><span class="si">{}</span><span class="s1">-&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">entity</span><span class="p">),</span>
+                        <span class="s1">&#39;sra_&#39;</span><span class="o">+</span><span class="n">entity</span><span class="p">,</span>
+                        <span class="n">id_field</span> <span class="o">=</span> <span class="s1">&#39;accession&#39;</span>
+    <span class="p">)</span>
+
+<span class="nd">@sra</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">help</span><span class="o">=</span><span class="s2">&quot;&quot;&quot;ETL query to public schema for all SRA entities&quot;&quot;&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">sra_gcs_to_elasticsearch</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">entity</span> <span class="ow">in</span> <span class="s1">&#39;experiment study sample run&#39;</span><span class="o">.</span><span class="n">split</span><span class="p">():</span>
+        <span class="n">_sra_gcs_to_elasticsearch</span><span class="p">(</span><span class="n">entity</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_sra_to_gcs_for_elasticsearch</span><span class="p">():</span>
+    <span class="kn">from</span> <span class="nn">..bigquery_utils</span> <span class="k">import</span> <span class="n">table_to_gcs</span>
+    <span class="k">for</span> <span class="n">entity</span> <span class="ow">in</span> <span class="s1">&#39;experiment study sample run&#39;</span><span class="o">.</span><span class="n">split</span><span class="p">():</span>
+        <span class="n">table_to_gcs</span><span class="p">(</span><span class="s1">&#39;omicidx_etl&#39;</span><span class="p">,</span><span class="n">f</span><span class="s1">&#39;sra_</span><span class="si">{entity}</span><span class="s1">_for_es&#39;</span><span class="p">,</span> <span class="n">f</span><span class="s1">&#39;gs://omicidx-cancerdatasci-org/exports/sra/json/</span><span class="si">{entity}</span><span class="s1">-*.json.gz&#39;</span><span class="p">)</span>
+
+
+<span class="nd">@sra</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;gcs-dump&quot;&quot;&quot;</span><span class="p">,</span>
+                   <span class="n">help</span> <span class="o">=</span> <span class="s2">&quot;Write json.gz format of sra entities to gcs&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">sra_to_gcs_for_elasticsearch</span><span class="p">():</span>
+    <span class="n">_sra_to_gcs_for_elasticsearch</span><span class="p">()</span>
+
+<span class="c1">######################</span>
+<span class="c1"># Biosample handling #</span>
+<span class="c1">######################</span>
+
+<span class="nd">@cli</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="n">help</span><span class="o">=</span><span class="s2">&quot;Use these commands to process biosample records.&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">biosample</span><span class="p">():</span>
+    <span class="k">pass</span>
+
+<span class="kn">from</span> <span class="nn">..biosample</span> <span class="k">import</span> <span class="n">BioSampleParser</span>
+<div class="viewcode-block" id="biosample_to_json"><a class="viewcode-back" href="../../../omicidx.scripts.cli.html#omicidx.scripts.cli.biosample_to_json">[docs]</a><span class="k">def</span> <span class="nf">biosample_to_json</span><span class="p">(</span><span class="n">biosample_file</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">BioSampleParser</span><span class="p">(</span><span class="n">biosample_file</span><span class="p">):</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">i</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">break</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">as_json</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="download_biosample"><a class="viewcode-back" href="../../../omicidx.scripts.cli.html#omicidx.scripts.cli.download_biosample">[docs]</a><span class="k">def</span> <span class="nf">download_biosample</span><span class="p">():</span>
+    <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s2">&quot;wget ftp://ftp.ncbi.nlm.nih.gov/biosample/biosample_set.xml.gz&quot;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="upload_biosample"><a class="viewcode-back" href="../../../omicidx.scripts.cli.html#omicidx.scripts.cli.upload_biosample">[docs]</a><span class="k">def</span> <span class="nf">upload_biosample</span><span class="p">():</span>
+    <span class="kn">from</span> <span class="nn">..gcs_utils</span> <span class="k">import</span> <span class="n">upload_blob_to_gcs</span>
+
+    <span class="n">fname</span> <span class="o">=</span> <span class="s1">&#39;biosample.json&#39;</span>
+    <span class="n">upload_blob_to_gcs</span><span class="p">(</span><span class="s1">&#39;temp-testing&#39;</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="s1">&#39;abc/&#39;</span> <span class="o">+</span> <span class="n">fname</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="load_biosample_from_gcs_to_bigquery"><a class="viewcode-back" href="../../../omicidx.scripts.cli.html#omicidx.scripts.cli.load_biosample_from_gcs_to_bigquery">[docs]</a><span class="k">def</span> <span class="nf">load_biosample_from_gcs_to_bigquery</span><span class="p">():</span>
+    <span class="kn">from</span> <span class="nn">..bigquery_utils</span> <span class="k">import</span> <span class="n">load_json_to_bigquery</span>
+
+    <span class="n">load_json_to_bigquery</span><span class="p">(</span><span class="s1">&#39;omicidx_etl&#39;</span><span class="p">,</span> <span class="s1">&#39;biosample&#39;</span><span class="p">,</span>
+                          <span class="s1">&#39;gs://temp-testing/abc/biosample.json&#39;</span><span class="p">)</span></div>
+
+
+<span class="nd">@biosample</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;download&quot;&quot;&quot;</span><span class="p">,</span>
+                   <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Download biosample xml file from NCBI&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">download</span><span class="p">():</span>
+    <span class="n">download_biosample</span><span class="p">()</span>
+
+
+<span class="nd">@biosample</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;upload&quot;&quot;&quot;</span><span class="p">,</span>
+                   <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Download biosample xml file from NCBI&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">upload</span><span class="p">():</span>
+    <span class="n">upload_biosample</span><span class="p">()</span>
+
+    
+<span class="nd">@biosample</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;parse&quot;&quot;&quot;</span><span class="p">,</span>
+                   <span class="n">help</span> <span class="o">=</span> <span class="s2">&quot;Parse xml to json, output to stdout&quot;</span><span class="p">)</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">argument</span><span class="p">(</span><span class="s1">&#39;biosample_file&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">to_json</span><span class="p">(</span><span class="n">biosample_file</span><span class="p">):</span>
+    <span class="n">biosample_to_json</span><span class="p">(</span><span class="n">biosample_file</span><span class="p">)</span>
+
+
+<span class="nd">@biosample</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;load&quot;&quot;&quot;</span><span class="p">,</span>
+                   <span class="n">help</span> <span class="o">=</span> <span class="s2">&quot;Load the gcs biosample.json file to bigquery&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">load_biosample_to_bigquery</span><span class="p">():</span>
+    <span class="n">load_biosample_from_gcs_to_bigquery</span><span class="p">()</span>
+
+
+<span class="nd">@biosample</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;etl-to-public&quot;&quot;&quot;</span><span class="p">,</span>
+                   <span class="n">help</span> <span class="o">=</span> <span class="s2">&quot;ETL process (copy) from etl schema to public&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">biosample_to_public</span><span class="p">():</span>
+    <span class="kn">from</span> <span class="nn">..bigquery_utils</span> <span class="k">import</span> <span class="n">copy_table</span>
+    <span class="n">copy_table</span><span class="p">(</span><span class="s1">&#39;omicidx_etl&#39;</span><span class="p">,</span><span class="s1">&#39;omicidx&#39;</span><span class="p">,</span>
+               <span class="s1">&#39;biosample&#39;</span><span class="p">,</span> <span class="s1">&#39;biosample&#39;</span><span class="p">)</span>
+
+<span class="nd">@biosample</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;gcs-dump&quot;&quot;&quot;</span><span class="p">,</span>
+                   <span class="n">help</span> <span class="o">=</span> <span class="s2">&quot;Write json.gz format of biosample to gcs&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">biosample_to_gcs</span><span class="p">():</span>
+    <span class="kn">from</span> <span class="nn">..bigquery_utils</span> <span class="k">import</span> <span class="n">table_to_gcs</span>
+    <span class="n">table_to_gcs</span><span class="p">(</span><span class="s1">&#39;omicidx&#39;</span><span class="p">,</span><span class="s1">&#39;biosample&#39;</span><span class="p">,</span> <span class="s1">&#39;gs://omicidx-cancerdatasci-org/exports/biosample/json/biosample-*.json.gz&#39;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_biosample_gcs_to_elasticsearch</span><span class="p">():</span>
+    <span class="kn">from</span> <span class="nn">..elasticsearch_utils</span> <span class="k">import</span> <span class="n">bulk_index_from_gcs</span>
+    <span class="n">bulk_index_from_gcs</span><span class="p">(</span><span class="s1">&#39;omicidx-cancerdatasci-org&#39;</span><span class="p">,</span> <span class="s1">&#39;exports/biosample/json/biosample-&#39;</span><span class="p">,</span> <span class="s1">&#39;biosample&#39;</span><span class="p">,</span>
+                        <span class="n">max_retries</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">chunk_size</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span>
+
+<span class="nd">@biosample</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s2">&quot;gcs-to-elasticsearch&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">biosample_gcs_to_elasticsearch</span><span class="p">():</span>
+    <span class="n">_biosample_gcs_to_elasticsearch</span><span class="p">()</span>
+
+    
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">cli</span><span class="p">()</span>
+    
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">OmicIDX</a></h1>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=seandavi&repo=omicidx&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../Bigquery.html">OmicIDX dataset on Bigquery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../cli.html">Commandline Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../genomic_metadata.html">Genomic metadata in OmicIDX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">omicidx</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Sean Davis.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/seandavi/omicidx" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

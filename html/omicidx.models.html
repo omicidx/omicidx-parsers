@@ -1,0 +1,1203 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>omicidx.models module &#8212; OmicIDX  documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="omicidx.schema_tools module" href="omicidx.schema_tools.html" />
+    <link rel="prev" title="omicidx.lambda_handlers module" href="omicidx.lambda_handlers.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-omicidx.models">
+<span id="omicidx-models-module"></span><h1>omicidx.models module<a class="headerlink" href="#module-omicidx.models" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="omicidx.models.AttributesMixin">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.models.</code><code class="sig-name descname">AttributesMixin</code><a class="reference internal" href="_modules/omicidx/models.html#AttributesMixin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.models.AttributesMixin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="attribute">
+<dt id="omicidx.models.AttributesMixin.tag">
+<code class="sig-name descname">tag</code><em class="property"> = Column(None, Text(), table=None)</em><a class="headerlink" href="#omicidx.models.AttributesMixin.tag" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.AttributesMixin.value">
+<code class="sig-name descname">value</code><em class="property"> = Column(None, Text(), table=None)</em><a class="headerlink" href="#omicidx.models.AttributesMixin.value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="omicidx.models.Biosample">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.models.</code><code class="sig-name descname">Biosample</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/models.html#Biosample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.models.Biosample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<dl class="attribute">
+<dt id="omicidx.models.Biosample.access">
+<code class="sig-name descname">access</code><a class="headerlink" href="#omicidx.models.Biosample.access" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.Biosample.attributes">
+<code class="sig-name descname">attributes</code><a class="headerlink" href="#omicidx.models.Biosample.attributes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.Biosample.dbgap">
+<code class="sig-name descname">dbgap</code><a class="headerlink" href="#omicidx.models.Biosample.dbgap" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.Biosample.description">
+<code class="sig-name descname">description</code><a class="headerlink" href="#omicidx.models.Biosample.description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.Biosample.id">
+<code class="sig-name descname">id</code><a class="headerlink" href="#omicidx.models.Biosample.id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.Biosample.last_update">
+<code class="sig-name descname">last_update</code><a class="headerlink" href="#omicidx.models.Biosample.last_update" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.Biosample.model">
+<code class="sig-name descname">model</code><a class="headerlink" href="#omicidx.models.Biosample.model" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.Biosample.publication_date">
+<code class="sig-name descname">publication_date</code><a class="headerlink" href="#omicidx.models.Biosample.publication_date" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.Biosample.submission_date">
+<code class="sig-name descname">submission_date</code><a class="headerlink" href="#omicidx.models.Biosample.submission_date" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.Biosample.taxon_id">
+<code class="sig-name descname">taxon_id</code><a class="headerlink" href="#omicidx.models.Biosample.taxon_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.Biosample.taxonomy_name">
+<code class="sig-name descname">taxonomy_name</code><a class="headerlink" href="#omicidx.models.Biosample.taxonomy_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.Biosample.title">
+<code class="sig-name descname">title</code><a class="headerlink" href="#omicidx.models.Biosample.title" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="omicidx.models.BiosampleAttribute">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.models.</code><code class="sig-name descname">BiosampleAttribute</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/models.html#BiosampleAttribute"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.models.BiosampleAttribute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<dl class="attribute">
+<dt id="omicidx.models.BiosampleAttribute.biosamples">
+<code class="sig-name descname">biosamples</code><a class="headerlink" href="#omicidx.models.BiosampleAttribute.biosamples" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.BiosampleAttribute.display_name">
+<code class="sig-name descname">display_name</code><a class="headerlink" href="#omicidx.models.BiosampleAttribute.display_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.BiosampleAttribute.harmonized_name">
+<code class="sig-name descname">harmonized_name</code><a class="headerlink" href="#omicidx.models.BiosampleAttribute.harmonized_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.BiosampleAttribute.id">
+<code class="sig-name descname">id</code><a class="headerlink" href="#omicidx.models.BiosampleAttribute.id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.BiosampleAttribute.name">
+<code class="sig-name descname">name</code><a class="headerlink" href="#omicidx.models.BiosampleAttribute.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.BiosampleAttribute.value">
+<code class="sig-name descname">value</code><a class="headerlink" href="#omicidx.models.BiosampleAttribute.value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="omicidx.models.BiosampleIdentifier">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.models.</code><code class="sig-name descname">BiosampleIdentifier</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/models.html#BiosampleIdentifier"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.models.BiosampleIdentifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<dl class="attribute">
+<dt id="omicidx.models.BiosampleIdentifier.biosample">
+<code class="sig-name descname">biosample</code><a class="headerlink" href="#omicidx.models.BiosampleIdentifier.biosample" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.BiosampleIdentifier.db">
+<code class="sig-name descname">db</code><a class="headerlink" href="#omicidx.models.BiosampleIdentifier.db" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.BiosampleIdentifier.id">
+<code class="sig-name descname">id</code><a class="headerlink" href="#omicidx.models.BiosampleIdentifier.id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.BiosampleIdentifier.identifier">
+<code class="sig-name descname">identifier</code><a class="headerlink" href="#omicidx.models.BiosampleIdentifier.identifier" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.BiosampleIdentifier.label">
+<code class="sig-name descname">label</code><a class="headerlink" href="#omicidx.models.BiosampleIdentifier.label" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="omicidx.models.BiosampleModel">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.models.</code><code class="sig-name descname">BiosampleModel</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/models.html#BiosampleModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.models.BiosampleModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<dl class="attribute">
+<dt id="omicidx.models.BiosampleModel.id">
+<code class="sig-name descname">id</code><a class="headerlink" href="#omicidx.models.BiosampleModel.id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.BiosampleModel.name">
+<code class="sig-name descname">name</code><a class="headerlink" href="#omicidx.models.BiosampleModel.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="omicidx.models.GEOContact">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.models.</code><code class="sig-name descname">GEOContact</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/models.html#GEOContact"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.models.GEOContact" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<dl class="attribute">
+<dt id="omicidx.models.GEOContact.address">
+<code class="sig-name descname">address</code><a class="headerlink" href="#omicidx.models.GEOContact.address" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.GEOContact.city">
+<code class="sig-name descname">city</code><a class="headerlink" href="#omicidx.models.GEOContact.city" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.GEOContact.country">
+<code class="sig-name descname">country</code><a class="headerlink" href="#omicidx.models.GEOContact.country" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.GEOContact.email">
+<code class="sig-name descname">email</code><a class="headerlink" href="#omicidx.models.GEOContact.email" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.GEOContact.fax">
+<code class="sig-name descname">fax</code><a class="headerlink" href="#omicidx.models.GEOContact.fax" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.GEOContact.institute">
+<code class="sig-name descname">institute</code><a class="headerlink" href="#omicidx.models.GEOContact.institute" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.GEOContact.name">
+<code class="sig-name descname">name</code><a class="headerlink" href="#omicidx.models.GEOContact.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.GEOContact.phone">
+<code class="sig-name descname">phone</code><a class="headerlink" href="#omicidx.models.GEOContact.phone" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.GEOContact.postal_code">
+<code class="sig-name descname">postal_code</code><a class="headerlink" href="#omicidx.models.GEOContact.postal_code" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.GEOContact.web_link">
+<code class="sig-name descname">web_link</code><a class="headerlink" href="#omicidx.models.GEOContact.web_link" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="omicidx.models.GEOPlatform">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.models.</code><code class="sig-name descname">GEOPlatform</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/models.html#GEOPlatform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.models.GEOPlatform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<dl class="attribute">
+<dt id="omicidx.models.GEOPlatform.accession">
+<code class="sig-name descname">accession</code><a class="headerlink" href="#omicidx.models.GEOPlatform.accession" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.GEOPlatform.contributors">
+<code class="sig-name descname">contributors</code><a class="headerlink" href="#omicidx.models.GEOPlatform.contributors" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.GEOPlatform.data_row_count">
+<code class="sig-name descname">data_row_count</code><a class="headerlink" href="#omicidx.models.GEOPlatform.data_row_count" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.GEOPlatform.description">
+<code class="sig-name descname">description</code><a class="headerlink" href="#omicidx.models.GEOPlatform.description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.GEOPlatform.distribution">
+<code class="sig-name descname">distribution</code><a class="headerlink" href="#omicidx.models.GEOPlatform.distribution" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.GEOPlatform.gses">
+<code class="sig-name descname">gses</code><a class="headerlink" href="#omicidx.models.GEOPlatform.gses" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.GEOPlatform.gsms">
+<code class="sig-name descname">gsms</code><a class="headerlink" href="#omicidx.models.GEOPlatform.gsms" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.GEOPlatform.last_update_date">
+<code class="sig-name descname">last_update_date</code><a class="headerlink" href="#omicidx.models.GEOPlatform.last_update_date" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.GEOPlatform.status">
+<code class="sig-name descname">status</code><a class="headerlink" href="#omicidx.models.GEOPlatform.status" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.GEOPlatform.submission_date">
+<code class="sig-name descname">submission_date</code><a class="headerlink" href="#omicidx.models.GEOPlatform.submission_date" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.GEOPlatform.summary">
+<code class="sig-name descname">summary</code><a class="headerlink" href="#omicidx.models.GEOPlatform.summary" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.GEOPlatform.technology">
+<code class="sig-name descname">technology</code><a class="headerlink" href="#omicidx.models.GEOPlatform.technology" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.GEOPlatform.title">
+<code class="sig-name descname">title</code><a class="headerlink" href="#omicidx.models.GEOPlatform.title" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="omicidx.models.GEOSeries">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.models.</code><code class="sig-name descname">GEOSeries</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/models.html#GEOSeries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.models.GEOSeries" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<dl class="attribute">
+<dt id="omicidx.models.GEOSeries.accession">
+<code class="sig-name descname">accession</code><a class="headerlink" href="#omicidx.models.GEOSeries.accession" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.GEOSeries.contributors">
+<code class="sig-name descname">contributors</code><a class="headerlink" href="#omicidx.models.GEOSeries.contributors" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.GEOSeries.data_processing">
+<code class="sig-name descname">data_processing</code><a class="headerlink" href="#omicidx.models.GEOSeries.data_processing" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.GEOSeries.description">
+<code class="sig-name descname">description</code><a class="headerlink" href="#omicidx.models.GEOSeries.description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.GEOSeries.gpls">
+<code class="sig-name descname">gpls</code><a class="headerlink" href="#omicidx.models.GEOSeries.gpls" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.GEOSeries.gsms">
+<code class="sig-name descname">gsms</code><a class="headerlink" href="#omicidx.models.GEOSeries.gsms" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.GEOSeries.last_update_date">
+<code class="sig-name descname">last_update_date</code><a class="headerlink" href="#omicidx.models.GEOSeries.last_update_date" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.GEOSeries.overall_design">
+<code class="sig-name descname">overall_design</code><a class="headerlink" href="#omicidx.models.GEOSeries.overall_design" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.GEOSeries.status">
+<code class="sig-name descname">status</code><a class="headerlink" href="#omicidx.models.GEOSeries.status" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.GEOSeries.submission_date">
+<code class="sig-name descname">submission_date</code><a class="headerlink" href="#omicidx.models.GEOSeries.submission_date" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.GEOSeries.summary">
+<code class="sig-name descname">summary</code><a class="headerlink" href="#omicidx.models.GEOSeries.summary" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.GEOSeries.title">
+<code class="sig-name descname">title</code><a class="headerlink" href="#omicidx.models.GEOSeries.title" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="omicidx.models.IdentifiersMixin">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.models.</code><code class="sig-name descname">IdentifiersMixin</code><a class="reference internal" href="_modules/omicidx/models.html#IdentifiersMixin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.models.IdentifiersMixin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="attribute">
+<dt id="omicidx.models.IdentifiersMixin.identifier">
+<code class="sig-name descname">identifier</code><em class="property"> = Column(None, Text(), table=None)</em><a class="headerlink" href="#omicidx.models.IdentifiersMixin.identifier" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.IdentifiersMixin.namespace">
+<code class="sig-name descname">namespace</code><em class="property"> = Column(None, Text(), table=None)</em><a class="headerlink" href="#omicidx.models.IdentifiersMixin.namespace" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="omicidx.models.SraAccession">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.models.</code><code class="sig-name descname">SraAccession</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/models.html#SraAccession"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.models.SraAccession" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<dl class="attribute">
+<dt id="omicidx.models.SraAccession.accession">
+<code class="sig-name descname">accession</code><a class="headerlink" href="#omicidx.models.SraAccession.accession" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraAccession.alias">
+<code class="sig-name descname">alias</code><a class="headerlink" href="#omicidx.models.SraAccession.alias" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraAccession.bases">
+<code class="sig-name descname">bases</code><a class="headerlink" href="#omicidx.models.SraAccession.bases" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraAccession.bio_project">
+<code class="sig-name descname">bio_project</code><a class="headerlink" href="#omicidx.models.SraAccession.bio_project" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraAccession.bio_sample">
+<code class="sig-name descname">bio_sample</code><a class="headerlink" href="#omicidx.models.SraAccession.bio_sample" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraAccession.center">
+<code class="sig-name descname">center</code><a class="headerlink" href="#omicidx.models.SraAccession.center" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraAccession.experiment">
+<code class="sig-name descname">experiment</code><a class="headerlink" href="#omicidx.models.SraAccession.experiment" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraAccession.loaded">
+<code class="sig-name descname">loaded</code><a class="headerlink" href="#omicidx.models.SraAccession.loaded" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraAccession.md5sum">
+<code class="sig-name descname">md5sum</code><a class="headerlink" href="#omicidx.models.SraAccession.md5sum" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraAccession.published">
+<code class="sig-name descname">published</code><a class="headerlink" href="#omicidx.models.SraAccession.published" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraAccession.received">
+<code class="sig-name descname">received</code><a class="headerlink" href="#omicidx.models.SraAccession.received" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraAccession.replaced_by">
+<code class="sig-name descname">replaced_by</code><a class="headerlink" href="#omicidx.models.SraAccession.replaced_by" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraAccession.sample">
+<code class="sig-name descname">sample</code><a class="headerlink" href="#omicidx.models.SraAccession.sample" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraAccession.spots">
+<code class="sig-name descname">spots</code><a class="headerlink" href="#omicidx.models.SraAccession.spots" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraAccession.status">
+<code class="sig-name descname">status</code><a class="headerlink" href="#omicidx.models.SraAccession.status" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraAccession.study">
+<code class="sig-name descname">study</code><a class="headerlink" href="#omicidx.models.SraAccession.study" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraAccession.submission">
+<code class="sig-name descname">submission</code><a class="headerlink" href="#omicidx.models.SraAccession.submission" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraAccession.type">
+<code class="sig-name descname">type</code><a class="headerlink" href="#omicidx.models.SraAccession.type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraAccession.updated">
+<code class="sig-name descname">updated</code><a class="headerlink" href="#omicidx.models.SraAccession.updated" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraAccession.visibility">
+<code class="sig-name descname">visibility</code><a class="headerlink" href="#omicidx.models.SraAccession.visibility" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="omicidx.models.SraExperiment">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.models.</code><code class="sig-name descname">SraExperiment</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/models.html#SraExperiment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.models.SraExperiment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<dl class="attribute">
+<dt id="omicidx.models.SraExperiment.accession">
+<code class="sig-name descname">accession</code><a class="headerlink" href="#omicidx.models.SraExperiment.accession" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraExperiment.alias">
+<code class="sig-name descname">alias</code><a class="headerlink" href="#omicidx.models.SraExperiment.alias" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraExperiment.attributes">
+<code class="sig-name descname">attributes</code><a class="headerlink" href="#omicidx.models.SraExperiment.attributes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraExperiment.broker_name">
+<code class="sig-name descname">broker_name</code><a class="headerlink" href="#omicidx.models.SraExperiment.broker_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraExperiment.center_name">
+<code class="sig-name descname">center_name</code><a class="headerlink" href="#omicidx.models.SraExperiment.center_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraExperiment.description">
+<code class="sig-name descname">description</code><a class="headerlink" href="#omicidx.models.SraExperiment.description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraExperiment.design">
+<code class="sig-name descname">design</code><a class="headerlink" href="#omicidx.models.SraExperiment.design" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraExperiment.identifiers">
+<code class="sig-name descname">identifiers</code><a class="headerlink" href="#omicidx.models.SraExperiment.identifiers" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraExperiment.instrument_model">
+<code class="sig-name descname">instrument_model</code><a class="headerlink" href="#omicidx.models.SraExperiment.instrument_model" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraExperiment.library_construction_protocol">
+<code class="sig-name descname">library_construction_protocol</code><a class="headerlink" href="#omicidx.models.SraExperiment.library_construction_protocol" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraExperiment.library_layout">
+<code class="sig-name descname">library_layout</code><a class="headerlink" href="#omicidx.models.SraExperiment.library_layout" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraExperiment.library_layout_length">
+<code class="sig-name descname">library_layout_length</code><a class="headerlink" href="#omicidx.models.SraExperiment.library_layout_length" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraExperiment.library_layout_orientation">
+<code class="sig-name descname">library_layout_orientation</code><a class="headerlink" href="#omicidx.models.SraExperiment.library_layout_orientation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraExperiment.library_layout_sdev">
+<code class="sig-name descname">library_layout_sdev</code><a class="headerlink" href="#omicidx.models.SraExperiment.library_layout_sdev" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraExperiment.library_name">
+<code class="sig-name descname">library_name</code><a class="headerlink" href="#omicidx.models.SraExperiment.library_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraExperiment.library_selection">
+<code class="sig-name descname">library_selection</code><a class="headerlink" href="#omicidx.models.SraExperiment.library_selection" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraExperiment.library_source">
+<code class="sig-name descname">library_source</code><a class="headerlink" href="#omicidx.models.SraExperiment.library_source" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraExperiment.library_strategy">
+<code class="sig-name descname">library_strategy</code><a class="headerlink" href="#omicidx.models.SraExperiment.library_strategy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraExperiment.platform">
+<code class="sig-name descname">platform</code><a class="headerlink" href="#omicidx.models.SraExperiment.platform" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraExperiment.published">
+<code class="sig-name descname">published</code><a class="headerlink" href="#omicidx.models.SraExperiment.published" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraExperiment.received">
+<code class="sig-name descname">received</code><a class="headerlink" href="#omicidx.models.SraExperiment.received" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraExperiment.replaced_by">
+<code class="sig-name descname">replaced_by</code><a class="headerlink" href="#omicidx.models.SraExperiment.replaced_by" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraExperiment.sample_accession">
+<code class="sig-name descname">sample_accession</code><a class="headerlink" href="#omicidx.models.SraExperiment.sample_accession" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraExperiment.sra_sample">
+<code class="sig-name descname">sra_sample</code><a class="headerlink" href="#omicidx.models.SraExperiment.sra_sample" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraExperiment.sra_study">
+<code class="sig-name descname">sra_study</code><a class="headerlink" href="#omicidx.models.SraExperiment.sra_study" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraExperiment.status">
+<code class="sig-name descname">status</code><a class="headerlink" href="#omicidx.models.SraExperiment.status" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraExperiment.study_accession">
+<code class="sig-name descname">study_accession</code><a class="headerlink" href="#omicidx.models.SraExperiment.study_accession" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraExperiment.title">
+<code class="sig-name descname">title</code><a class="headerlink" href="#omicidx.models.SraExperiment.title" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraExperiment.updated">
+<code class="sig-name descname">updated</code><a class="headerlink" href="#omicidx.models.SraExperiment.updated" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraExperiment.visibility">
+<code class="sig-name descname">visibility</code><a class="headerlink" href="#omicidx.models.SraExperiment.visibility" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraExperiment.xrefs">
+<code class="sig-name descname">xrefs</code><a class="headerlink" href="#omicidx.models.SraExperiment.xrefs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="omicidx.models.SraLibraryLayout">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.models.</code><code class="sig-name descname">SraLibraryLayout</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/models.html#SraLibraryLayout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.models.SraLibraryLayout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<dl class="attribute">
+<dt id="omicidx.models.SraLibraryLayout.value">
+<code class="sig-name descname">value</code><a class="headerlink" href="#omicidx.models.SraLibraryLayout.value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="omicidx.models.SraLibrarySelection">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.models.</code><code class="sig-name descname">SraLibrarySelection</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/models.html#SraLibrarySelection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.models.SraLibrarySelection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<dl class="attribute">
+<dt id="omicidx.models.SraLibrarySelection.value">
+<code class="sig-name descname">value</code><a class="headerlink" href="#omicidx.models.SraLibrarySelection.value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="omicidx.models.SraLibrarySource">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.models.</code><code class="sig-name descname">SraLibrarySource</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/models.html#SraLibrarySource"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.models.SraLibrarySource" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<dl class="attribute">
+<dt id="omicidx.models.SraLibrarySource.value">
+<code class="sig-name descname">value</code><a class="headerlink" href="#omicidx.models.SraLibrarySource.value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="omicidx.models.SraLibraryStrategy">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.models.</code><code class="sig-name descname">SraLibraryStrategy</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/models.html#SraLibraryStrategy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.models.SraLibraryStrategy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<dl class="attribute">
+<dt id="omicidx.models.SraLibraryStrategy.value">
+<code class="sig-name descname">value</code><a class="headerlink" href="#omicidx.models.SraLibraryStrategy.value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="omicidx.models.SraPlatform">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.models.</code><code class="sig-name descname">SraPlatform</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/models.html#SraPlatform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.models.SraPlatform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<dl class="attribute">
+<dt id="omicidx.models.SraPlatform.value">
+<code class="sig-name descname">value</code><a class="headerlink" href="#omicidx.models.SraPlatform.value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="omicidx.models.SraRun">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.models.</code><code class="sig-name descname">SraRun</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/models.html#SraRun"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.models.SraRun" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<dl class="attribute">
+<dt id="omicidx.models.SraRun.accession">
+<code class="sig-name descname">accession</code><a class="headerlink" href="#omicidx.models.SraRun.accession" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraRun.alias">
+<code class="sig-name descname">alias</code><a class="headerlink" href="#omicidx.models.SraRun.alias" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraRun.attributes">
+<code class="sig-name descname">attributes</code><a class="headerlink" href="#omicidx.models.SraRun.attributes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraRun.bases">
+<code class="sig-name descname">bases</code><a class="headerlink" href="#omicidx.models.SraRun.bases" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraRun.bio_project">
+<code class="sig-name descname">bio_project</code><a class="headerlink" href="#omicidx.models.SraRun.bio_project" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraRun.broker_name">
+<code class="sig-name descname">broker_name</code><a class="headerlink" href="#omicidx.models.SraRun.broker_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraRun.center_name">
+<code class="sig-name descname">center_name</code><a class="headerlink" href="#omicidx.models.SraRun.center_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraRun.experiment_accession">
+<code class="sig-name descname">experiment_accession</code><a class="headerlink" href="#omicidx.models.SraRun.experiment_accession" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraRun.identifiers">
+<code class="sig-name descname">identifiers</code><a class="headerlink" href="#omicidx.models.SraRun.identifiers" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraRun.loaded">
+<code class="sig-name descname">loaded</code><a class="headerlink" href="#omicidx.models.SraRun.loaded" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraRun.nreads">
+<code class="sig-name descname">nreads</code><a class="headerlink" href="#omicidx.models.SraRun.nreads" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraRun.published">
+<code class="sig-name descname">published</code><a class="headerlink" href="#omicidx.models.SraRun.published" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraRun.reads">
+<code class="sig-name descname">reads</code><a class="headerlink" href="#omicidx.models.SraRun.reads" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraRun.received">
+<code class="sig-name descname">received</code><a class="headerlink" href="#omicidx.models.SraRun.received" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraRun.replaced_by">
+<code class="sig-name descname">replaced_by</code><a class="headerlink" href="#omicidx.models.SraRun.replaced_by" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraRun.run_center">
+<code class="sig-name descname">run_center</code><a class="headerlink" href="#omicidx.models.SraRun.run_center" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraRun.run_date">
+<code class="sig-name descname">run_date</code><a class="headerlink" href="#omicidx.models.SraRun.run_date" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraRun.sample_accession">
+<code class="sig-name descname">sample_accession</code><a class="headerlink" href="#omicidx.models.SraRun.sample_accession" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraRun.spot_length">
+<code class="sig-name descname">spot_length</code><a class="headerlink" href="#omicidx.models.SraRun.spot_length" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraRun.spots">
+<code class="sig-name descname">spots</code><a class="headerlink" href="#omicidx.models.SraRun.spots" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraRun.sra_experiment">
+<code class="sig-name descname">sra_experiment</code><a class="headerlink" href="#omicidx.models.SraRun.sra_experiment" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraRun.sra_sample">
+<code class="sig-name descname">sra_sample</code><a class="headerlink" href="#omicidx.models.SraRun.sra_sample" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraRun.sra_study">
+<code class="sig-name descname">sra_study</code><a class="headerlink" href="#omicidx.models.SraRun.sra_study" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraRun.status">
+<code class="sig-name descname">status</code><a class="headerlink" href="#omicidx.models.SraRun.status" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraRun.study_accession">
+<code class="sig-name descname">study_accession</code><a class="headerlink" href="#omicidx.models.SraRun.study_accession" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraRun.updated">
+<code class="sig-name descname">updated</code><a class="headerlink" href="#omicidx.models.SraRun.updated" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraRun.visibility">
+<code class="sig-name descname">visibility</code><a class="headerlink" href="#omicidx.models.SraRun.visibility" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="omicidx.models.SraSample">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.models.</code><code class="sig-name descname">SraSample</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/models.html#SraSample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.models.SraSample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<dl class="attribute">
+<dt id="omicidx.models.SraSample.accession">
+<code class="sig-name descname">accession</code><a class="headerlink" href="#omicidx.models.SraSample.accession" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraSample.alias">
+<code class="sig-name descname">alias</code><a class="headerlink" href="#omicidx.models.SraSample.alias" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraSample.attributes">
+<code class="sig-name descname">attributes</code><a class="headerlink" href="#omicidx.models.SraSample.attributes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraSample.bio_sample">
+<code class="sig-name descname">bio_sample</code><a class="headerlink" href="#omicidx.models.SraSample.bio_sample" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraSample.broker_name">
+<code class="sig-name descname">broker_name</code><a class="headerlink" href="#omicidx.models.SraSample.broker_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraSample.center_name">
+<code class="sig-name descname">center_name</code><a class="headerlink" href="#omicidx.models.SraSample.center_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraSample.description">
+<code class="sig-name descname">description</code><a class="headerlink" href="#omicidx.models.SraSample.description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraSample.gsm">
+<code class="sig-name descname">gsm</code><a class="headerlink" href="#omicidx.models.SraSample.gsm" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraSample.identifiers">
+<code class="sig-name descname">identifiers</code><a class="headerlink" href="#omicidx.models.SraSample.identifiers" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraSample.organism">
+<code class="sig-name descname">organism</code><a class="headerlink" href="#omicidx.models.SraSample.organism" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraSample.published">
+<code class="sig-name descname">published</code><a class="headerlink" href="#omicidx.models.SraSample.published" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraSample.received">
+<code class="sig-name descname">received</code><a class="headerlink" href="#omicidx.models.SraSample.received" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraSample.replaced_by">
+<code class="sig-name descname">replaced_by</code><a class="headerlink" href="#omicidx.models.SraSample.replaced_by" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraSample.sra_study">
+<code class="sig-name descname">sra_study</code><a class="headerlink" href="#omicidx.models.SraSample.sra_study" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraSample.status">
+<code class="sig-name descname">status</code><a class="headerlink" href="#omicidx.models.SraSample.status" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraSample.study_accession">
+<code class="sig-name descname">study_accession</code><a class="headerlink" href="#omicidx.models.SraSample.study_accession" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraSample.taxon_id">
+<code class="sig-name descname">taxon_id</code><a class="headerlink" href="#omicidx.models.SraSample.taxon_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraSample.title">
+<code class="sig-name descname">title</code><a class="headerlink" href="#omicidx.models.SraSample.title" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraSample.updated">
+<code class="sig-name descname">updated</code><a class="headerlink" href="#omicidx.models.SraSample.updated" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraSample.visibility">
+<code class="sig-name descname">visibility</code><a class="headerlink" href="#omicidx.models.SraSample.visibility" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraSample.xrefs">
+<code class="sig-name descname">xrefs</code><a class="headerlink" href="#omicidx.models.SraSample.xrefs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="omicidx.models.SraStudy">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.models.</code><code class="sig-name descname">SraStudy</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/models.html#SraStudy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.models.SraStudy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<dl class="attribute">
+<dt id="omicidx.models.SraStudy.abstract">
+<code class="sig-name descname">abstract</code><a class="headerlink" href="#omicidx.models.SraStudy.abstract" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraStudy.accession">
+<code class="sig-name descname">accession</code><a class="headerlink" href="#omicidx.models.SraStudy.accession" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraStudy.alias">
+<code class="sig-name descname">alias</code><a class="headerlink" href="#omicidx.models.SraStudy.alias" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraStudy.attributes">
+<code class="sig-name descname">attributes</code><a class="headerlink" href="#omicidx.models.SraStudy.attributes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraStudy.bio_project">
+<code class="sig-name descname">bio_project</code><a class="headerlink" href="#omicidx.models.SraStudy.bio_project" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraStudy.bioproject">
+<code class="sig-name descname">bioproject</code><a class="headerlink" href="#omicidx.models.SraStudy.bioproject" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraStudy.broker_name">
+<code class="sig-name descname">broker_name</code><a class="headerlink" href="#omicidx.models.SraStudy.broker_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraStudy.center_name">
+<code class="sig-name descname">center_name</code><a class="headerlink" href="#omicidx.models.SraStudy.center_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraStudy.description">
+<code class="sig-name descname">description</code><a class="headerlink" href="#omicidx.models.SraStudy.description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraStudy.gse">
+<code class="sig-name descname">gse</code><a class="headerlink" href="#omicidx.models.SraStudy.gse" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraStudy.identifiers">
+<code class="sig-name descname">identifiers</code><a class="headerlink" href="#omicidx.models.SraStudy.identifiers" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraStudy.published">
+<code class="sig-name descname">published</code><a class="headerlink" href="#omicidx.models.SraStudy.published" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraStudy.received">
+<code class="sig-name descname">received</code><a class="headerlink" href="#omicidx.models.SraStudy.received" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraStudy.replaced_by">
+<code class="sig-name descname">replaced_by</code><a class="headerlink" href="#omicidx.models.SraStudy.replaced_by" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraStudy.status">
+<code class="sig-name descname">status</code><a class="headerlink" href="#omicidx.models.SraStudy.status" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraStudy.study_type">
+<code class="sig-name descname">study_type</code><a class="headerlink" href="#omicidx.models.SraStudy.study_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraStudy.title">
+<code class="sig-name descname">title</code><a class="headerlink" href="#omicidx.models.SraStudy.title" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraStudy.updated">
+<code class="sig-name descname">updated</code><a class="headerlink" href="#omicidx.models.SraStudy.updated" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraStudy.visibility">
+<code class="sig-name descname">visibility</code><a class="headerlink" href="#omicidx.models.SraStudy.visibility" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.SraStudy.xrefs">
+<code class="sig-name descname">xrefs</code><a class="headerlink" href="#omicidx.models.SraStudy.xrefs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="omicidx.models.XrefsMixin">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.models.</code><code class="sig-name descname">XrefsMixin</code><a class="reference internal" href="_modules/omicidx/models.html#XrefsMixin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.models.XrefsMixin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="attribute">
+<dt id="omicidx.models.XrefsMixin.db">
+<code class="sig-name descname">db</code><em class="property"> = Column(None, Text(), table=None)</em><a class="headerlink" href="#omicidx.models.XrefsMixin.db" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.XrefsMixin.identifier">
+<code class="sig-name descname">identifier</code><em class="property"> = Column(None, Text(), table=None)</em><a class="headerlink" href="#omicidx.models.XrefsMixin.identifier" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="omicidx.models.XrefsMixin.uuid">
+<code class="sig-name descname">uuid</code><em class="property"> = Column(None, Text(), table=None)</em><a class="headerlink" href="#omicidx.models.XrefsMixin.uuid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">OmicIDX</a></h1>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=seandavi&repo=omicidx&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Bigquery.html">OmicIDX dataset on Bigquery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">Commandline Interface</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">omicidx</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="omicidx.html">omicidx package</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">omicidx</a><ul>
+  <li><a href="omicidx.html">omicidx package</a><ul>
+      <li>Previous: <a href="omicidx.lambda_handlers.html" title="previous chapter">omicidx.lambda_handlers module</a></li>
+      <li>Next: <a href="omicidx.schema_tools.html" title="next chapter">omicidx.schema_tools module</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Sean Davis.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/omicidx.models.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/seandavi/omicidx" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

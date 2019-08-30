@@ -1,0 +1,213 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>omicidx.sra.etl module &#8212; OmicIDX  documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="omicidx.sra.pydantic_models module" href="omicidx.sra.pydantic_models.html" />
+    <link rel="prev" title="omicidx.sra.ebiutils module" href="omicidx.sra.ebiutils.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-omicidx.sra.etl">
+<span id="omicidx-sra-etl-module"></span><h1>omicidx.sra.etl module<a class="headerlink" href="#module-omicidx.sra.etl" title="Permalink to this headline">¶</a></h1>
+<p>ETL from gcs to bigquery</p>
+<ol class="arabic simple">
+<li><p>create_all_tables()</p></li>
+<li><p>load_accession_table()</p></li>
+<li><p>load_livelist_table()</p></li>
+<li><p>load_all_json_tables()</p></li>
+<li><p>do_all_join_tables()</p></li>
+</ol>
+<blockquote>
+<div><p># Does copy into SRA schema from etl
+#   AFTER deleting!
+# may need to delete_table(‘sra.experiment’), … first
+1. study_join_accessions()
+2. sample_join_accessions()
+3. experiment_join_accessions()
+4. run_join_accessions()</p>
+</div></blockquote>
+<dl class="function">
+<dt id="omicidx.sra.etl.create_all_tables">
+<code class="sig-prename descclassname">omicidx.sra.etl.</code><code class="sig-name descname">create_all_tables</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/etl.html#create_all_tables"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.etl.create_all_tables" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="omicidx.sra.etl.create_table">
+<code class="sig-prename descclassname">omicidx.sra.etl.</code><code class="sig-name descname">create_table</code><span class="sig-paren">(</span><em class="sig-param">table</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/etl.html#create_table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.etl.create_table" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="omicidx.sra.etl.delete_table">
+<code class="sig-prename descclassname">omicidx.sra.etl.</code><code class="sig-name descname">delete_table</code><span class="sig-paren">(</span><em class="sig-param">table</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/etl.html#delete_table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.etl.delete_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Just supply schema.tablename as table</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="omicidx.sra.etl.do_all_join_tables">
+<code class="sig-prename descclassname">omicidx.sra.etl.</code><code class="sig-name descname">do_all_join_tables</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/etl.html#do_all_join_tables"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.etl.do_all_join_tables" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="omicidx.sra.etl.experiment_join_accessions">
+<code class="sig-prename descclassname">omicidx.sra.etl.</code><code class="sig-name descname">experiment_join_accessions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/etl.html#experiment_join_accessions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.etl.experiment_join_accessions" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="omicidx.sra.etl.load_accession_table">
+<code class="sig-prename descclassname">omicidx.sra.etl.</code><code class="sig-name descname">load_accession_table</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/etl.html#load_accession_table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.etl.load_accession_table" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="omicidx.sra.etl.load_all_json_tables">
+<code class="sig-prename descclassname">omicidx.sra.etl.</code><code class="sig-name descname">load_all_json_tables</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/etl.html#load_all_json_tables"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.etl.load_all_json_tables" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="omicidx.sra.etl.load_json_table">
+<code class="sig-prename descclassname">omicidx.sra.etl.</code><code class="sig-name descname">load_json_table</code><span class="sig-paren">(</span><em class="sig-param">table</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/etl.html#load_json_table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.etl.load_json_table" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="omicidx.sra.etl.load_livelist_table">
+<code class="sig-prename descclassname">omicidx.sra.etl.</code><code class="sig-name descname">load_livelist_table</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/etl.html#load_livelist_table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.etl.load_livelist_table" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="omicidx.sra.etl.prep_bigquery_schemas">
+<code class="sig-prename descclassname">omicidx.sra.etl.</code><code class="sig-name descname">prep_bigquery_schemas</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/etl.html#prep_bigquery_schemas"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.etl.prep_bigquery_schemas" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="omicidx.sra.etl.run_join_accessions">
+<code class="sig-prename descclassname">omicidx.sra.etl.</code><code class="sig-name descname">run_join_accessions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/etl.html#run_join_accessions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.etl.run_join_accessions" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="omicidx.sra.etl.sample_join_accessions">
+<code class="sig-prename descclassname">omicidx.sra.etl.</code><code class="sig-name descname">sample_join_accessions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/etl.html#sample_join_accessions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.etl.sample_join_accessions" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="omicidx.sra.etl.study_join_accessions">
+<code class="sig-prename descclassname">omicidx.sra.etl.</code><code class="sig-name descname">study_join_accessions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/etl.html#study_join_accessions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.etl.study_join_accessions" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">OmicIDX</a></h1>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=seandavi&repo=omicidx&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Bigquery.html">OmicIDX dataset on Bigquery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">Commandline Interface</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">omicidx</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="omicidx.html">omicidx package</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">omicidx</a><ul>
+  <li><a href="omicidx.html">omicidx package</a><ul>
+  <li><a href="omicidx.sra.html">omicidx.sra package</a><ul>
+      <li>Previous: <a href="omicidx.sra.ebiutils.html" title="previous chapter">omicidx.sra.ebiutils module</a></li>
+      <li>Next: <a href="omicidx.sra.pydantic_models.html" title="next chapter">omicidx.sra.pydantic_models module</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Sean Davis.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/omicidx.sra.etl.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/seandavi/omicidx" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

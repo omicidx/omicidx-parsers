@@ -1,6 +1,0 @@
-Commandline Interface
-=====================
-
-.. click:: module:parser
-   :prog: hello-world
-   :show-nested:

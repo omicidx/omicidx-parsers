@@ -1,0 +1,189 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>OmicIDX dataset on Bigquery &#8212; OmicIDX  documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Commandline Interface" href="cli.html" />
+    <link rel="prev" title="Welcome to OmicIDX" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="omicidx-dataset-on-bigquery">
+<h1>OmicIDX dataset on Bigquery<a class="headerlink" href="#omicidx-dataset-on-bigquery" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference external" href="https://bigquery.cloud.google.com/">Bigquery</a> is a cloud-based, fully-managed data warehouse and
+relational database and analytical engine available from
+Google. Bigquery is capable of storing and querying very large
+datasets (think billions or even more rows, TB of data).</p>
+<p>The OmicIDX data are accessible as a <em>public</em> dataset on
+Bigquery. For users who wish to use SQL for search, analytics, or
+other analytical workflows, Bigquery provides a ready-made solution
+that includes an online web-based query tool, a command-line tool, and
+clients in many languages including R, Python, Go, and Java.</p>
+<p>For OmicIDX, though, Bigquery offers additional capabilities
+including:</p>
+<ul class="simple">
+<li><p>Export of large query results to Google cloud storage</p></li>
+<li><p>Joining OmicIDX with any other database tables available to the
+user, including private ones.</p></li>
+<li><p>Public data warehouse for publicly available genomics datasets</p></li>
+<li><p>Integration with other Google Cloud Platform services like machine
+learning, Dataflow, or natural language processing</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>While OmicIDX data on Bigquery is public, accessing Bigquery
+requires a Google Cloud Platform account and an active <a class="reference external" href="https://abc.com">billing
+project</a>. A <a class="reference external" href="https://abc.com">new account</a> comes with free credits.</p>
+</div>
+<div class="section" id="bigquery-omicidx-tables">
+<h2>Bigquery OmicIDX tables<a class="headerlink" href="#bigquery-omicidx-tables" title="Permalink to this headline">¶</a></h2>
+<p>The OmicIDX data in Bigquery comprise a set of tables that mirror the
+data model available from NCBI.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 35%" />
+<col style="width: 40%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>Repository</p></td>
+<td><p>Table Name</p></td>
+<td><p>Accessions like:</p></td>
+</tr>
+<tr class="row-even"><td><p>sra</p></td>
+<td><p>sra_study</p></td>
+<td><p>SRP…</p></td>
+</tr>
+<tr class="row-odd"><td><p>sra</p></td>
+<td><p>sra_sample</p></td>
+<td><p>SRS…</p></td>
+</tr>
+<tr class="row-even"><td><p>sra</p></td>
+<td><p>sra_experiment</p></td>
+<td><p>SRX…</p></td>
+</tr>
+<tr class="row-odd"><td><p>sra</p></td>
+<td><p>sra_run</p></td>
+<td><p>SRR…</p></td>
+</tr>
+<tr class="row-even"><td><p>biosample</p></td>
+<td><p>biosample</p></td>
+<td><p>SAMN…</p></td>
+</tr>
+</tbody>
+</table>
+<p>Unlike in a traditional relational database, these tables include
+“nested” columns.</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">OmicIDX</a></h1>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=seandavi&repo=omicidx&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">OmicIDX dataset on Bigquery</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#bigquery-omicidx-tables">Bigquery OmicIDX tables</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">Commandline Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">omicidx</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Welcome to OmicIDX</a></li>
+      <li>Next: <a href="cli.html" title="next chapter">Commandline Interface</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Sean Davis.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/Bigquery.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/seandavi/omicidx" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

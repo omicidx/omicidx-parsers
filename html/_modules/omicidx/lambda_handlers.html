@@ -1,0 +1,258 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>omicidx.lambda_handlers &#8212; OmicIDX  documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for omicidx.lambda_handlers</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">.sra_parsers</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">boto3</span>
+<span class="kn">import</span> <span class="nn">decimal</span>
+<span class="kn">from</span> <span class="nn">boto3.dynamodb.conditions</span> <span class="k">import</span> <span class="n">Key</span>
+
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span>
+                    <span class="nb">format</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%(asctime)s</span><span class="s1"> - </span><span class="si">%(name)s</span><span class="s1"> - </span><span class="si">%(levelname)s</span><span class="s1"> - </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;lambda_handlers&#39;</span><span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+
+<span class="n">dynamodb</span> <span class="o">=</span> <span class="n">boto3</span><span class="o">.</span><span class="n">resource</span><span class="p">(</span><span class="s1">&#39;dynamodb&#39;</span><span class="p">)</span>
+<span class="n">experiment_table</span> <span class="o">=</span> <span class="n">dynamodb</span><span class="o">.</span><span class="n">Table</span><span class="p">(</span><span class="s2">&quot;sra_experiment&quot;</span><span class="p">)</span>
+<span class="n">run_table</span> <span class="o">=</span> <span class="n">dynamodb</span><span class="o">.</span><span class="n">Table</span><span class="p">(</span><span class="s2">&quot;sra_run&quot;</span><span class="p">)</span>
+<span class="n">sample_table</span> <span class="o">=</span> <span class="n">dynamodb</span><span class="o">.</span><span class="n">Table</span><span class="p">(</span><span class="s2">&quot;sra_sample&quot;</span><span class="p">)</span>
+<span class="n">study_table</span> <span class="o">=</span> <span class="n">dynamodb</span><span class="o">.</span><span class="n">Table</span><span class="p">(</span><span class="s2">&quot;sra_study&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="replace_floats"><a class="viewcode-back" href="../../omicidx.lambda_handlers.html#omicidx.lambda_handlers.replace_floats">[docs]</a><span class="k">def</span> <span class="nf">replace_floats</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">obj</span><span class="p">)):</span>
+            <span class="n">obj</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">replace_floats</span><span class="p">(</span><span class="n">obj</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">obj</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">obj</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">replace_floats</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">obj</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">decimal</span><span class="o">.</span><span class="n">Decimal</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">obj</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">obj</span></div>
+
+<div class="viewcode-block" id="replace_decimals"><a class="viewcode-back" href="../../omicidx.lambda_handlers.html#omicidx.lambda_handlers.replace_decimals">[docs]</a><span class="k">def</span> <span class="nf">replace_decimals</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">obj</span><span class="p">)):</span>
+            <span class="n">obj</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">replace_decimals</span><span class="p">(</span><span class="n">obj</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">obj</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">obj</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">replace_decimals</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">obj</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">decimal</span><span class="o">.</span><span class="n">Decimal</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">obj</span> <span class="o">%</span> <span class="mi">1</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">obj</span></div>
+    
+<div class="viewcode-block" id="full_experiment_package"><a class="viewcode-back" href="../../omicidx.lambda_handlers.html#omicidx.lambda_handlers.full_experiment_package">[docs]</a><span class="k">def</span> <span class="nf">full_experiment_package</span><span class="p">(</span><span class="n">accession</span><span class="p">):</span>
+    <span class="c1"># note that this returns a list right now, as we can use any</span>
+    <span class="c1"># accession type. In general, use SRXNNNNNN to get a list</span>
+    <span class="c1"># of length 1.</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">load_experiment_xml_by_accession</span><span class="p">(</span><span class="n">accession</span><span class="p">)</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="nb">list</span><span class="p">([</span><span class="n">SRAExperimentPackage</span><span class="p">(</span><span class="n">exptpkg</span><span class="p">)</span><span class="o">.</span><span class="n">data</span> <span class="k">for</span> <span class="n">exptpkg</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">getroot</span><span class="p">()</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;.//EXPERIMENT_PACKAGE&quot;</span><span class="p">)])</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">expt</span> <span class="ow">in</span> <span class="n">s</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">run_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">expt</span><span class="p">[</span><span class="s1">&#39;runs&#39;</span><span class="p">])):</span>
+            <span class="n">expt</span><span class="p">[</span><span class="s1">&#39;runs&#39;</span><span class="p">][</span><span class="n">run_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">run_from_runbrowser</span><span class="p">(</span><span class="n">expt</span><span class="p">[</span><span class="s1">&#39;runs&#39;</span><span class="p">][</span><span class="n">run_idx</span><span class="p">][</span><span class="s1">&#39;accession&#39;</span><span class="p">])</span>
+            <span class="n">expt</span><span class="p">[</span><span class="s1">&#39;run_count&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">expt</span><span class="p">[</span><span class="s1">&#39;runs&#39;</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">s</span></div>
+
+
+
+<div class="viewcode-block" id="create_dynamodb_table"><a class="viewcode-back" href="../../omicidx.lambda_handlers.html#omicidx.lambda_handlers.create_dynamodb_table">[docs]</a><span class="k">def</span> <span class="nf">create_dynamodb_table</span><span class="p">(</span><span class="n">tname</span><span class="p">):</span>
+    <span class="n">table</span> <span class="o">=</span> <span class="n">dynamodb</span><span class="o">.</span><span class="n">create_table</span><span class="p">(</span>
+        <span class="n">TableName</span> <span class="o">=</span> <span class="n">tname</span><span class="p">,</span>
+        <span class="n">KeySchema</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="s1">&#39;AttributeName&#39;</span><span class="p">:</span> <span class="s1">&#39;accession&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;KeyType&#39;</span><span class="p">:</span> <span class="s1">&#39;HASH&#39;</span>  <span class="c1">#Partition key</span>
+            <span class="p">}</span>
+        <span class="p">],</span>
+        <span class="n">AttributeDefinitions</span><span class="o">=</span><span class="p">[</span>
+            <span class="p">{</span>
+                <span class="s1">&#39;AttributeName&#39;</span><span class="p">:</span> <span class="s1">&#39;accession&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;AttributeType&#39;</span><span class="p">:</span> <span class="s1">&#39;S&#39;</span>
+            <span class="p">}</span>
+        <span class="p">],</span>
+        <span class="n">ProvisionedThroughput</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;ReadCapacityUnits&#39;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span>
+            <span class="s1">&#39;WriteCapacityUnits&#39;</span><span class="p">:</span> <span class="mi">20</span>
+        <span class="p">}</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">table</span></div>
+
+
+<div class="viewcode-block" id="insert_to_dynamo"><a class="viewcode-back" href="../../omicidx.lambda_handlers.html#omicidx.lambda_handlers.insert_to_dynamo">[docs]</a><span class="k">def</span> <span class="nf">insert_to_dynamo</span><span class="p">(</span><span class="n">expt_pkg</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">expt</span> <span class="ow">in</span> <span class="n">expt_pkg</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;inserting </span><span class="si">{}</span><span class="s1"> to dynamodb&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">expt</span><span class="p">[</span><span class="s1">&#39;experiment&#39;</span><span class="p">][</span><span class="s1">&#39;accession&#39;</span><span class="p">]))</span>
+        <span class="k">with</span> <span class="n">run_table</span><span class="o">.</span><span class="n">batch_writer</span><span class="p">()</span> <span class="k">as</span> <span class="n">batch</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">run</span> <span class="ow">in</span> <span class="n">expt</span><span class="p">[</span><span class="s1">&#39;runs&#39;</span><span class="p">]:</span>
+                <span class="n">batch</span><span class="o">.</span><span class="n">put_item</span><span class="p">(</span><span class="n">Item</span><span class="o">=</span><span class="n">replace_floats</span><span class="p">(</span><span class="n">run</span><span class="p">))</span>
+                <span class="n">study_table</span><span class="o">.</span><span class="n">put_item</span><span class="p">(</span><span class="n">Item</span><span class="o">=</span><span class="n">replace_floats</span><span class="p">(</span><span class="n">expt</span><span class="p">[</span><span class="s1">&#39;study&#39;</span><span class="p">]))</span>
+                <span class="n">sample_table</span><span class="o">.</span><span class="n">put_item</span><span class="p">(</span><span class="n">Item</span><span class="o">=</span><span class="n">replace_floats</span><span class="p">(</span><span class="n">expt</span><span class="p">[</span><span class="s1">&#39;sample&#39;</span><span class="p">]))</span>
+        <span class="k">del</span><span class="p">(</span><span class="n">expt</span><span class="p">[</span><span class="s1">&#39;runs&#39;</span><span class="p">])</span>
+        <span class="k">del</span><span class="p">(</span><span class="n">expt</span><span class="p">[</span><span class="s1">&#39;sample&#39;</span><span class="p">])</span>
+        <span class="k">del</span><span class="p">(</span><span class="n">expt</span><span class="p">[</span><span class="s1">&#39;study&#39;</span><span class="p">])</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;inserted runs from </span><span class="si">{}</span><span class="s2"> to dynamodb&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">expt</span><span class="p">[</span><span class="s1">&#39;experiment&#39;</span><span class="p">][</span><span class="s1">&#39;accession&#39;</span><span class="p">]))</span>
+        <span class="n">experiment_table</span><span class="o">.</span><span class="n">put_item</span><span class="p">(</span><span class="n">Item</span> <span class="o">=</span> <span class="n">replace_floats</span><span class="p">(</span><span class="n">expt</span><span class="p">[</span><span class="s1">&#39;experiment&#39;</span><span class="p">]))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;inserted experiment from </span><span class="si">{}</span><span class="s2"> to dynamodb&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">expt</span><span class="p">[</span><span class="s1">&#39;experiment&#39;</span><span class="p">][</span><span class="s1">&#39;accession&#39;</span><span class="p">]))</span></div>
+
+<div class="viewcode-block" id="lambda_return_full_experiment_json"><a class="viewcode-back" href="../../omicidx.lambda_handlers.html#omicidx.lambda_handlers.lambda_return_full_experiment_json">[docs]</a><span class="k">def</span> <span class="nf">lambda_return_full_experiment_json</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+    <span class="n">accession</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s1">&#39;accession&#39;</span><span class="p">]</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;processing accession: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">accession</span><span class="p">))</span>
+    <span class="c1"># munge experiment package</span>
+    <span class="k">return</span> <span class="n">full_experiment_package</span><span class="p">(</span><span class="n">accession</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="insert_if_empty"><a class="viewcode-back" href="../../omicidx.lambda_handlers.html#omicidx.lambda_handlers.insert_if_empty">[docs]</a><span class="k">def</span> <span class="nf">insert_if_empty</span><span class="p">(</span><span class="n">accession</span><span class="p">):</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;checking for accession </span><span class="si">{}</span><span class="s1"> in dynamodb&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">accession</span><span class="p">))</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">experiment_table</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">KeyConditionExpression</span><span class="o">=</span><span class="n">Key</span><span class="p">(</span><span class="s1">&#39;accession&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="n">accession</span><span class="p">))</span>
+    <span class="k">if</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="p">[</span><span class="s1">&#39;Items&#39;</span><span class="p">])</span><span class="o">==</span><span class="mi">0</span><span class="p">):</span>
+        <span class="n">expt_pkg</span> <span class="o">=</span> <span class="n">full_experiment_package</span><span class="p">(</span><span class="n">accession</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;expt_pkg for accession </span><span class="si">{}</span><span class="s1"> obtained&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">accession</span><span class="p">))</span>
+        <span class="n">insert_to_dynamo</span><span class="p">(</span><span class="n">expt_pkg</span><span class="p">)</span>
+        <span class="k">return</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;skipped: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">accession</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="lambda_insert_to_dynamo"><a class="viewcode-back" href="../../omicidx.lambda_handlers.html#omicidx.lambda_handlers.lambda_insert_to_dynamo">[docs]</a><span class="k">def</span> <span class="nf">lambda_insert_to_dynamo</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+    <span class="n">accession</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s1">&#39;accession&#39;</span><span class="p">]</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;processing accession: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">accession</span><span class="p">))</span>
+    <span class="n">insert_if_empty</span><span class="p">(</span><span class="n">accession</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">accession</span></div>
+
+<div class="viewcode-block" id="lambda_insert_from_sqs_to_dynamo"><a class="viewcode-back" href="../../omicidx.lambda_handlers.html#omicidx.lambda_handlers.lambda_insert_from_sqs_to_dynamo">[docs]</a><span class="k">def</span> <span class="nf">lambda_insert_from_sqs_to_dynamo</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+    <span class="n">accession</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s1">&#39;Records&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;body&#39;</span><span class="p">]</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;processing accession: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">accession</span><span class="p">))</span>
+    <span class="n">insert_if_empty</span><span class="p">(</span><span class="n">accession</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">accession</span></div>
+    
+
+
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../omicidx.lambda_handlers.html#omicidx.lambda_handlers.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;~/top10k_experiments&#39;</span><span class="p">)</span>
+    <span class="kn">from</span> <span class="nn">multiprocessing.dummy</span> <span class="k">import</span> <span class="n">Pool</span> <span class="k">as</span> <span class="n">ThreadPool</span>
+    <span class="n">pool</span> <span class="o">=</span> <span class="n">ThreadPool</span><span class="p">(</span><span class="mi">9</span><span class="p">)</span>
+    <span class="n">pool</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">row</span><span class="p">:</span> <span class="n">insert_if_empty</span><span class="p">(</span><span class="n">row</span><span class="p">),</span>
+             <span class="n">y</span><span class="o">.</span><span class="n">itertuples</span><span class="p">())</span></div>
+    
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">OmicIDX</a></h1>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=seandavi&repo=omicidx&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Bigquery.html">OmicIDX dataset on Bigquery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../cli.html">Commandline Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../genomic_metadata.html">Genomic metadata in OmicIDX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">omicidx</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Sean Davis.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/seandavi/omicidx" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

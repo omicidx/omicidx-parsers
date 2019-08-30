@@ -1,0 +1,71 @@
+\select@language {english}
+\contentsline {chapter}{\numberline {1}Documentation}{3}{chapter.1}
+\contentsline {section}{\numberline {1.1}OmicIDX dataset on Bigquery}{3}{section.1.1}
+\contentsline {subsection}{\numberline {1.1.1}Bigquery OmicIDX tables}{3}{subsection.1.1.1}
+\contentsline {section}{\numberline {1.2}Commandline Interface}{4}{section.1.2}
+\contentsline {subsection}{\numberline {1.2.1}omicidx-cli}{4}{subsection.1.2.1}
+\contentsline {subsubsection}{biosample}{4}{subsubsection*.3}
+\contentsline {paragraph}{download}{4}{paragraph*.4}
+\contentsline {paragraph}{etl-to-public}{4}{paragraph*.5}
+\contentsline {paragraph}{gcs-dump}{4}{paragraph*.6}
+\contentsline {paragraph}{gcs-to-elasticsearch}{4}{paragraph*.7}
+\contentsline {paragraph}{load}{4}{paragraph*.8}
+\contentsline {paragraph}{parse}{5}{paragraph*.9}
+\contentsline {paragraph}{upload}{5}{paragraph*.11}
+\contentsline {subsubsection}{sra}{5}{subsubsection*.12}
+\contentsline {paragraph}{download}{5}{paragraph*.13}
+\contentsline {paragraph}{gcs-dump}{5}{paragraph*.15}
+\contentsline {paragraph}{load-sra-data-to-bigquery}{5}{paragraph*.16}
+\contentsline {paragraph}{parse-entity}{6}{paragraph*.17}
+\contentsline {paragraph}{sra-bigquery-for-elasticsearch}{6}{paragraph*.19}
+\contentsline {paragraph}{sra-gcs-to-elasticsearch}{6}{paragraph*.20}
+\contentsline {paragraph}{sra-to-bigquery}{6}{paragraph*.21}
+\contentsline {paragraph}{upload}{6}{paragraph*.22}
+\contentsline {section}{\numberline {1.3}Genomic Metadata in OmicIDX}{7}{section.1.3}
+\contentsline {section}{\numberline {1.4}omicidx}{7}{section.1.4}
+\contentsline {subsection}{\numberline {1.4.1}omicidx package}{7}{subsection.1.4.1}
+\contentsline {subsubsection}{Subpackages}{7}{subsubsection*.24}
+\contentsline {paragraph}{omicidx.data package}{7}{paragraph*.25}
+\contentsline {subparagraph}{Subpackages}{7}{subparagraph*.26}
+\contentsline {subparagraph}{omicidx.data.bigquery\_schemas package}{7}{subparagraph*.27}
+\contentsline {subparagraph}{Module contents}{7}{subparagraph*.28}
+\contentsline {subparagraph}{Module contents}{7}{subparagraph*.29}
+\contentsline {paragraph}{omicidx.model package}{7}{paragraph*.30}
+\contentsline {subparagraph}{Submodules}{7}{subparagraph*.31}
+\contentsline {subparagraph}{omicidx.model.etl module}{7}{subparagraph*.32}
+\contentsline {subparagraph}{omicidx.model.etl\_schema module}{9}{subparagraph*.54}
+\contentsline {subparagraph}{omicidx.model.public module}{10}{subparagraph*.91}
+\contentsline {subparagraph}{Module contents}{16}{subparagraph*.276}
+\contentsline {paragraph}{omicidx.schema package}{16}{paragraph*.277}
+\contentsline {subparagraph}{Module contents}{16}{subparagraph*.278}
+\contentsline {paragraph}{omicidx.scripts package}{16}{paragraph*.279}
+\contentsline {subparagraph}{Submodules}{16}{subparagraph*.280}
+\contentsline {subparagraph}{omicidx.scripts.cli module}{16}{subparagraph*.281}
+\contentsline {subparagraph}{omicidx.scripts.omicidx module}{16}{subparagraph*.287}
+\contentsline {subparagraph}{omicidx.scripts.sra\_entity\_to\_json module}{16}{subparagraph*.292}
+\contentsline {subparagraph}{Module contents}{16}{subparagraph*.294}
+\contentsline {paragraph}{omicidx.sra package}{16}{paragraph*.295}
+\contentsline {subparagraph}{Submodules}{16}{subparagraph*.296}
+\contentsline {subparagraph}{omicidx.sra.ebiutils module}{16}{subparagraph*.297}
+\contentsline {subparagraph}{omicidx.sra.etl module}{17}{subparagraph*.302}
+\contentsline {subparagraph}{omicidx.sra.pydantic\_models module}{18}{subparagraph*.316}
+\contentsline {subparagraph}{Module contents}{18}{subparagraph*.333}
+\contentsline {subsubsection}{Submodules}{18}{subsubsection*.334}
+\contentsline {paragraph}{omicidx.bigquery\_utils module}{18}{paragraph*.335}
+\contentsline {paragraph}{omicidx.biosample module}{19}{paragraph*.343}
+\contentsline {paragraph}{omicidx.db module}{20}{paragraph*.347}
+\contentsline {paragraph}{omicidx.elasticsearch\_utils module}{20}{paragraph*.352}
+\contentsline {paragraph}{omicidx.gcs\_utils module}{20}{paragraph*.355}
+\contentsline {paragraph}{omicidx.geometa module}{21}{paragraph*.358}
+\contentsline {paragraph}{omicidx.lambda\_handlers module}{23}{paragraph*.380}
+\contentsline {paragraph}{omicidx.models module}{23}{paragraph*.391}
+\contentsline {paragraph}{omicidx.schema\_tools module}{29}{paragraph*.603}
+\contentsline {paragraph}{omicidx.scratch module}{30}{paragraph*.620}
+\contentsline {paragraph}{omicidx.sra\_parsers module}{30}{paragraph*.625}
+\contentsline {paragraph}{omicidx.utils module}{34}{paragraph*.669}
+\contentsline {subsubsection}{Module contents}{34}{subsubsection*.671}
+\contentsline {section}{\numberline {1.5}Ipython notebooks}{34}{section.1.5}
+\contentsline {section}{\numberline {1.6}Rmarkdown workbooks}{34}{section.1.6}
+\contentsline {chapter}{\numberline {2}Indices and tables}{35}{chapter.2}
+\contentsline {chapter}{Python Module Index}{37}{section*.672}
+\contentsline {chapter}{Index}{39}{section*.673}

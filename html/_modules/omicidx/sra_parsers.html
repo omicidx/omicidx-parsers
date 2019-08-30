@@ -1,0 +1,1249 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>omicidx.sra_parsers &#8212; OmicIDX  documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for omicidx.sra_parsers</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;SRA parsers including:</span>
+
+<span class="sd">- study</span>
+<span class="sd">- sample</span>
+<span class="sd">- experiment</span>
+<span class="sd">- run</span>
+
+<span class="sd">These parsers each parse XML format files of the format</span>
+<span class="sd">available from the fullxml api.</span>
+
+<span class="sd">The main entry point into this module is the `parse_xml_file`</span>
+<span class="sd">function.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">ujson</span>
+<span class="kn">import</span> <span class="nn">csv</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">defaultdict</span>
+<span class="kn">import</span> <span class="nn">urllib</span>
+<span class="kn">import</span> <span class="nn">urllib.error</span>
+<span class="kn">import</span> <span class="nn">urllib.request</span>
+<span class="kn">import</span> <span class="nn">xml.etree.ElementTree</span> <span class="k">as</span> <span class="nn">etree</span>
+<span class="kn">import</span> <span class="nn">io</span>
+<span class="kn">import</span> <span class="nn">gzip</span>
+<span class="kn">from</span> <span class="nn">.sra</span> <span class="k">import</span> <span class="n">pydantic_models</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Iterable</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;sra_parser&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="parse_xml_file"><a class="viewcode-back" href="../../omicidx.sra_parsers.html#omicidx.sra_parsers.parse_xml_file">[docs]</a><span class="k">def</span> <span class="nf">parse_xml_file</span><span class="p">(</span><span class="n">xmlfilename</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parse an NCBI SRA mirroring XML file</span>
+
+<span class="sd">    This function returns an iterator over the </span>
+<span class="sd">    records in the xml file, returning a dict</span>
+<span class="sd">    of parsed records.</span>
+
+<span class="sd">    For example:</span>
+
+<span class="sd">    wget --mirror -nH --cut-dirs=3 ftp://ftp.ncbi.nlm.nih.gov/sra/reports/Mirroring/NCBI_SRA_Mirroring_20181027/</span>
+
+<span class="sd">    &gt;&gt;&gt; import omicidx.sra_parsers as sp</span>
+<span class="sd">    &gt;&gt;&gt; studies = sp.parse_xml_file(&quot;NCBI_SRA_Mirroring_20181027/meta_study_set.xml.gz&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; next(studies)</span>
+<span class="sd">    ...</span>
+
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    xmlfilename : string</span>
+<span class="sd">        the filename to be parsed. Can be gzipped. Must include</span>
+<span class="sd">        the &quot;entity&quot; name in the filename (eg., &quot;run&quot;, &quot;experiment&quot;)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    iterator: </span>
+<span class="sd">        An iterator of dict records from parsing each xml record.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span><span class="p">(</span><span class="s1">&#39;study&#39;</span> <span class="ow">in</span> <span class="n">xmlfilename</span><span class="p">):</span>
+        <span class="n">entity</span> <span class="o">=</span> <span class="s2">&quot;STUDY&quot;</span>
+        <span class="n">sra_parser</span> <span class="o">=</span> <span class="n">SRAStudyRecord</span>
+    <span class="k">if</span><span class="p">(</span><span class="s1">&#39;run&#39;</span> <span class="ow">in</span> <span class="n">xmlfilename</span><span class="p">):</span>
+        <span class="n">entity</span> <span class="o">=</span> <span class="s2">&quot;RUN&quot;</span>
+        <span class="n">sra_parser</span> <span class="o">=</span> <span class="n">SRARunRecord</span>
+    <span class="k">if</span><span class="p">(</span><span class="s1">&#39;sample&#39;</span> <span class="ow">in</span> <span class="n">xmlfilename</span><span class="p">):</span>
+        <span class="n">entity</span> <span class="o">=</span> <span class="s2">&quot;SAMPLE&quot;</span>
+        <span class="n">sra_parser</span> <span class="o">=</span> <span class="n">SRASampleRecord</span>
+    <span class="k">if</span><span class="p">(</span><span class="s1">&#39;experiment&#39;</span> <span class="ow">in</span> <span class="n">xmlfilename</span><span class="p">):</span>
+        <span class="n">entity</span> <span class="o">=</span> <span class="s2">&quot;EXPERIMENT&quot;</span>
+        <span class="n">sra_parser</span> <span class="o">=</span> <span class="n">SRAExperimentRecord</span>
+    <span class="n">n</span><span class="o">=</span><span class="mi">0</span>
+    <span class="k">with</span> <span class="n">open_file</span><span class="p">(</span><span class="n">xmlfilename</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">event</span><span class="p">,</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">etree</span><span class="o">.</span><span class="n">iterparse</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+            <span class="k">if</span><span class="p">(</span><span class="n">event</span> <span class="o">==</span> <span class="s1">&#39;end&#39;</span> <span class="ow">and</span> <span class="n">element</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="n">entity</span><span class="p">):</span>
+                <span class="n">rec</span> <span class="o">=</span> <span class="n">sra_parser</span><span class="p">(</span><span class="n">element</span><span class="p">)</span><span class="o">.</span><span class="n">data</span>
+                <span class="n">n</span><span class="o">+=</span><span class="mi">1</span>
+                <span class="k">if</span><span class="p">((</span><span class="n">n</span> <span class="o">%</span> <span class="mi">100000</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">):</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;parsed </span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1"> entries&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">entity</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
+                <span class="n">element</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+                <span class="k">yield</span><span class="p">(</span><span class="n">rec</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;parsed </span><span class="si">{}</span><span class="s1"> entity entries&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="lambda_handler"><a class="viewcode-back" href="../../omicidx.sra_parsers.html#omicidx.sra_parsers.lambda_handler">[docs]</a><span class="k">def</span> <span class="nf">lambda_handler</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+    <span class="n">accession</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s1">&#39;accession&#39;</span><span class="p">]</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">load_experiment_xml_by_accession</span><span class="p">(</span><span class="n">accession</span><span class="p">)</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="nb">list</span><span class="p">([</span><span class="n">SRAExperimentPackage</span><span class="p">(</span><span class="n">exptpkg</span><span class="p">)</span><span class="o">.</span><span class="n">data</span> <span class="k">for</span> <span class="n">exptpkg</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">getroot</span><span class="p">()</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;.//EXPERIMENT_PACKAGE&quot;</span><span class="p">)])</span>
+    <span class="k">return</span> <span class="n">s</span></div>
+
+
+<div class="viewcode-block" id="parse_study"><a class="viewcode-back" href="../../omicidx.sra_parsers.html#omicidx.sra_parsers.parse_study">[docs]</a><span class="k">def</span> <span class="nf">parse_study</span><span class="p">(</span><span class="n">xml</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parse an SRA xml STUDY element</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    xml: an xml.etree Element</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    A dict object parsed from the XML</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">required_keys</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;abstract&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;BioProject&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;GEO&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;accession&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;alias&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;attributes&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;center_name&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;broker_name&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;description&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;study_type&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;study_accession&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;title&#39;</span><span class="p">]</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">k</span><span class="p">,</span><span class="kc">None</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">required_keys</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">d</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">xml</span><span class="o">.</span><span class="n">attrib</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="n">path_map</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;.//STUDY_TITLE&quot;</span><span class="p">,</span> <span class="s2">&quot;text&quot;</span><span class="p">),</span>
+        <span class="s1">&#39;abstract&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;.//STUDY_ABSTRACT&quot;</span><span class="p">,</span> <span class="s2">&quot;text&quot;</span><span class="p">),</span>
+        <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;.//STUDY_DESCRIPTION&quot;</span><span class="p">,</span> <span class="s2">&quot;text&quot;</span><span class="p">),</span>
+    <span class="p">}</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_process_path_map</span><span class="p">(</span><span class="n">xml</span><span class="p">,</span> <span class="n">path_map</span><span class="p">))</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_parse_identifiers</span><span class="p">(</span><span class="n">xml</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;IDENTIFIERS&quot;</span><span class="p">),</span><span class="s2">&quot;study&quot;</span><span class="p">))</span>
+    <span class="n">try_update</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">_parse_study_type</span><span class="p">(</span><span class="n">xml</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;DESCRIPTOR/STUDY_TYPE&#39;</span><span class="p">)))</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">try_update</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">_parse_attributes</span><span class="p">(</span><span class="n">xml</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;STUDY_ATTRIBUTES&quot;</span><span class="p">)))</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_parse_links</span><span class="p">(</span>
+        <span class="n">xml</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;STUDY_LINKS&quot;</span><span class="p">)))</span>
+    <span class="n">pubmeds</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span><span class="p">(</span><span class="s1">&#39;xrefs&#39;</span> <span class="ow">in</span> <span class="n">d</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">xref</span> <span class="ow">in</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;xrefs&#39;</span><span class="p">]:</span>
+            <span class="k">if</span><span class="p">(</span><span class="n">xref</span><span class="p">[</span><span class="s1">&#39;db&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;pubmed&#39;</span><span class="p">):</span>
+                <span class="k">if</span><span class="p">(</span><span class="n">xref</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+                    <span class="n">pubmeds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">xref</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]))</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;pubmed_ids&#39;</span><span class="p">:</span><span class="n">pubmeds</span><span class="p">})</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">d</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="parse_submission"><a class="viewcode-back" href="../../omicidx.sra_parsers.html#omicidx.sra_parsers.parse_submission">[docs]</a><span class="k">def</span> <span class="nf">parse_submission</span><span class="p">(</span><span class="n">xml</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parse an SRA xml SUBMISSION element</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    xml: xml.etree.ElementTree.Element</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    a dict of experiment</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">xml</span><span class="o">.</span><span class="n">attrib</span><span class="p">)</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_parse_identifiers</span><span class="p">(</span><span class="n">xml</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;IDENTIFIERS&quot;</span><span class="p">),</span> <span class="s2">&quot;submission&quot;</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">d</span></div>
+
+
+<div class="viewcode-block" id="dict_from_single_xml"><a class="viewcode-back" href="../../omicidx.sra_parsers.html#omicidx.sra_parsers.dict_from_single_xml">[docs]</a><span class="k">def</span> <span class="nf">dict_from_single_xml</span><span class="p">(</span><span class="n">txt</span><span class="p">):</span>
+    <span class="n">xml</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">txt</span><span class="p">)</span>
+    <span class="n">entity</span> <span class="o">=</span> <span class="n">xml</span><span class="o">.</span><span class="n">tag</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="n">vals</span> <span class="o">=</span> <span class="nb">globals</span><span class="p">()[</span><span class="s1">&#39;parse_&#39;</span><span class="o">+</span><span class="n">entity</span><span class="p">](</span><span class="n">xml</span><span class="p">)</span>
+    <span class="n">vals</span><span class="p">[</span><span class="s1">&#39;entity_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">xml</span><span class="o">.</span><span class="n">tag</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">vals</span></div>
+
+<div class="viewcode-block" id="model_from_single_xml"><a class="viewcode-back" href="../../omicidx.sra_parsers.html#omicidx.sra_parsers.model_from_single_xml">[docs]</a><span class="k">def</span> <span class="nf">model_from_single_xml</span><span class="p">(</span><span class="n">txt</span><span class="p">):</span>
+    <span class="n">xml</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">txt</span><span class="p">)</span>
+    <span class="n">entity</span> <span class="o">=</span> <span class="n">xml</span><span class="o">.</span><span class="n">tag</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="n">et</span> <span class="o">=</span> <span class="nb">globals</span><span class="p">()[</span><span class="s1">&#39;parse_&#39;</span><span class="o">+</span><span class="n">entity</span><span class="p">](</span><span class="n">xml</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">pydantic_models</span><span class="p">,</span> <span class="s1">&#39;Sra&#39;</span><span class="o">+</span><span class="n">entity</span><span class="o">.</span><span class="n">capitalize</span><span class="p">())(</span><span class="o">**</span><span class="n">et</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="parse_run"><a class="viewcode-back" href="../../omicidx.sra_parsers.html#omicidx.sra_parsers.parse_run">[docs]</a><span class="k">def</span> <span class="nf">parse_run</span><span class="p">(</span><span class="n">xml</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parse an SRA xml RUN element</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    xml: an xml.etree Element</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    A dict object parsed from the XML</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">xml</span><span class="o">.</span><span class="n">attrib</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;total_spots&#39;</span><span class="p">,</span> <span class="s1">&#39;total_bases&#39;</span><span class="p">,</span> <span class="s1">&#39;size&#39;</span><span class="p">]:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="c1"># missing some key elements</span>
+            <span class="k">pass</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">d</span><span class="p">[</span><span class="s1">&#39;avg_length&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;total_bases&#39;</span><span class="p">])</span><span class="o">/</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;total_spots&#39;</span><span class="p">]</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="n">path_map</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;experiment_accession&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;EXPERIMENT_REF&quot;</span><span class="p">,</span> <span class="s2">&quot;accession&quot;</span><span class="p">),</span>
+        <span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;TITLE&quot;</span><span class="p">,</span> <span class="s1">&#39;text&#39;</span><span class="p">),</span>
+    <span class="p">}</span>
+
+    <span class="n">d</span> <span class="o">=</span> <span class="n">try_update</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">_parse_taxon</span><span class="p">(</span><span class="n">xml</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;tax_analysis&quot;</span><span class="p">)))</span>
+    <span class="c1"># d = try_update(d, _parse_run_reads(xml.find(&quot;.//SPOT_DESCRIPTOR&quot;)))</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_process_path_map</span><span class="p">(</span><span class="n">xml</span><span class="p">,</span> <span class="n">path_map</span><span class="p">))</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_parse_identifiers</span><span class="p">(</span><span class="n">xml</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;IDENTIFIERS&quot;</span><span class="p">),</span> <span class="s2">&quot;run&quot;</span><span class="p">))</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">try_update</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">_parse_attributes</span><span class="p">(</span><span class="n">xml</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;RUN_ATTRIBUTES&quot;</span><span class="p">)))</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">try_update</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">_parse_attributes</span><span class="p">(</span><span class="n">xml</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;RUN_ATTRIBUTES&quot;</span><span class="p">)))</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">try_update</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">_parse_run_files</span><span class="p">(</span><span class="n">xml</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;SRAFiles&quot;</span><span class="p">)))</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">try_update</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">_parse_run_stats</span><span class="p">(</span><span class="n">xml</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;Statistics&quot;</span><span class="p">)))</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">try_update</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">_parse_run_bases</span><span class="p">(</span><span class="n">xml</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;Bases&quot;</span><span class="p">)))</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_parse_run_qualities</span><span class="p">(</span><span class="n">xml</span><span class="p">))</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># already have accession, so no need for this</span>
+        <span class="k">del</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;run_accession&#39;</span><span class="p">])</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">return</span> <span class="n">d</span></div>
+
+
+<span class="k">def</span> <span class="nf">_parse_run_stats</span><span class="p">(</span><span class="n">xml</span><span class="p">):</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">xml</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">stats</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">read</span> <span class="ow">in</span> <span class="n">xml</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;Read&#39;</span><span class="p">):</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">ret</span><span class="p">[</span><span class="s1">&#39;index&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">read</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;index&#39;</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+        <span class="n">ret</span><span class="p">[</span><span class="s1">&#39;count&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">read</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;count&#39;</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+        <span class="n">ret</span><span class="p">[</span><span class="s1">&#39;mean_length&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">read</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;average&#39;</span><span class="p">,</span><span class="mf">0.0</span><span class="p">))</span>
+        <span class="n">ret</span><span class="p">[</span><span class="s1">&#39;sd_length&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">read</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;stdev&#39;</span><span class="p">,</span><span class="mf">0.0</span><span class="p">))</span>
+        <span class="n">stats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;reads&quot;</span><span class="p">:</span> <span class="n">stats</span><span class="p">}</span>
+
+<span class="k">def</span> <span class="nf">_parse_run_bases</span><span class="p">(</span><span class="n">xml</span><span class="p">):</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">xml</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">base</span> <span class="ow">in</span> <span class="n">xml</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;Base&#39;</span><span class="p">):</span>
+        <span class="n">ret</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="n">base</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;value&#39;</span><span class="p">):</span> <span class="nb">int</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;count&#39;</span><span class="p">))})</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;base_counts&#39;</span><span class="p">:</span><span class="n">ret</span><span class="p">}</span>
+
+
+
+<span class="k">def</span> <span class="nf">_parse_run_files</span><span class="p">(</span><span class="n">xml</span><span class="p">):</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">xml</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">files</span> <span class="o">=</span> <span class="n">xml</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;./SRAFile&#39;</span><span class="p">)</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+        <span class="n">retfile</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">f</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">retfile</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+        <span class="n">retfile</span><span class="p">[</span><span class="s1">&#39;alternatives&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">alt</span> <span class="ow">in</span> <span class="n">f</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;Alternatives&#39;</span><span class="p">):</span>
+            <span class="n">altfile</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">alt</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">altfile</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">alt</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+            <span class="n">retfile</span><span class="p">[</span><span class="s1">&#39;alternatives&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">altfile</span><span class="p">)</span>
+        <span class="n">ret</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">retfile</span><span class="p">)</span>
+    <span class="k">return</span><span class="p">({</span><span class="s1">&#39;files&#39;</span><span class="p">:</span><span class="n">ret</span><span class="p">})</span>
+
+
+<div class="viewcode-block" id="parse_experiment"><a class="viewcode-back" href="../../omicidx.sra_parsers.html#omicidx.sra_parsers.parse_experiment">[docs]</a><span class="k">def</span> <span class="nf">parse_experiment</span><span class="p">(</span><span class="n">xml</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parse an SRA xml EXPERIMENT element</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    xml: xml.etree.ElementTree.Element</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    a dict of experiment</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">required_keys</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s1">&#39;accession&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;attributes&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;alias&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;center_name&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;design&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;description&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;experiment_accession&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;identifiers&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;instrument_model&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;library_name&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;library_construction_protocol&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;library_layout_orientation&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;library_layout_length&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;library_layout_sdev&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;library_strategy&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;library_source&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;library_selection&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;library_layout&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;xrefs&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;platform&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;sample_accession&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;study_accession&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;title&#39;</span>
+    <span class="p">]</span>
+    
+    <span class="n">d</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">k</span><span class="p">,</span><span class="kc">None</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">required_keys</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">d</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">xml</span><span class="o">.</span><span class="n">attrib</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">xml.etree.ElementTree</span> <span class="k">as</span> <span class="nn">et</span>
+        <span class="n">et</span><span class="o">.</span><span class="n">tostring</span><span class="p">(</span><span class="n">xml</span><span class="p">)</span>
+    
+    <span class="n">path_map</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;./TITLE&#39;</span><span class="p">,</span> <span class="s1">&#39;text&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;study_accession&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;./STUDY_REF/IDENTIFIERS/PRIMARY_ID&#39;</span><span class="p">,</span> <span class="s1">&#39;text&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;design&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;./DESIGN/DESIGN_DESCRIPTION&#39;</span><span class="p">,</span> <span class="s1">&#39;text&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;library_name&#39;</span><span class="p">:</span> <span class="p">(</span>
+            <span class="s1">&#39;./DESIGN/LIBRARY_DESCRIPTOR/LIBRARY_NAME&#39;</span><span class="p">,</span> <span class="s1">&#39;text&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;library_strategy&#39;</span><span class="p">:</span> <span class="p">(</span>
+            <span class="s1">&#39;./DESIGN/LIBRARY_DESCRIPTOR/LIBRARY_STRATEGY&#39;</span><span class="p">,</span> <span class="s1">&#39;text&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;library_source&#39;</span><span class="p">:</span> <span class="p">(</span>
+            <span class="s1">&#39;./DESIGN/LIBRARY_DESCRIPTOR/LIBRARY_SOURCE&#39;</span><span class="p">,</span> <span class="s1">&#39;text&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;library_selection&#39;</span><span class="p">:</span> <span class="p">(</span>
+            <span class="s1">&#39;./DESIGN/LIBRARY_DESCRIPTOR/LIBRARY_SELECTION&#39;</span><span class="p">,</span> <span class="s1">&#39;text&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;library_layout&#39;</span><span class="p">:</span> <span class="p">(</span>
+            <span class="s1">&#39;./DESIGN/LIBRARY_DESCRIPTOR/LIBRARY_LAYOUT&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;child&#39;</span><span class="p">,</span> <span class="s1">&#39;tag&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;library_layout_orientation&#39;</span><span class="p">:</span> <span class="p">(</span>
+            <span class="s1">&#39;./DESIGN/LIBRARY_DESCRIPTOR/LIBRARY_LAYOUT/PAIRED&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;ORIENTATION&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;library_layout_length&#39;</span><span class="p">:</span> <span class="p">(</span>
+            <span class="s1">&#39;./DESIGN/LIBRARY_DESCRIPTOR/LIBRARY_LAYOUT/PAIRED&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;NOMINAL_LENGTH&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;library_layout_sdev&#39;</span><span class="p">:</span> <span class="p">(</span>
+            <span class="s1">&#39;./DESIGN/LIBRARY_DESCRIPTOR/LIBRARY_LAYOUT/PAIRED&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;NOMINAL_SDEV&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;pooling_stategy&#39;</span><span class="p">:</span> <span class="p">(</span>
+            <span class="s1">&#39;./DESIGN/LIBRARY_DESCRIPTOR/POOLING_STRATEGY&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;text&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;library_construction_protocol&#39;</span><span class="p">:</span> <span class="p">(</span>
+            <span class="s1">&#39;./DESIGN/LIBRARY_DESCRIPTOR/LIBRARY_CONSTRUCTION_PROTOCOL&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;text&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;platform&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;./PLATFORM&#39;</span><span class="p">,</span> <span class="s1">&#39;child&#39;</span><span class="p">,</span> <span class="s1">&#39;tag&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;sample_accession&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;.//SAMPLE_DESCRIPTOR&#39;</span><span class="p">,</span><span class="s1">&#39;accession&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;instrument_model&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;./PLATFORM/*/INSTRUMENT_MODEL&#39;</span><span class="p">,</span> <span class="s1">&#39;text&#39;</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="n">d</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_process_path_map</span><span class="p">(</span><span class="n">xml</span><span class="p">,</span> <span class="n">path_map</span><span class="p">))</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_parse_identifiers</span><span class="p">(</span><span class="n">xml</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;IDENTIFIERS&quot;</span><span class="p">),</span>
+                                     <span class="s2">&quot;experiment&quot;</span><span class="p">))</span>
+
+    <span class="n">d</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_parse_attributes</span><span class="p">(</span>
+        <span class="n">xml</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;EXPERIMENT_ATTRIBUTES&quot;</span><span class="p">)))</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_parse_links</span><span class="p">(</span>
+        <span class="n">xml</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;EXPERIMENT_LINKS&quot;</span><span class="p">)))</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">try_update</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">_parse_run_reads</span><span class="p">(</span><span class="n">xml</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;.//SPOT_DESCRIPTOR&quot;</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">d</span></div>
+
+
+<div class="viewcode-block" id="parse_sample"><a class="viewcode-back" href="../../omicidx.sra_parsers.html#omicidx.sra_parsers.parse_sample">[docs]</a><span class="k">def</span> <span class="nf">parse_sample</span><span class="p">(</span><span class="n">xml</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parse an SRA xml SAMPLE element</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    xml: an xml.etree Element</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    A dict object parsed from the XML</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">d</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">xml</span><span class="o">.</span><span class="n">attrib</span><span class="p">)</span>
+    <span class="n">path_map</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;.//TITLE&quot;</span><span class="p">,</span> <span class="s2">&quot;text&quot;</span><span class="p">),</span>
+        <span class="s1">&#39;organism&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;.//SCIENTIFIC_NAME&quot;</span><span class="p">,</span> <span class="s2">&quot;text&quot;</span><span class="p">),</span>
+        <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;.//DESCRIPTION&quot;</span><span class="p">,</span> <span class="s2">&quot;text&quot;</span><span class="p">),</span>
+    <span class="p">}</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_process_path_map</span><span class="p">(</span><span class="n">xml</span><span class="p">,</span> <span class="n">path_map</span><span class="p">))</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_parse_identifiers</span><span class="p">(</span><span class="n">xml</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;IDENTIFIERS&quot;</span><span class="p">),</span> <span class="s2">&quot;sample&quot;</span><span class="p">))</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_parse_attributes</span><span class="p">(</span><span class="n">xml</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;SAMPLE_ATTRIBUTES&quot;</span><span class="p">)))</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_parse_links</span><span class="p">(</span>
+        <span class="n">xml</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;SAMPLE_LINKS&quot;</span><span class="p">)))</span>
+
+    <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="n">xml</span><span class="o">.</span><span class="n">iter</span><span class="p">():</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">elem</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="s2">&quot;TAXON_ID&quot;</span><span class="p">):</span>
+            <span class="n">d</span><span class="p">[</span><span class="s1">&#39;taxon_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">elem</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+
+    <span class="k">return</span><span class="p">(</span><span class="n">d</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">_parse_run_reads</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parse reads from runs.&quot;&quot;&quot;</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">d</span><span class="p">[</span><span class="s1">&#39;spot_length&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;.//SPOT_LENGTH&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">d</span><span class="p">[</span><span class="s1">&#39;spot_length&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">d</span><span class="p">[</span><span class="s1">&#39;reads&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">node</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># No read statistics present</span>
+        <span class="k">return</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+    <span class="n">readrecs</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;.//READ_SPEC&quot;</span><span class="p">)</span>
+    <span class="n">d</span><span class="p">[</span><span class="s1">&#39;nreads&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">readrecs</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">read</span> <span class="ow">in</span> <span class="n">readrecs</span><span class="p">:</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">r</span><span class="p">[</span><span class="s1">&#39;read_index&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">read</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;./READ_INDEX&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">r</span><span class="p">[</span><span class="s1">&#39;read_class&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;./READ_CLASS&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">r</span><span class="p">[</span><span class="s1">&#39;read_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">read</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;./READ_TYPE&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">r</span><span class="p">[</span><span class="s1">&#39;base_coord&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">read</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;./BASE_COORD&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="n">d</span><span class="p">[</span><span class="s1">&#39;reads&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">d</span>
+
+
+<span class="k">def</span> <span class="nf">_parse_run_qualities</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parse the quality stats, if available, from RUN&quot;&quot;&quot;</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="n">d</span><span class="p">[</span><span class="s1">&#39;qualities&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">qualrecs</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;.//Quality&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">qual</span> <span class="ow">in</span> <span class="n">qualrecs</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">d</span><span class="p">[</span><span class="s1">&#39;qualities&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="nb">int</span><span class="p">(</span><span class="n">qual</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;value&#39;</span><span class="p">)):</span> <span class="nb">int</span><span class="p">(</span><span class="n">qual</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;count&#39;</span><span class="p">))})</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+    <span class="k">return</span> <span class="n">d</span>
+
+
+<span class="k">def</span> <span class="nf">_parse_taxon</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parse taxonomy informaiton.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">crawl</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="p">[]):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">node</span><span class="p">:</span>
+            <span class="n">rank</span> <span class="o">=</span> <span class="n">i</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;rank&#39;</span><span class="p">,</span> <span class="s1">&#39;Unkown&#39;</span><span class="p">)</span>
+            <span class="n">d</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                <span class="s1">&#39;rank&#39;</span><span class="p">:</span> <span class="n">rank</span><span class="p">,</span>
+                <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">i</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;$&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+                <span class="s1">&#39;parent&#39;</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">),</span>
+                <span class="s1">&#39;total_count&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;total_count&#39;</span><span class="p">)),</span>
+                <span class="s1">&#39;self_count&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;self_count&#39;</span><span class="p">)),</span>
+                <span class="s1">&#39;tax_id&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;tax_id&#39;</span><span class="p">)),</span>
+                <span class="p">})</span>
+            <span class="k">if</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">i</span><span class="p">))</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">):</span>
+                <span class="n">d</span> <span class="o">=</span> <span class="n">d</span> <span class="o">+</span> <span class="n">crawl</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">d</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;tax_analysis&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;nspot_analyze&#39;</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;analyzed_spot_count&#39;</span><span class="p">),</span>
+                              <span class="s1">&#39;total_spots&#39;</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;total_spot_count&#39;</span><span class="p">),</span>
+                              <span class="s1">&#39;mapped_spots&#39;</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;identified_spot_count&#39;</span><span class="p">),</span>
+                              <span class="s1">&#39;tax_counts&#39;</span><span class="p">:</span> <span class="n">crawl</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+        <span class="c1"># No tax_analysis node</span>
+        <span class="k">return</span> <span class="p">{}</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;tax_analysis&#39;</span><span class="p">][</span><span class="s1">&#39;nspot_analyze&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">d</span><span class="p">[</span><span class="s1">&#39;tax_analysis&#39;</span><span class="p">][</span><span class="s1">&#39;nspot_analyze&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;tax_analysis&#39;</span><span class="p">][</span><span class="s1">&#39;nspot_analyze&#39;</span><span class="p">])</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Non integer count: nspot_analyze&#39;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;tax_analysis&#39;</span><span class="p">][</span><span class="s1">&#39;nspot_analyze&#39;</span><span class="p">])</span>
+        <span class="n">d</span><span class="p">[</span><span class="s1">&#39;tax_analysis&#39;</span><span class="p">][</span><span class="s1">&#39;nspot_analyze&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;tax_analysis&#39;</span><span class="p">][</span><span class="s1">&#39;total_spots&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">d</span><span class="p">[</span><span class="s1">&#39;tax_analysis&#39;</span><span class="p">][</span><span class="s1">&#39;total_spots&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;tax_analysis&#39;</span><span class="p">][</span><span class="s1">&#39;total_spots&#39;</span><span class="p">])</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Non integer count: total_spots&#39;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;tax_analysis&#39;</span><span class="p">][</span><span class="s1">&#39;total_spots&#39;</span><span class="p">])</span>
+        <span class="n">d</span><span class="p">[</span><span class="s1">&#39;tax_analysis&#39;</span><span class="p">][</span><span class="s1">&#39;total_spots&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;tax_analysis&#39;</span><span class="p">][</span><span class="s1">&#39;mapped_spots&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">d</span><span class="p">[</span><span class="s1">&#39;tax_analysis&#39;</span><span class="p">][</span><span class="s1">&#39;mapped_spots&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;tax_analysis&#39;</span><span class="p">][</span><span class="s1">&#39;mapped_spots&#39;</span><span class="p">])</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Non integer count: mapped_spots&#39;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;tax_analysis&#39;</span><span class="p">][</span><span class="s1">&#39;mapped_spots&#39;</span><span class="p">])</span>
+        <span class="n">d</span><span class="p">[</span><span class="s1">&#39;tax_analysis&#39;</span><span class="p">][</span><span class="s1">&#39;mapped_spots&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">return</span> <span class="n">d</span>
+
+
+<span class="k">def</span> <span class="nf">_safe_add_text_element</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">elem</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Add text from an xml element to a dict</span>
+
+<span class="sd">    Because not all elements have text elements despite </span>
+<span class="sd">    their existence in the xml tree, this little </span>
+<span class="sd">    function checks for text existence and then</span>
+<span class="sd">    adds the text conditionally. If no text is present,</span>
+<span class="sd">    the key is not created. </span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    d : dict</span>
+<span class="sd">        Add the text element to this dict</span>
+<span class="sd">    key : str</span>
+<span class="sd">        The key to which to add the text element</span>
+<span class="sd">    elem : lxml.etree.Element</span>
+<span class="sd">        From where to extract the text</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">txt</span> <span class="o">=</span> <span class="n">elem</span><span class="o">.</span><span class="n">text</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">txt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="n">d</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">txt</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+
+<span class="k">def</span> <span class="nf">_parse_attributes</span><span class="p">(</span><span class="n">xml</span><span class="p">):</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">xml</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{}</span>
+    <span class="sd">&quot;&quot;&quot;Add attributes to a record</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    xml: xml.etree.ElementTree.ElementTree.Element</span>
+<span class="sd">        An xml element of level &quot;EXPERIMENT|STUDY|RUN|SAMPLE_ATTRIBUTES&quot;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+    <span class="c1"># Iterate over &quot;XXX_ATTRIBUTES&quot;</span>
+    <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="n">xml</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">tag</span> <span class="o">=</span> <span class="n">elem</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;./TAG&#39;</span><span class="p">)</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">elem</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;./VALUE&#39;</span><span class="p">)</span>
+            <span class="n">d</span><span class="p">[</span><span class="s1">&#39;attributes&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;tag&#39;</span><span class="p">:</span> <span class="n">tag</span><span class="o">.</span><span class="n">text</span><span class="p">,</span> <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">value</span><span class="o">.</span><span class="n">text</span><span class="p">})</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="c1"># tag or value missing text, so skip</span>
+            <span class="k">pass</span>
+    <span class="k">if</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">):</span>
+        <span class="n">d</span><span class="o">=</span><span class="p">{}</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_parse_links</span><span class="p">(</span><span class="n">xml</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Add attributes to a record</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    xml: xml.etree.ElementTree.ElementTree.Element</span>
+<span class="sd">        An xml element of level &quot;EXPERIMENT|STUDY|RUN|SAMPLE_LINKS&quot;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">xml</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{}</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+    <span class="c1"># Iterate over &quot;XXX_ATTRIBUTES&quot;</span>
+    <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="n">xml</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;.//XREF_LINK&quot;</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">tag</span> <span class="o">=</span> <span class="n">elem</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;./DB&#39;</span><span class="p">)</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">elem</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;./ID&#39;</span><span class="p">)</span>
+            <span class="n">d</span><span class="p">[</span><span class="s1">&#39;xrefs&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;db&#39;</span><span class="p">:</span> <span class="n">tag</span><span class="o">.</span><span class="n">text</span><span class="p">,</span> <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">value</span><span class="o">.</span><span class="n">text</span><span class="p">})</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="c1"># tag or value missing text, so skip</span>
+            <span class="k">pass</span>
+    <span class="k">if</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">):</span>
+        <span class="n">d</span><span class="o">=</span><span class="p">{}</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_get_special_ids</span><span class="p">(</span><span class="n">id_rec</span><span class="p">):</span>
+    <span class="n">namespace_map</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;geo&quot;</span><span class="p">:</span> <span class="s2">&quot;GEO&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;gds&quot;</span><span class="p">:</span> <span class="s2">&quot;GEO_Dataset&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;pubmed&quot;</span><span class="p">:</span> <span class="s2">&quot;pubmed&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;biosample&quot;</span><span class="p">:</span> <span class="s2">&quot;BioSample&quot;</span><span class="p">,</span>
+                     <span class="s2">&quot;bioproject&quot;</span><span class="p">:</span> <span class="s2">&quot;BioProject&quot;</span><span class="p">}</span>
+    <span class="c1"># code below from sramongo/sra.py by jtfear</span>
+    <span class="c1"># https://github.com/jfear/sramongo/blob/master/sramongo/sra.py</span>
+    <span class="c1"># </span>
+    <span class="c1"># Make sure fully formed xref</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">_id</span> <span class="o">=</span> <span class="n">id_rec</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+        <span class="n">_db</span> <span class="o">=</span> <span class="n">id_rec</span><span class="p">[</span><span class="s1">&#39;namespace&#39;</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">_db</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="c1"># normalize db name</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">norm</span> <span class="o">=</span> <span class="n">_db</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39; ()[].:&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="n">norm</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+
+    <span class="k">if</span> <span class="n">norm</span> <span class="ow">in</span> <span class="n">namespace_map</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="c1"># Normalize the ids a little</span>
+        <span class="n">id_norm</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s1">&#39;geo|gds|bioproject|biosample|pubmed|pmid&#39;</span><span class="p">,</span>
+                         <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">_id</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39; :().&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">namespace_map</span><span class="p">[</span><span class="n">norm</span><span class="p">],</span> <span class="n">id_norm</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="k">def</span> <span class="nf">_parse_identifiers</span><span class="p">(</span><span class="n">xml</span><span class="p">,</span> <span class="n">section</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parse IDENTIFIERS section&quot;&quot;&quot;</span>
+
+    <span class="n">d</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">_id</span> <span class="ow">in</span> <span class="n">xml</span><span class="p">:</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">_id</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="s2">&quot;PRIMARY_ID&quot;</span><span class="p">):</span>
+            <span class="n">d</span><span class="p">[</span><span class="n">section</span> <span class="o">+</span> <span class="s1">&#39;_accession&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_id</span><span class="o">.</span><span class="n">text</span>
+        <span class="k">elif</span><span class="p">(</span><span class="n">_id</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="s2">&quot;SUBMITTER_ID&quot;</span><span class="p">):</span>
+            <span class="n">id_rec</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;namespace&#39;</span><span class="p">:</span> <span class="n">_id</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;namespace&quot;</span><span class="p">),</span> <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">_id</span><span class="o">.</span><span class="n">text</span><span class="p">}</span>
+            <span class="n">d</span><span class="p">[</span><span class="s1">&#39;identifiers&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">id_rec</span><span class="p">)</span>
+        <span class="k">elif</span><span class="p">(</span><span class="n">_id</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="s2">&quot;UUID&quot;</span><span class="p">):</span>
+            <span class="n">d</span><span class="p">[</span><span class="s1">&#39;identifiers&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;uuid&#39;</span><span class="p">:</span><span class="n">_id</span><span class="o">.</span><span class="n">text</span><span class="p">})</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># all other id types (secondary, external)</span>
+            <span class="n">id_rec</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;namespace&#39;</span><span class="p">:</span> <span class="n">_id</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;namespace&quot;</span><span class="p">),</span> <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">_id</span><span class="o">.</span><span class="n">text</span><span class="p">}</span>
+            <span class="n">d</span><span class="p">[</span><span class="s1">&#39;identifiers&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">id_rec</span><span class="p">)</span>
+            <span class="n">special</span> <span class="o">=</span> <span class="n">_get_special_ids</span><span class="p">(</span><span class="n">id_rec</span><span class="p">)</span>
+            <span class="k">if</span><span class="p">(</span><span class="n">special</span><span class="p">):</span>
+                <span class="n">d</span><span class="p">[</span><span class="n">special</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">special</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">d</span><span class="p">[</span><span class="s1">&#39;identifiers&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">id_rec</span><span class="p">)</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_process_path_map</span><span class="p">(</span><span class="n">xml</span><span class="p">,</span> <span class="n">path_map</span><span class="p">):</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">path_map</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># use &quot;text&quot; as second tuple value to</span>
+            <span class="c1"># get the text value</span>
+            <span class="k">if</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;text&#39;</span><span class="p">):</span>
+                <span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">xml</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">text</span>
+                <span class="c1"># use the name of the attribute to</span>
+                <span class="c1"># get a specific attribute</span>
+            <span class="k">elif</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;child&#39;</span><span class="p">):</span>
+                <span class="n">child</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">xml</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">child</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                        <span class="s1">&#39;There are too many elements&#39;</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">v</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;text&#39;</span><span class="p">:</span>
+                    <span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">child</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span>
+                <span class="k">elif</span> <span class="n">v</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;tag&#39;</span><span class="p">:</span>
+                    <span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">child</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tag</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">xml</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">pass</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_parse_study_type</span><span class="p">(</span><span class="n">xml</span><span class="p">):</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">xml</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">d</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">xml</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;existing_study_type&#39;</span><span class="p">)):</span>
+        <span class="n">d</span><span class="p">[</span><span class="s1">&#39;study_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">xml</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;existing_study_type&#39;</span><span class="p">)</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">xml</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;new_study_type&#39;</span><span class="p">)):</span>
+        <span class="n">d</span><span class="p">[</span><span class="s1">&#39;study_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">xml</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;new_study_type&#39;</span><span class="p">)</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="try_update"><a class="viewcode-back" href="../../omicidx.sra_parsers.html#omicidx.sra_parsers.try_update">[docs]</a><span class="k">def</span> <span class="nf">try_update</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">d</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">return</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span><span class="p">(</span><span class="n">d</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="SRAXMLRecord"><a class="viewcode-back" href="../../omicidx.sra_parsers.html#omicidx.sra_parsers.SRAXMLRecord">[docs]</a><span class="k">class</span> <span class="nc">SRAXMLRecord</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xml</span><span class="p">):</span>
+        <span class="c1">#if(type(xml) is not xml.etree.ElementTree.Element):</span>
+        <span class="c1">#    raise(TypeError(&#39;xml should be of type xml.etree.ElementTree.Element&#39;))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xml</span> <span class="o">=</span> <span class="n">xml</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parse_xml</span><span class="p">()</span>
+
+<div class="viewcode-block" id="SRAXMLRecord.parse_xml"><a class="viewcode-back" href="../../omicidx.sra_parsers.html#omicidx.sra_parsers.SRAXMLRecord.parse_xml">[docs]</a>    <span class="k">def</span> <span class="nf">parse_xml</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xml</span><span class="o">.</span><span class="n">attrib</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">d</span></div></div>
+
+
+<div class="viewcode-block" id="SRAExperimentRecord"><a class="viewcode-back" href="../../omicidx.sra_parsers.html#omicidx.sra_parsers.SRAExperimentRecord">[docs]</a><span class="k">class</span> <span class="nc">SRAExperimentRecord</span><span class="p">(</span><span class="n">SRAXMLRecord</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xml</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">xml</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SRAExperimentRecord.parse_xml"><a class="viewcode-back" href="../../omicidx.sra_parsers.html#omicidx.sra_parsers.SRAExperimentRecord.parse_xml">[docs]</a>    <span class="k">def</span> <span class="nf">parse_xml</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Parse an SRA xml EXPERIMENT element&quot;&quot;&quot;</span>
+        <span class="n">xml</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xml</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">parse_experiment</span><span class="p">(</span><span class="n">xml</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="SRAStudyRecord"><a class="viewcode-back" href="../../omicidx.sra_parsers.html#omicidx.sra_parsers.SRAStudyRecord">[docs]</a><span class="k">class</span> <span class="nc">SRAStudyRecord</span><span class="p">(</span><span class="n">SRAXMLRecord</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xml</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">xml</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SRAStudyRecord.parse_xml"><a class="viewcode-back" href="../../omicidx.sra_parsers.html#omicidx.sra_parsers.SRAStudyRecord.parse_xml">[docs]</a>    <span class="k">def</span> <span class="nf">parse_xml</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">parse_study</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xml</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="SRASampleRecord"><a class="viewcode-back" href="../../omicidx.sra_parsers.html#omicidx.sra_parsers.SRASampleRecord">[docs]</a><span class="k">class</span> <span class="nc">SRASampleRecord</span><span class="p">(</span><span class="n">SRAXMLRecord</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xml</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">xml</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SRASampleRecord.parse_xml"><a class="viewcode-back" href="../../omicidx.sra_parsers.html#omicidx.sra_parsers.SRASampleRecord.parse_xml">[docs]</a>    <span class="k">def</span> <span class="nf">parse_xml</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">parse_sample</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xml</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="SRASubmissionRecord"><a class="viewcode-back" href="../../omicidx.sra_parsers.html#omicidx.sra_parsers.SRASubmissionRecord">[docs]</a><span class="k">class</span> <span class="nc">SRASubmissionRecord</span><span class="p">(</span><span class="n">SRAXMLRecord</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xml</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">xml</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SRASubmissionRecord.parse_xml"><a class="viewcode-back" href="../../omicidx.sra_parsers.html#omicidx.sra_parsers.SRASubmissionRecord.parse_xml">[docs]</a>    <span class="k">def</span> <span class="nf">parse_xml</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">parse_submission</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xml</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="SRARunRecord"><a class="viewcode-back" href="../../omicidx.sra_parsers.html#omicidx.sra_parsers.SRARunRecord">[docs]</a><span class="k">class</span> <span class="nc">SRARunRecord</span><span class="p">(</span><span class="n">SRAXMLRecord</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xml</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">xml</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SRARunRecord.parse_xml"><a class="viewcode-back" href="../../omicidx.sra_parsers.html#omicidx.sra_parsers.SRARunRecord.parse_xml">[docs]</a>    <span class="k">def</span> <span class="nf">parse_xml</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">parse_run</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xml</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="SRAExperimentPackage"><a class="viewcode-back" href="../../omicidx.sra_parsers.html#omicidx.sra_parsers.SRAExperimentPackage">[docs]</a><span class="k">class</span> <span class="nc">SRAExperimentPackage</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Parse SRA Experiment to dict</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        node: xml.etree.ElementTree.Element</span>
+<span class="sd">            Element</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">study</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">experiment</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">runs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">sample</span> <span class="o">=</span> <span class="p">{}</span>
+
+
+        <span class="c1"># Currently, just skip all incomplete or</span>
+        <span class="c1"># broken records by returning None in data slot</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">study</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">experiment</span> <span class="o">=</span> <span class="n">SRAExperimentRecord</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;.//EXPERIMENT&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">data</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">study</span> <span class="o">=</span> <span class="n">SRAStudyRecord</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;.//STUDY&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">data</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">study</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;accession&#39;</span><span class="p">:</span> <span class="n">experiment</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;study_accession&#39;</span><span class="p">]}</span>
+            <span class="n">sample</span> <span class="o">=</span> <span class="n">SRASampleRecord</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;.//SAMPLE&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">data</span>
+            <span class="n">runs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">([</span><span class="n">SRARunRecord</span><span class="p">(</span><span class="n">run</span><span class="p">)</span><span class="o">.</span><span class="n">data</span> <span class="k">for</span> <span class="n">run</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s2">&quot;.//RUN&quot;</span><span class="p">)])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;experiment&#39;</span><span class="p">:</span> <span class="n">experiment</span><span class="p">,</span>
+                <span class="s1">&#39;runs&#39;</span><span class="p">:</span> <span class="n">runs</span><span class="p">,</span>
+                <span class="s1">&#39;sample&#39;</span><span class="p">:</span> <span class="n">sample</span><span class="p">,</span>
+                <span class="s1">&#39;study&#39;</span><span class="p">:</span> <span class="n">study</span>
+            <span class="p">}</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="kc">None</span>
+        
+
+<div class="viewcode-block" id="SRAExperimentPackage.sample"><a class="viewcode-back" href="../../omicidx.sra_parsers.html#omicidx.sra_parsers.SRAExperimentPackage.sample">[docs]</a>    <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;sample&#39;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="SRAExperimentPackage.experiment"><a class="viewcode-back" href="../../omicidx.sra_parsers.html#omicidx.sra_parsers.SRAExperimentPackage.experiment">[docs]</a>    <span class="k">def</span> <span class="nf">experiment</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;experiment&#39;</span><span class="p">]</span></div>
+        
+<div class="viewcode-block" id="SRAExperimentPackage.expanded_experiment"><a class="viewcode-back" href="../../omicidx.sra_parsers.html#omicidx.sra_parsers.SRAExperimentPackage.expanded_experiment">[docs]</a>    <span class="k">def</span> <span class="nf">expanded_experiment</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">expt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;experiment&#39;</span><span class="p">]</span>
+        <span class="n">expt</span><span class="p">[</span><span class="s1">&#39;runs&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">runs</span><span class="p">()</span>
+        <span class="n">expt</span><span class="p">[</span><span class="s1">&#39;sample&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span>
+        <span class="n">expt</span><span class="p">[</span><span class="s1">&#39;study&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">study</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">expt</span></div>
+
+<div class="viewcode-block" id="SRAExperimentPackage.runs"><a class="viewcode-back" href="../../omicidx.sra_parsers.html#omicidx.sra_parsers.SRAExperimentPackage.runs">[docs]</a>    <span class="k">def</span> <span class="nf">runs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;runs&#39;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="SRAExperimentPackage.nested_runs"><a class="viewcode-back" href="../../omicidx.sra_parsers.html#omicidx.sra_parsers.SRAExperimentPackage.nested_runs">[docs]</a>    <span class="k">def</span> <span class="nf">nested_runs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">retval</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">run</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">runs</span><span class="p">():</span>
+            <span class="n">run</span><span class="p">[</span><span class="s1">&#39;experiment&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiment</span><span class="p">()</span>
+            <span class="n">run</span><span class="p">[</span><span class="s1">&#39;study&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">study</span><span class="p">()</span>
+            <span class="n">run</span><span class="p">[</span><span class="s1">&#39;sample&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span>
+            <span class="n">retval</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">run</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">retval</span></div>
+
+<div class="viewcode-block" id="SRAExperimentPackage.study"><a class="viewcode-back" href="../../omicidx.sra_parsers.html#omicidx.sra_parsers.SRAExperimentPackage.study">[docs]</a>    <span class="k">def</span> <span class="nf">study</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;study&#39;</span><span class="p">]</span></div></div>
+
+
+<div class="viewcode-block" id="open_file"><a class="viewcode-back" href="../../omicidx.sra_parsers.html#omicidx.sra_parsers.open_file">[docs]</a><span class="k">def</span> <span class="nf">open_file</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">encoding</span> <span class="o">=</span> <span class="s1">&#39;UTF-8&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Open a file, generalized to deal with gzip files</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    fname: string</span>
+<span class="sd">        The filename. If ends in &#39;.gz&#39;, is opened with </span>
+<span class="sd">        gzip. </span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    an open file handle</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">fname</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.gz&#39;</span><span class="p">)):</span>
+        <span class="k">return</span><span class="p">(</span><span class="n">gzip</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;rt&quot;</span><span class="p">,</span> <span class="n">encoding</span> <span class="o">=</span> <span class="n">encoding</span><span class="p">))</span>
+    <span class="k">return</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span> <span class="o">=</span> <span class="n">encoding</span><span class="p">))</span></div>
+
+
+
+<span class="c1"># this csv parser</span>
+<span class="c1"># 1. uses DictReader</span>
+<span class="c1"># 2. converts NCBI&#39;s standard of &#39;&#39; to None</span>
+<span class="k">def</span> <span class="nf">_custom_csv_parser</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">open_file</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">reader</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">DictReader</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">reader</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">row</span><span class="p">:</span>
+                <span class="k">if</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">):</span>
+                    <span class="n">row</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span>
+            <span class="k">yield</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+
+<div class="viewcode-block" id="parse_livelist"><a class="viewcode-back" href="../../omicidx.sra_parsers.html#omicidx.sra_parsers.parse_livelist">[docs]</a><span class="k">def</span> <span class="nf">parse_livelist</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">_custom_csv_parser</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="parse_run_info"><a class="viewcode-back" href="../../omicidx.sra_parsers.html#omicidx.sra_parsers.parse_run_info">[docs]</a><span class="k">def</span> <span class="nf">parse_run_info</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">_custom_csv_parser</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="parse_addons_info"><a class="viewcode-back" href="../../omicidx.sra_parsers.html#omicidx.sra_parsers.parse_addons_info">[docs]</a><span class="k">def</span> <span class="nf">parse_addons_info</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">_custom_csv_parser</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="srastatrep"><a class="viewcode-back" href="../../omicidx.sra_parsers.html#omicidx.sra_parsers.srastatrep">[docs]</a><span class="k">def</span> <span class="nf">srastatrep</span><span class="p">(</span><span class="n">accessions</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Access the SRA statrep api</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    accessions: List[str]</span>
+<span class="sd">        A list (or can be single string) of accessions</span>
+
+<span class="sd">    Return</span>
+<span class="sd">    ------</span>
+<span class="sd">    A named tuple with statrep column names as field_names</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span><span class="p">(</span><span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">accessions</span><span class="p">,</span> <span class="nb">list</span><span class="p">)):</span>
+        <span class="n">accessions</span> <span class="o">=</span> <span class="p">[</span><span class="n">accessions</span><span class="p">]</span>
+    <span class="k">with</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="s1">&#39;https://www.ncbi.nlm.nih.gov/Traces/sra/status/srastatrep.fcgi/acc-mirroring?acc=</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">accessions</span><span class="p">)))</span> <span class="k">as</span> <span class="n">response</span><span class="p">:</span>
+        <span class="n">vals</span> <span class="o">=</span> <span class="n">ujson</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        <span class="n">cnames</span> <span class="o">=</span> <span class="n">vals</span><span class="p">[</span><span class="s1">&#39;column_names&#39;</span><span class="p">]</span>
+        <span class="n">StatRep</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s2">&quot;StatRep&quot;</span><span class="p">,</span> <span class="n">field_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">([</span><span class="n">cname</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">cname</span> <span class="ow">in</span> <span class="n">cnames</span><span class="p">]))</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">vals</span><span class="p">[</span><span class="s1">&#39;rows&#39;</span><span class="p">]:</span>
+            <span class="n">tmp</span> <span class="o">=</span> <span class="n">StatRep</span><span class="p">(</span><span class="o">*</span><span class="n">row</span><span class="p">)</span>
+            <span class="n">ret</span><span class="p">[</span><span class="n">tmp</span><span class="o">.</span><span class="n">accession</span><span class="p">]</span><span class="o">=</span><span class="n">tmp</span>
+        <span class="k">return</span> <span class="n">ret</span></div>
+
+
+    
+<div class="viewcode-block" id="load_experiment_xml_by_accession"><a class="viewcode-back" href="../../omicidx.sra_parsers.html#omicidx.sra_parsers.load_experiment_xml_by_accession">[docs]</a><span class="k">def</span> <span class="nf">load_experiment_xml_by_accession</span><span class="p">(</span><span class="n">accession</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="s1">&#39;https://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?save=efetch&amp;db=sra&amp;rettype=FullXml&amp;term=</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">accession</span><span class="p">))</span> <span class="k">as</span> <span class="n">response</span><span class="p">:</span>
+        <span class="n">xml</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">xml</span></div>
+
+
+
+<div class="viewcode-block" id="load_runbrowser_xml_by_accession"><a class="viewcode-back" href="../../omicidx.sra_parsers.html#omicidx.sra_parsers.load_runbrowser_xml_by_accession">[docs]</a><span class="k">def</span> <span class="nf">load_runbrowser_xml_by_accession</span><span class="p">(</span><span class="n">accession</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="s2">&quot;https://trace.ncbi.nlm.nih.gov/Traces/sra/?run=</span><span class="si">{}</span><span class="s2">&amp;retmode=xml&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">accession</span><span class="p">))</span> <span class="k">as</span> <span class="n">response</span><span class="p">:</span>
+        <span class="n">xml</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">xml</span></div>
+
+    
+
+<div class="viewcode-block" id="run_from_runbrowser"><a class="viewcode-back" href="../../omicidx.sra_parsers.html#omicidx.sra_parsers.run_from_runbrowser">[docs]</a><span class="k">def</span> <span class="nf">run_from_runbrowser</span><span class="p">(</span><span class="n">accession</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Just the run part of runbrowser output&quot;&quot;&quot;</span>
+    
+    <span class="n">runbrowser_xml</span> <span class="o">=</span> <span class="n">load_runbrowser_xml_by_accession</span><span class="p">(</span><span class="n">accession</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">parse_run</span><span class="p">(</span><span class="n">runbrowser_xml</span><span class="o">.</span><span class="n">getroot</span><span class="p">()</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;.//RUN&#39;</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="results_from_runbrowser"><a class="viewcode-back" href="../../omicidx.sra_parsers.html#omicidx.sra_parsers.results_from_runbrowser">[docs]</a><span class="k">def</span> <span class="nf">results_from_runbrowser</span><span class="p">(</span><span class="n">accession</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return complete record from runbrowser</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    accession: string</span>
+<span class="sd">        Any SRA accession, but the only one-to-one results are</span>
+<span class="sd">        for SRR records. </span>
+
+<span class="sd">    Return</span>
+<span class="sd">    ------</span>
+<span class="sd">    a dict with experiment, run, study, and sample records</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">runbrowser_xml</span> <span class="o">=</span> <span class="n">load_runbrowser_xml_by_accession</span><span class="p">(</span><span class="n">accession</span><span class="p">)</span>
+    <span class="n">root</span> <span class="o">=</span> <span class="n">runbrowser_xml</span><span class="o">.</span><span class="n">getroot</span><span class="p">()</span>
+    <span class="n">error</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;./ERROR&#39;</span><span class="p">)</span>
+    <span class="c1"># This finds errors like &quot;XXXXX has been removed&quot;</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">error</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span><span class="p">(</span><span class="s2">&quot;ERROR: &quot;</span> <span class="o">+</span> <span class="n">error</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">res</span><span class="p">[</span><span class="s1">&#39;run&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">parse_run</span><span class="p">(</span><span class="n">root</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;.//RUN&#39;</span><span class="p">))</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">return</span><span class="p">(</span><span class="s1">&#39;ERROR: Nothing found for accession </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">accession</span><span class="p">))</span>
+    <span class="n">res</span><span class="p">[</span><span class="s1">&#39;experiment&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">parse_experiment</span><span class="p">(</span><span class="n">root</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;.//EXPERIMENT&#39;</span><span class="p">))</span>
+    <span class="n">sample_root</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;./SAMPLE&#39;</span><span class="p">)</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">sample_root</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="n">res</span><span class="p">[</span><span class="s1">&#39;sample&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">parse_sample</span><span class="p">(</span><span class="n">sample_root</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">res</span><span class="p">[</span><span class="s1">&#39;sample&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;accession&#39;</span><span class="p">:</span> <span class="n">res</span><span class="p">[</span><span class="s1">&#39;experiment&#39;</span><span class="p">][</span><span class="s1">&#39;sample_accession&#39;</span><span class="p">]}</span>
+    <span class="n">study_root</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;./STUDY&#39;</span><span class="p">)</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">study_root</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="n">res</span><span class="p">[</span><span class="s1">&#39;study&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">parse_study</span><span class="p">(</span><span class="n">study_root</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">res</span><span class="p">[</span><span class="s1">&#39;study&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;accession&#39;</span><span class="p">:</span> <span class="n">res</span><span class="p">[</span><span class="s1">&#39;experiment&#39;</span><span class="p">][</span><span class="s1">&#39;study_accession&#39;</span><span class="p">]}</span>
+    <span class="n">res</span><span class="p">[</span><span class="s1">&#39;xml&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">runbrowser_xml</span>
+    <span class="k">return</span> <span class="n">res</span></div>
+
+<div class="viewcode-block" id="models_from_runbrowser"><a class="viewcode-back" href="../../omicidx.sra_parsers.html#omicidx.sra_parsers.models_from_runbrowser">[docs]</a><span class="k">def</span> <span class="nf">models_from_runbrowser</span><span class="p">(</span><span class="n">accession</span><span class="p">):</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">results_from_runbrowser</span><span class="p">(</span><span class="n">accession</span><span class="p">)</span>
+    <span class="k">if</span><span class="p">(</span><span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="s2">&quot;error&quot;</span>
+    <span class="n">mapper</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;experiment&#39;</span><span class="p">:</span> <span class="n">pydantic_models</span><span class="o">.</span><span class="n">SraExperiment</span><span class="p">,</span>
+              <span class="s1">&#39;run&#39;</span><span class="p">:</span> <span class="n">pydantic_models</span><span class="o">.</span><span class="n">SraRun</span><span class="p">,</span>
+              <span class="s1">&#39;sample&#39;</span><span class="p">:</span> <span class="n">pydantic_models</span><span class="o">.</span><span class="n">SraSample</span><span class="p">,</span>
+              <span class="s1">&#39;study&#39;</span><span class="p">:</span> <span class="n">pydantic_models</span><span class="o">.</span><span class="n">SraStudy</span><span class="p">}</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">res</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">k</span> <span class="ow">in</span> <span class="n">mapper</span><span class="p">):</span>
+            <span class="n">ret</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">mapper</span><span class="p">[</span><span class="n">k</span><span class="p">](</span><span class="o">**</span><span class="n">res</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">ret</span></div>
+              
+              
+<div class="viewcode-block" id="run_iterator"><a class="viewcode-back" href="../../omicidx.sra_parsers.html#omicidx.sra_parsers.run_iterator">[docs]</a><span class="k">def</span> <span class="nf">run_iterator</span><span class="p">(</span><span class="n">from_date</span><span class="o">=</span><span class="s2">&quot;2001-01-01&quot;</span><span class="p">,</span><span class="n">to_date</span><span class="o">=</span><span class="s2">&quot;2050-01-01&quot;</span><span class="p">,</span>
+                 <span class="n">count</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="n">offset</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">get_accession_list</span><span class="p">(</span><span class="n">from_date</span><span class="p">,</span> <span class="n">to_date</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;RUN&quot;</span><span class="p">):</span>
+        <span class="k">yield</span><span class="p">(</span><span class="n">models_from_runbrowser</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s1">&#39;Accession&#39;</span><span class="p">]))</span></div>
+
+
+
+
+<div class="viewcode-block" id="get_accession_list"><a class="viewcode-back" href="../../omicidx.sra_parsers.html#omicidx.sra_parsers.get_accession_list">[docs]</a><span class="k">def</span> <span class="nf">get_accession_list</span><span class="p">(</span><span class="n">from_date</span><span class="o">=</span><span class="s2">&quot;2001-01-01&quot;</span><span class="p">,</span><span class="n">to_date</span><span class="o">=</span><span class="s2">&quot;2050-01-01&quot;</span><span class="p">,</span>
+                       <span class="n">count</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="n">offset</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;EXPERIMENT&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get SRA accessions from SRA API</span>
+
+<span class="sd">    The API is at https://www.ncbi.nlm.nih.gov/Traces/sra/status/srastatrep.fcgi/acc-mirroring</span>
+<span class="sd">    and can be used to get &quot;RUN&quot;, &quot;EXPERIMENT&quot;, &quot;SAMPLE&quot;, and &quot;STUDY&quot;.</span>
+
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    from_date: str</span>
+<span class="sd">        Collect accessions starting from the given date</span>
+<span class="sd">    to_date: str</span>
+<span class="sd">        Collect accessions starting from the given date</span>
+<span class="sd">    count: int</span>
+<span class="sd">        How many accessions to collect from the SRA API in</span>
+<span class="sd">        one pass</span>
+<span class="sd">    offset: int</span>
+<span class="sd">        Start at offset...</span>
+<span class="sd">    type: str</span>
+<span class="sd">        One of &quot;RUN&quot;, &quot;EXPERIMENT&quot;, &quot;SAMPLE&quot;, and &quot;STUDY&quot;.</span>
+
+<span class="sd">    Return</span>
+<span class="sd">    ======</span>
+<span class="sd">    An iterator of accessions as strings. </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">column_names</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Accession&quot;</span><span class="p">,</span> <span class="s2">&quot;Submission&quot;</span><span class="p">,</span> <span class="s2">&quot;Type&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;Received&quot;</span><span class="p">,</span> <span class="s2">&quot;Published&quot;</span><span class="p">,</span> <span class="s2">&quot;LastUpdate&quot;</span><span class="p">,</span> <span class="s2">&quot;Status&quot;</span><span class="p">,</span> <span class="s2">&quot;Insdc&quot;</span><span class="p">]</span>
+    <span class="n">column_names</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Accession&quot;</span><span class="p">]</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://www.ncbi.nlm.nih.gov/Traces/sra/status/&quot;</span> <span class="o">+</span> \
+          <span class="s2">&quot;srastatrep.fcgi/acc-mirroring?&quot;</span> <span class="o">+</span> \
+          <span class="s2">&quot;from_date=</span><span class="si">{}</span><span class="s2">&amp;to_date=</span><span class="si">{}</span><span class="s2">&amp;count=</span><span class="si">{}</span><span class="s2">&amp;type=</span><span class="si">{}</span><span class="s2">&amp;offset=</span><span class="si">{}</span><span class="s2">&quot;</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="n">url</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">from_date</span><span class="p">,</span> <span class="n">to_date</span><span class="p">,</span> <span class="n">count</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">with</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">)</span> <span class="k">as</span> <span class="n">response</span><span class="p">:</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">ujson</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;UTF-8&#39;</span><span class="p">))</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="kc">True</span> <span class="p">:</span>
+        <span class="n">offset</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">c</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">c</span> <span class="o">!=</span> <span class="nb">int</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s1">&#39;fetched_count&#39;</span><span class="p">])):</span>
+            <span class="n">retval</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s1">&#39;column_names&#39;</span><span class="p">],</span> <span class="n">res</span><span class="p">[</span><span class="s1">&#39;rows&#39;</span><span class="p">][</span><span class="n">c</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+            <span class="k">yield</span><span class="p">(</span><span class="n">retval</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span><span class="p">(</span><span class="n">c</span> <span class="o">!=</span> <span class="n">count</span><span class="p">):</span>
+                <span class="k">break</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://www.ncbi.nlm.nih.gov/Traces/sra/&quot;</span> <span class="o">+</span>\
+                <span class="s2">&quot;status/srastatrep.fcgi/acc-mirroring&quot;</span> <span class="o">+</span> \
+                <span class="s2">&quot;?from_date=</span><span class="si">{}</span><span class="s2">&amp;to_date=</span><span class="si">{}</span><span class="s2">&amp;count=</span><span class="si">{}</span><span class="s2">&amp;type=</span><span class="si">{}</span><span class="s2">&amp;offset=</span><span class="si">{}</span><span class="s2">&quot;</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="n">url</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">from_date</span><span class="p">,</span> <span class="n">to_date</span><span class="p">,</span> <span class="n">count</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">with</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">)</span> <span class="k">as</span> <span class="n">response</span><span class="p">:</span>
+                    <span class="n">res</span> <span class="o">=</span> <span class="n">ujson</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;UTF-8&#39;</span><span class="p">))</span>
+            <span class="k">except</span> <span class="n">urllib</span><span class="o">.</span><span class="n">error</span><span class="o">.</span><span class="n">HTTPError</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;fetched: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s1">&#39;fetched_count&#39;</span><span class="p">]))</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;total: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">offset</span><span class="p">))</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="mi">0</span></div>
+            
+            
+<div class="viewcode-block" id="sra_object_generator"><a class="viewcode-back" href="../../omicidx.sra_parsers.html#omicidx.sra_parsers.sra_object_generator">[docs]</a><span class="k">def</span> <span class="nf">sra_object_generator</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Iterate over objects in an SRA meta_XXX_set xml file</span>
+<span class="sd">    </span>
+<span class="sd">    :param: fname str() name of xml file, may be gzipped or not</span>
+<span class="sd">    </span>
+<span class="sd">    :returns: An iterator over SRA objects. Access actual data </span>
+<span class="sd">        as a dict using Object.data</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">validClasses</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;experiment&#39;</span><span class="p">,</span> <span class="s1">&#39;run&#39;</span><span class="p">,</span> <span class="s1">&#39;study&#39;</span><span class="p">,</span> <span class="s1">&#39;sample&#39;</span><span class="p">]</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">fname</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;gz&quot;</span><span class="p">)):</span>
+        <span class="n">fh</span> <span class="o">=</span> <span class="n">gzip</span><span class="o">.</span><span class="n">GzipFile</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">event</span><span class="p">,</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">et</span><span class="o">.</span><span class="n">iterparse</span><span class="p">(</span><span class="n">fh</span><span class="p">):</span>
+        <span class="k">if</span><span class="p">((</span><span class="n">element</span><span class="o">.</span><span class="n">tag</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">validClasses</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">event</span> <span class="o">==</span> <span class="s2">&quot;end&quot;</span><span class="p">)):</span>
+            <span class="k">yield</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="s2">&quot;SRA&quot;</span> <span class="o">+</span> <span class="n">element</span><span class="o">.</span><span class="n">tag</span><span class="o">.</span><span class="n">title</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;Record&quot;</span><span class="p">)(</span><span class="n">element</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="LiveList"><a class="viewcode-back" href="../../omicidx.sra_parsers.html#omicidx.sra_parsers.LiveList">[docs]</a><span class="k">class</span> <span class="nc">LiveList</span><span class="p">(</span><span class="n">Iterable</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return an iterator of pydantic_models&quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">from_date</span><span class="o">=</span><span class="s2">&quot;2004-01-01&quot;</span><span class="p">,</span>
+                 <span class="n">to_date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="mi">2500</span><span class="p">,</span>
+                 <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">entity</span><span class="o">=</span><span class="s2">&quot;EXPERIMENT&quot;</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s2">&quot;live&quot;</span><span class="p">,</span>
+                 <span class="n">max_retries</span> <span class="o">=</span> <span class="mi">5</span>
+                 <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">from_date</span> <span class="o">=</span> <span class="n">from_date</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="o">=</span> <span class="n">offset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">=</span> <span class="n">count</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">retries</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_retries</span> <span class="o">=</span> <span class="n">max_retries</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">entity</span> <span class="o">=</span> <span class="n">entity</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">status</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">done</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">to_date</span> <span class="o">=</span> <span class="n">to_date</span>
+        <span class="c1">#self.pool = multiprocessing.Pool(8)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fill_buffer</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span><span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">done</span><span class="p">):</span>
+            <span class="n">retval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">counter</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">counter</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="p">)):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_fill_buffer</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">retval</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span><span class="p">(</span><span class="ne">StopIteration</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_url</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;current offset: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">offset</span><span class="p">))</span>
+        <span class="n">columns</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot;Accession&quot;</span><span class="p">,</span> <span class="s2">&quot;Submission&quot;</span><span class="p">,</span> <span class="s2">&quot;Type&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;Received&quot;</span><span class="p">,</span> <span class="s2">&quot;Published&quot;</span><span class="p">,</span> <span class="s2">&quot;LastUpdate&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;Status&quot;</span><span class="p">,</span> <span class="s2">&quot;Insdc&quot;</span><span class="p">,</span> <span class="s2">&quot;ReplacedBy&quot;</span><span class="p">,</span> <span class="s2">&quot;Meta&quot;</span><span class="p">])</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://www.ncbi.nlm.nih.gov/Traces/&quot;</span> \
+              <span class="s2">&quot;sra/status/srastatrep.fcgi/acc-mirroring?&quot;</span> \
+              <span class="s2">&quot;from_date=</span><span class="si">{}</span><span class="s2">&amp;count=</span><span class="si">{}</span><span class="s2">&amp;offset=</span><span class="si">{}</span><span class="s2">&amp;columns=</span><span class="si">{}</span><span class="s2">&quot;</span> \
+              <span class="s2">&quot;&amp;format=json&amp;type=</span><span class="si">{}</span><span class="s2">&amp;status=</span><span class="si">{}</span><span class="s2">&quot;</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">url</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">from_date</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span><span class="p">,</span>
+                         <span class="bp">self</span><span class="o">.</span><span class="n">offset</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span>
+                         <span class="bp">self</span><span class="o">.</span><span class="n">entity</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span><span class="p">)</span>
+        <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">to_date</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">url</span> <span class="o">+=</span> <span class="s2">&quot;&amp;to_date=</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">to_date</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;url:&#39;</span> <span class="o">+</span> <span class="n">url</span><span class="p">)</span>
+        <span class="k">return</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_process_row</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
+            <span class="k">if</span><span class="p">(</span><span class="s2">&quot;Meta&quot;</span> <span class="ow">in</span> <span class="n">row</span> <span class="ow">and</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;Meta&#39;</span><span class="p">]</span><span class="o">!=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+                <span class="n">d</span> <span class="o">=</span> <span class="n">dict_from_single_xml</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;Meta&#39;</span><span class="p">])</span>
+                <span class="n">model_type</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;entity_type&#39;</span><span class="p">]</span>
+                <span class="n">d</span><span class="p">[</span><span class="s1">&#39;published&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;Published&#39;</span><span class="p">]</span>
+                <span class="n">d</span><span class="p">[</span><span class="s1">&#39;lastupdate&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;LastUpdate&#39;</span><span class="p">]</span>
+                <span class="n">d</span><span class="p">[</span><span class="s1">&#39;received&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;Received&#39;</span><span class="p">]</span>
+                <span class="n">d</span><span class="p">[</span><span class="s1">&#39;status&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;Status&#39;</span><span class="p">]</span>
+                <span class="n">d</span><span class="p">[</span><span class="s1">&#39;insdc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="k">if</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;Insdc&#39;</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;True&#39;</span><span class="p">):</span>
+                    <span class="n">d</span><span class="p">[</span><span class="s1">&#39;insdc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">pydantic_model</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">pydantic_models</span><span class="p">,</span> <span class="s1">&#39;Sra&#39;</span><span class="o">+</span><span class="n">model_type</span><span class="o">.</span><span class="n">capitalize</span><span class="p">())(</span><span class="o">**</span><span class="n">d</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">pydantic_model</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">_prep_records</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">reader</span><span class="p">):</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">reader</span><span class="p">:</span>
+            <span class="n">pydantic_model</span> <span class="o">=</span> <span class="n">LiveList</span><span class="o">.</span><span class="n">_process_row</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+        <span class="c1">#for pydantic_model in self.pool.imap_unordered(LiveList._process_row, reader):</span>
+            <span class="k">if</span><span class="p">(</span><span class="n">pydantic_model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+                <span class="n">ret</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pydantic_model</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+                
+        <span class="k">return</span> <span class="n">ret</span>
+
+    <span class="k">def</span> <span class="nf">_fill_buffer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span><span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">done</span><span class="p">):</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_url</span><span class="p">()</span>
+            <span class="kn">import</span> <span class="nn">json</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+                <span class="k">if</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">):</span>
+                    <span class="c1">#reader = csv.DictReader(response, delimiter=&quot;\t&quot;)</span>
+                    <span class="n">vals</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+                    <span class="n">reader</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="k">if</span><span class="p">(</span><span class="s1">&#39;column_names&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">vals</span><span class="p">):</span>
+                        <span class="k">raise</span> <span class="n">urllib</span><span class="o">.</span><span class="n">error</span><span class="o">.</span><span class="n">HTTPError</span>
+                    <span class="n">colnames</span> <span class="o">=</span> <span class="n">vals</span><span class="p">[</span><span class="s1">&#39;column_names&#39;</span><span class="p">]</span>
+                    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">vals</span><span class="p">[</span><span class="s1">&#39;rows&#39;</span><span class="p">]:</span>
+                        <span class="n">reader</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">colnames</span><span class="p">,[</span><span class="n">val</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">row</span><span class="p">])))</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">buffer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prep_records</span><span class="p">(</span><span class="n">reader</span><span class="p">)</span>
+                    <span class="k">if</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">buffer</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">done</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">retries</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;url </span><span class="si">{url}</span><span class="s1"> :: retries </span><span class="si">{self.retries}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="kn">import</span> <span class="nn">time</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">2</span><span class="o">^</span><span class="bp">self</span><span class="o">.</span><span class="n">retries</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">retries</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">if</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">retries</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_retries</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_fill_buffer</span><span class="p">()</span></div>
+                
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">OmicIDX</a></h1>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=seandavi&repo=omicidx&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Bigquery.html">OmicIDX dataset on Bigquery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../cli.html">Commandline Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../genomic_metadata.html">Genomic metadata in OmicIDX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">omicidx</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Sean Davis.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/seandavi/omicidx" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

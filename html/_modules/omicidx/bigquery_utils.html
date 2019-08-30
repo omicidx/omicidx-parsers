@@ -1,0 +1,409 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>omicidx.bigquery_utils &#8212; OmicIDX  documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for omicidx.bigquery_utils</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">google</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">from</span> <span class="nn">google.cloud</span> <span class="k">import</span> <span class="n">bigquery</span>
+<span class="kn">from</span> <span class="nn">google.cloud</span> <span class="k">import</span> <span class="n">storage</span>
+<span class="kn">from</span> <span class="nn">google.cloud.bigquery</span> <span class="k">import</span> <span class="n">SchemaField</span>
+
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span>
+                    <span class="nb">format</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%(asctime)s</span><span class="s1"> - </span><span class="si">%(name)s</span><span class="s1"> - </span><span class="si">%(levelname)s</span><span class="s1"> - </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_get_field_schema</span><span class="p">(</span><span class="n">field</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;convert bigquery field (dict) to SchemaField</span>
+
+<span class="sd">    Works recursively if necessary to deal with </span>
+<span class="sd">    nested fields&quot;&quot;&quot;</span>
+    
+    <span class="n">name</span> <span class="o">=</span> <span class="n">field</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+    <span class="n">field_type</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="s1">&#39;STRING&#39;</span><span class="p">)</span>
+    <span class="n">mode</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mode&#39;</span><span class="p">,</span> <span class="s1">&#39;NULLABLE&#39;</span><span class="p">)</span>
+    <span class="n">fields</span> <span class="o">=</span> <span class="n">field</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;fields&#39;</span><span class="p">,</span> <span class="p">[])</span>
+
+    <span class="k">if</span> <span class="n">fields</span><span class="p">:</span>
+        <span class="n">subschema</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">:</span>
+            <span class="n">fields_res</span> <span class="o">=</span> <span class="n">_get_field_schema</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+            <span class="n">subschema</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fields_res</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">subschema</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">field_schema</span> <span class="o">=</span> <span class="n">SchemaField</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> 
+        <span class="n">field_type</span><span class="o">=</span><span class="n">field_type</span><span class="p">,</span>
+        <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span>
+        <span class="n">fields</span><span class="o">=</span><span class="n">subschema</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">field_schema</span>
+
+
+<div class="viewcode-block" id="parse_bq_json_schema"><a class="viewcode-back" href="../../omicidx.bigquery_utils.html#omicidx.bigquery_utils.parse_bq_json_schema">[docs]</a><span class="k">def</span> <span class="nf">parse_bq_json_schema</span><span class="p">(</span><span class="n">schema_filename</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Convert bigquery JSON file to python Bigquery Schema</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    schema_filename: str</span>
+<span class="sd">        A json file with bigquery schema dump</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">schema</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">schema_filename</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">infile</span><span class="p">:</span>
+        <span class="n">jsonschema</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">infile</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">jsonschema</span><span class="p">:</span>
+        <span class="n">schema</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_get_field_schema</span><span class="p">(</span><span class="n">field</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">schema</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">_load_file_to_bigquery</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">uri</span><span class="p">,</span>
+                           <span class="n">job_config</span><span class="p">:</span> <span class="n">bigquery</span><span class="o">.</span><span class="n">LoadJobConfig</span><span class="p">,</span>
+                           <span class="n">schema</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                           <span class="n">drop</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+    
+    <span class="n">client</span> <span class="o">=</span> <span class="n">bigquery</span><span class="o">.</span><span class="n">Client</span><span class="p">()</span>
+    <span class="n">dataset_id</span> <span class="o">=</span> <span class="n">dataset</span>
+    
+    <span class="n">dataset_ref</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">dataset</span><span class="p">(</span><span class="n">dataset_id</span><span class="p">)</span>
+
+    <span class="k">if</span><span class="p">(</span><span class="n">drop</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">client</span><span class="o">.</span><span class="n">delete_table</span><span class="p">(</span><span class="n">dataset_ref</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">table</span><span class="p">))</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Table </span><span class="si">{table}</span><span class="s1"> dropped from dataset </span><span class="si">{dataset}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">pass</span>
+        
+    <span class="n">uri</span> <span class="o">=</span> <span class="n">uri</span>
+
+    <span class="n">load_job</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">load_table_from_uri</span><span class="p">(</span>
+        <span class="n">uri</span><span class="p">,</span>
+        <span class="n">dataset_ref</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">table</span><span class="p">),</span>
+        <span class="n">location</span><span class="o">=</span><span class="s2">&quot;US&quot;</span><span class="p">,</span>  <span class="c1"># Location must match that of the destination dataset.</span>
+        <span class="n">job_config</span><span class="o">=</span><span class="n">job_config</span><span class="p">,</span>
+    <span class="p">)</span>  <span class="c1"># API request</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Starting job </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">load_job</span><span class="o">.</span><span class="n">job_id</span><span class="p">))</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Loading </span><span class="si">{uri}</span><span class="s2"> to table </span><span class="si">{table}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">load_job</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>  <span class="c1"># Waits for table load to complete.</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Job finished.&quot;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">google</span><span class="o">.</span><span class="n">api_core</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">BadRequest</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Job loading </span><span class="si">{uri}</span><span class="s2"> into </span><span class="si">{dataset}</span><span class="s2">.</span><span class="si">{table}</span><span class="s2"> failed.&quot;</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">load_job</span><span class="o">.</span><span class="n">errors</span><span class="p">)</span>
+    
+    <span class="n">destination_table</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_table</span><span class="p">(</span><span class="n">dataset_ref</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">table</span><span class="p">))</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Loaded </span><span class="si">{}</span><span class="s2"> rows.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">destination_table</span><span class="o">.</span><span class="n">num_rows</span><span class="p">))</span>
+
+    
+
+
+<div class="viewcode-block" id="load_json_to_bigquery"><a class="viewcode-back" href="../../omicidx.bigquery_utils.html#omicidx.bigquery_utils.load_json_to_bigquery">[docs]</a><span class="k">def</span> <span class="nf">load_json_to_bigquery</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">uri</span><span class="p">,</span> <span class="n">schema</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Load a file from google cloud storage into BigQuery</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dataset: str</span>
+<span class="sd">        The Bigquery dataset</span>
+<span class="sd">    table: str</span>
+<span class="sd">        The Bigquery table</span>
+<span class="sd">    uri: str</span>
+<span class="sd">        The google cloud storage uri (``gs://....``)</span>
+<span class="sd">    schema: List[SchemaField] objects or ``None``</span>
+<span class="sd">        The schema as a list of `bigquery.SchemaField` objects</span>
+<span class="sd">    drop: boolean</span>
+<span class="sd">        Drop the table or not.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">job_config</span> <span class="o">=</span> <span class="n">bigquery</span><span class="o">.</span><span class="n">LoadJobConfig</span><span class="p">()</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">schema</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="n">job_config</span><span class="o">.</span><span class="n">schema</span> <span class="o">=</span> <span class="n">schema</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">job_config</span><span class="o">.</span><span class="n">autodetect</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">job_config</span><span class="o">.</span><span class="n">source_format</span> <span class="o">=</span> <span class="n">bigquery</span><span class="o">.</span><span class="n">SourceFormat</span><span class="o">.</span><span class="n">NEWLINE_DELIMITED_JSON</span>
+
+    <span class="n">_load_file_to_bigquery</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">uri</span><span class="p">,</span> <span class="n">job_config</span><span class="p">,</span> <span class="n">schema</span><span class="p">,</span> <span class="n">drop</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="load_csv_to_bigquery"><a class="viewcode-back" href="../../omicidx.bigquery_utils.html#omicidx.bigquery_utils.load_csv_to_bigquery">[docs]</a><span class="k">def</span> <span class="nf">load_csv_to_bigquery</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">uri</span><span class="p">,</span> <span class="n">schema</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Load a file from google cloud storage into BigQuery</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dataset: str</span>
+<span class="sd">        The Bigquery dataset</span>
+<span class="sd">    table: str</span>
+<span class="sd">        The Bigquery table</span>
+<span class="sd">    uri: str</span>
+<span class="sd">        The google cloud storage uri (``gs://....``)</span>
+<span class="sd">    schema: List[SchemaField] objects or ``None``</span>
+<span class="sd">        The schema as a list of `bigquery.SchemaField` objects</span>
+<span class="sd">    drop: boolean</span>
+<span class="sd">        Drop the table or not.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">job_config</span> <span class="o">=</span> <span class="n">bigquery</span><span class="o">.</span><span class="n">LoadJobConfig</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">schema</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="n">job_config</span><span class="o">.</span><span class="n">schema</span> <span class="o">=</span> <span class="n">schema</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">job_config</span><span class="o">.</span><span class="n">autodetect</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">job_config</span><span class="o">.</span><span class="n">source_format</span> <span class="o">=</span> <span class="n">bigquery</span><span class="o">.</span><span class="n">SourceFormat</span><span class="o">.</span><span class="n">CSV</span>
+
+    <span class="n">_load_file_to_bigquery</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">uri</span><span class="p">,</span> <span class="n">job_config</span><span class="p">,</span> <span class="n">schema</span><span class="p">,</span> <span class="n">drop</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="copy_table"><a class="viewcode-back" href="../../omicidx.bigquery_utils.html#omicidx.bigquery_utils.copy_table">[docs]</a><span class="k">def</span> <span class="nf">copy_table</span><span class="p">(</span><span class="n">src_dataset</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">dest_dataset</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+               <span class="n">src_table</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">dest_table</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+               <span class="n">drop</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">bigquery</span><span class="o">.</span><span class="n">Client</span><span class="p">()</span>
+    <span class="n">source_dataset</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">dataset</span><span class="p">(</span><span class="n">src_dataset</span><span class="p">)</span>
+    <span class="n">source_table_ref</span> <span class="o">=</span> <span class="n">source_dataset</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">src_table</span><span class="p">)</span>
+
+    <span class="n">dest_dataset</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">dataset</span><span class="p">(</span><span class="n">dest_dataset</span><span class="p">)</span>
+    <span class="n">dest_table_ref</span> <span class="o">=</span> <span class="n">dest_dataset</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">dest_table</span><span class="p">)</span>
+
+    <span class="k">if</span><span class="p">(</span><span class="n">drop</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">client</span><span class="o">.</span><span class="n">delete_table</span><span class="p">(</span><span class="n">dest_table_ref</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Table </span><span class="si">{dest_table}</span><span class="s1"> dropped from dataset </span><span class="si">{dest_dataset}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">pass</span>
+    <span class="n">job</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">copy_table</span><span class="p">(</span>
+        <span class="n">source_table_ref</span><span class="p">,</span>
+        <span class="n">dest_table_ref</span><span class="p">,</span>
+        <span class="c1"># Location must match that of the source and destination tables.</span>
+        <span class="n">location</span><span class="o">=</span><span class="s2">&quot;US&quot;</span><span class="p">,</span>
+    <span class="p">)</span>  <span class="c1"># API request</span>
+    
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Starting job </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">job</span><span class="o">.</span><span class="n">job_id</span><span class="p">))</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;copying </span><span class="si">{src_dataset}</span><span class="s2">.</span><span class="si">{src_table}</span><span class="s2"> to </span><span class="si">{dest_dataset}</span><span class="s2">.</span><span class="si">{dest_table}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">job</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>  <span class="c1"># Waits for table load to complete.</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Job finished.&quot;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">google</span><span class="o">.</span><span class="n">api_core</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">BadRequest</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Job copying </span><span class="si">{src_dataset}</span><span class="s2">.</span><span class="si">{src_table}</span><span class="s2"> to </span><span class="si">{dest_dataset}</span><span class="s2">.</span><span class="si">{dest_table}</span><span class="s2"> failed&quot;</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">load_job</span><span class="o">.</span><span class="n">errors</span><span class="p">)</span></div>
+    
+
+
+
+<div class="viewcode-block" id="query_to_destination"><a class="viewcode-back" href="../../omicidx.bigquery_utils.html#omicidx.bigquery_utils.query_to_destination">[docs]</a><span class="k">def</span> <span class="nf">query_to_destination</span><span class="p">(</span><span class="n">dest_dataset</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">dest_table</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                         <span class="n">sql</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                         <span class="n">drop</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">bigquery</span><span class="o">.</span><span class="n">Client</span><span class="p">()</span>
+    <span class="n">dest_dataset</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">dataset</span><span class="p">(</span><span class="n">dest_dataset</span><span class="p">)</span>
+    <span class="n">dest_table_ref</span> <span class="o">=</span> <span class="n">dest_dataset</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">dest_table</span><span class="p">)</span>
+
+    <span class="k">if</span><span class="p">(</span><span class="n">drop</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">client</span><span class="o">.</span><span class="n">delete_table</span><span class="p">(</span><span class="n">dest_table_ref</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;Table </span><span class="si">{dest_table}</span><span class="s1"> dropped from dataset </span><span class="si">{dest_dataset}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+    <span class="n">job_config</span> <span class="o">=</span> <span class="n">bigquery</span><span class="o">.</span><span class="n">QueryJobConfig</span><span class="p">()</span>
+    <span class="n">job_config</span><span class="o">.</span><span class="n">destination</span> <span class="o">=</span> <span class="n">dest_table_ref</span>
+
+    <span class="c1"># Start the query, passing in the extra configuration.</span>
+    <span class="n">query_job</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
+        <span class="n">sql</span><span class="p">,</span>
+        <span class="c1"># Location must match that of the dataset(s) referenced in the query</span>
+        <span class="c1"># and of the destination table.</span>
+        <span class="n">location</span><span class="o">=</span><span class="s2">&quot;US&quot;</span><span class="p">,</span>
+        <span class="n">job_config</span><span class="o">=</span><span class="n">job_config</span><span class="p">,</span>
+    <span class="p">)</span>
+    
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Starting job </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">query_job</span><span class="o">.</span><span class="n">job_id</span><span class="p">))</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;----------------------</span><span class="si">{sql}</span><span class="s2">---------------------&quot;</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;querying to </span><span class="si">{dest_dataset}</span><span class="s2">.</span><span class="si">{dest_table}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">query_job</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>  <span class="c1"># Waits for table load to complete.</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Query results loaded to table </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dest_table_ref</span><span class="o">.</span><span class="n">path</span><span class="p">))</span>
+    <span class="k">except</span> <span class="n">google</span><span class="o">.</span><span class="n">api_core</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">BadRequest</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;querying to </span><span class="si">{dest_dataset}</span><span class="s2">.</span><span class="si">{dest_table}</span><span class="s2"> failed&quot;</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">query_job</span><span class="o">.</span><span class="n">errors</span><span class="p">)</span></div>
+    
+
+<div class="viewcode-block" id="query"><a class="viewcode-back" href="../../omicidx.bigquery_utils.html#omicidx.bigquery_utils.query">[docs]</a><span class="k">def</span> <span class="nf">query</span><span class="p">(</span><span class="n">sql</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">bigquery</span><span class="o">.</span><span class="n">Client</span><span class="p">()</span>
+
+    <span class="n">job_config</span> <span class="o">=</span> <span class="n">bigquery</span><span class="o">.</span><span class="n">QueryJobConfig</span><span class="p">()</span>
+
+    <span class="c1"># Start the query, passing in the extra configuration.</span>
+    <span class="n">query_job</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
+        <span class="n">sql</span><span class="p">,</span>
+        <span class="c1"># Location must match that of the dataset(s) referenced in the query</span>
+        <span class="c1"># and of the destination table.</span>
+        <span class="n">location</span><span class="o">=</span><span class="s2">&quot;US&quot;</span><span class="p">,</span>
+        <span class="n">job_config</span><span class="o">=</span><span class="n">job_config</span><span class="p">,</span>
+    <span class="p">)</span>
+    
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Starting job </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">query_job</span><span class="o">.</span><span class="n">job_id</span><span class="p">))</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;----------------------</span><span class="si">{sql}</span><span class="s2">---------------------&quot;</span><span class="p">)</span>
+    
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">query_job</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>  <span class="c1"># Waits for table load to complete.</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Query completed&quot;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">google</span><span class="o">.</span><span class="n">api_core</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">BadRequest</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;query failed&quot;</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">query_job</span><span class="o">.</span><span class="n">errors</span><span class="p">)</span></div>
+    
+
+<div class="viewcode-block" id="table_to_gcs"><a class="viewcode-back" href="../../omicidx.bigquery_utils.html#omicidx.bigquery_utils.table_to_gcs">[docs]</a><span class="k">def</span> <span class="nf">table_to_gcs</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">uri</span><span class="p">,</span> <span class="n">gzip</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Load a file from google cloud storage into BigQuery</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dataset: str</span>
+<span class="sd">        The Bigquery dataset</span>
+<span class="sd">    table: str</span>
+<span class="sd">        The Bigquery table</span>
+<span class="sd">    uri: str</span>
+<span class="sd">        The google cloud storage uri (``gs://....``)</span>
+<span class="sd">    gzip: bool</span>
+<span class="sd">        Compress output with gzip or not</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">bigquery</span><span class="o">.</span><span class="n">Client</span><span class="p">()</span>
+
+    <span class="n">destination_uri</span> <span class="o">=</span> <span class="n">uri</span>
+    <span class="n">dataset_ref</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">dataset</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+    <span class="n">table_ref</span> <span class="o">=</span> <span class="n">dataset_ref</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+
+
+    
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Exporting </span><span class="si">{}</span><span class="s2">.</span><span class="si">{}</span><span class="s2"> to </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">destination_uri</span><span class="p">))</span>
+
+    <span class="n">job_config</span> <span class="o">=</span> <span class="n">bigquery</span><span class="o">.</span><span class="n">ExtractJobConfig</span><span class="p">()</span>
+
+    <span class="k">if</span><span class="p">(</span><span class="n">gzip</span><span class="p">):</span>
+        <span class="n">job_config</span><span class="o">.</span><span class="n">compression</span> <span class="o">=</span> <span class="n">bigquery</span><span class="o">.</span><span class="n">Compression</span><span class="o">.</span><span class="n">GZIP</span>
+        <span class="n">job_config</span><span class="o">.</span><span class="n">destination_format</span> <span class="o">=</span> <span class="n">bigquery</span><span class="o">.</span><span class="n">DestinationFormat</span><span class="o">.</span><span class="n">NEWLINE_DELIMITED_JSON</span>
+    
+    <span class="n">extract_job</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">extract_table</span><span class="p">(</span>
+        <span class="n">table_ref</span><span class="p">,</span>
+        <span class="n">destination_uri</span><span class="p">,</span>
+        <span class="c1"># Location must match that of the source table.</span>
+        <span class="n">location</span><span class="o">=</span><span class="s2">&quot;US&quot;</span><span class="p">,</span>
+        <span class="n">job_config</span> <span class="o">=</span> <span class="n">job_config</span>
+    <span class="p">)</span>  <span class="c1"># API request</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">extract_job</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>  <span class="c1"># Waits for table load to complete.</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Extract completed&quot;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">google</span><span class="o">.</span><span class="n">api_core</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">BadRequest</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;extract failed&quot;</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">extract_job</span><span class="o">.</span><span class="n">errors</span><span class="p">)</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Exported </span><span class="si">{}</span><span class="s2">.</span><span class="si">{}</span><span class="s2"> to </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">destination_uri</span><span class="p">))</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">OmicIDX</a></h1>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=seandavi&repo=omicidx&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Bigquery.html">OmicIDX dataset on Bigquery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../cli.html">Commandline Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../genomic_metadata.html">Genomic metadata in OmicIDX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">omicidx</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Sean Davis.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/seandavi/omicidx" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

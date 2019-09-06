@@ -2,6 +2,7 @@
 import click
 import subprocess
 import logging
+import os
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
@@ -103,13 +104,13 @@ def upload_processed_sra_data(mirrordir):
     from ..gcs_utils import upload_blob_to_gcs
 
     for entity in 'study sample experiment run'.split():
-        fname = i + '.json'
+        fname = entity + '.json'
         loc_fname = os.path.join(mirrordir, fname)
-        upload_processed_sra_data('temp-testing', loc_fname, 'abc/' + fname)
+        upload_blob_to_gcs('temp-testing', loc_fname, 'abc/' + fname)
 
     fname = 'SRA_Accessions.tab'
     loc_fname = os.path.join(mirrordir, fname)
-    upload_processed_sra_data('temp-testing', loc_fname, 'abc/' + fname)
+    upload_blob_to_gcs('temp-testing', loc_fname, 'abc/' + fname)
 
 
     

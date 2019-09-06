@@ -26,7 +26,10 @@ def _prep_data(fname, index, id_field):
             d = json.loads(line)
             d['_index'] = index
             if(id_field is not None):
-                d['_id'] = d[id_field]
+                if(id_field in d):
+                    d['_id'] = d[id_field]
+                else:
+                    continue
             yield(d)
 
 def bulk_index(fname, index, id_field = None, **kwargs):

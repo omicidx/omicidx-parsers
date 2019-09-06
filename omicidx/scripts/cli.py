@@ -222,10 +222,10 @@ SELECT
   STRUCT(study).study as study
 FROM 
   `isb-cgc-01-0006.omicidx.sra_experiment` expt 
-  JOIN 
+  LEFT OUTER JOIN 
   `isb-cgc-01-0006.omicidx.sra_sample` samp
   ON samp.accession = expt.sample_accession
-  JOIN 
+  LEFT OUTER JOIN 
   `isb-cgc-01-0006.omicidx.sra_study` study
   ON study.accession = expt.study_accession
     """
@@ -233,7 +233,6 @@ FROM
 
 
     sql = """CREATE OR REPLACE TABLE omicidx_etl.sra_run_for_es AS
-create or replace table omicidx_etl.sra_run_for_es as
 SELECT
   run.*,
   STRUCT(expt).expt as experiment,
@@ -244,10 +243,10 @@ FROM
   LEFT OUTER JOIN
   `isb-cgc-01-0006.omicidx.sra_experiment` expt
   ON run.experiment_accession = expt.accession
-  JOIN 
+  LEFT OUTER JOIN 
   `isb-cgc-01-0006.omicidx.sra_sample` samp
   ON samp.accession = expt.sample_accession
-  JOIN 
+  LEFT OUTER JOIN 
   `isb-cgc-01-0006.omicidx.sra_study` study
   ON study.accession = expt.study_accession
 """
@@ -263,9 +262,9 @@ FROM
   SUM(CAST(run.total_spots as INT64)) as total_spots,
   AVG(CAST(run.total_bases as INT64)) as mean_bases_per_run
 FROM `isb-cgc-01-0006.omicidx.sra_study` study 
-JOIN `isb-cgc-01-0006.omicidx.sra_experiment` expt 
+LEFT OUTER JOIN `isb-cgc-01-0006.omicidx.sra_experiment` expt 
   ON expt.study_accession = study.accession
-JOIN `isb-cgc-01-0006.omicidx.sra_run` run
+LEFT OUTER JOIN `isb-cgc-01-0006.omicidx.sra_run` run
   ON run.experiment_accession = expt.accession
 JOIN `isb-cgc-01-0006.omicidx.sra_sample` sample
   ON expt.sample_accession = sample.accession
@@ -276,7 +275,7 @@ SELECT
   STRUCT(study).study,
   agg_counts.* EXCEPT(accession) 
 FROM `isb-cgc-01-0006.omicidx.sra_sample` sample
-JOIN agg_counts 
+LEFT OUTER JOIN agg_counts 
   ON agg_counts.accession = sample.accession
 JOIN `isb-cgc-01-0006.omicidx.sra_experiment` expt 
   ON expt.sample_accession = sample.accession
@@ -309,7 +308,7 @@ SELECT
   study.*,
   agg_counts.* EXCEPT(accession) 
 FROM agg_counts 
-JOIN `isb-cgc-01-0006.omicidx.sra_study` study
+RIGHT OUTER JOIN `isb-cgc-01-0006.omicidx.sra_study` study
   ON study.accession=agg_counts.accession;
 """
     query(sql)

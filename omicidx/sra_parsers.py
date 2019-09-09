@@ -13,7 +13,7 @@ function.
 
 """
 
-import ujson
+import json
 import csv
 import re
 import requests
@@ -24,7 +24,7 @@ import urllib.request
 import xml.etree.ElementTree as etree
 import io
 import gzip
-from .sra import pydantic_models
+from omicidx.sra import pydantic_models
 import logging
 from typing import Iterator, List, Dict, Iterable
 
@@ -842,7 +842,7 @@ def srastatrep(accessions):
     if(not isinstance(accessions, list)):
         accessions = [accessions]
     with urllib.request.urlopen('https://www.ncbi.nlm.nih.gov/Traces/sra/status/srastatrep.fcgi/acc-mirroring?acc={}'.format(",".join(accessions))) as response:
-        vals = ujson.load(response)
+        vals = json.load(response)
         cnames = vals['column_names']
         StatRep = namedtuple("StatRep", field_names = list([cname.lower() for cname in cnames]))
         ret = {}
@@ -885,8 +885,8 @@ def results_from_runbrowser(accession):
         Any SRA accession, but the only one-to-one results are
         for SRR records. 
 
-    Returns
-    -------
+    Return
+    ------
     a dict with experiment, run, study, and sample records
     """
     
@@ -940,6 +940,30 @@ def run_iterator(from_date="2001-01-01",to_date="2050-01-01",
 
 def get_accession_list(from_date="2001-01-01",to_date="2050-01-01",
                        count = 100, offset = 0, type="EXPERIMENT"):
+    """Get SRA accessions from SRA API
+
+    The API is at https://www.ncbi.nlm.nih.gov/Traces/sra/status/srastatrep.fcgi/acc-mirroring
+    and can be used to get "RUN", "EXPERIMENT", "SAMPLE", and "STUDY".
+
+
+    Parameters
+    ----------
+    from_date: str
+        Collect accessions starting from the given date
+    to_date: str
+        Collect accessions starting from the given date
+    count: int
+        How many accessions to collect from the SRA API in
+        one pass
+    offset: int
+        Start at offset...
+    type: str
+        One of "RUN", "EXPERIMENT", "SAMPLE", and "STUDY".
+
+    Return
+    ======
+    An iterator of accessions as strings. 
+    """
     column_names = ["Accession", "Submission", "Type",
                     "Received", "Published", "LastUpdate", "Status", "Insdc"]
     column_names = ["Accession"]
@@ -950,7 +974,7 @@ def get_accession_list(from_date="2001-01-01",to_date="2050-01-01",
     logger.debug(url)
     res = None
     with urllib.request.urlopen(url) as response:
-        res = ujson.loads(response.read().decode('UTF-8'))
+        res = json.loads(response.read().decode('UTF-8'))
         c = 0
     while True :
         offset += 1
@@ -968,7 +992,7 @@ def get_accession_list(from_date="2001-01-01",to_date="2050-01-01",
             url = url.format(from_date, to_date, count, type, offset)
             try:
                 with urllib.request.urlopen(url) as response:
-                    res = ujson.loads(response.read().decode('UTF-8'))
+                    res = json.loads(response.read().decode('UTF-8'))
             except urllib.error.HTTPError:
                 continue
             logger.info("fetched: " + str(res['fetched_count']))

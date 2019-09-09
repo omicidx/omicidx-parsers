@@ -19,7 +19,8 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
-        apt install libpq-dev 
+        sudo apt-get update
+        sudo apt-get install libpq-dev 
         python -m pip install --upgrade pip poetry
         poetry install
     - name: Lint with flake8

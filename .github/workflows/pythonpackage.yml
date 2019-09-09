@@ -19,6 +19,8 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
+        apk add --no-cache postgresql-libs 
+        apk add --no-cache gcc postgresql-dev
         python -m pip install --upgrade pip poetry
         poetry install
     - name: Lint with flake8

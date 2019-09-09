@@ -132,7 +132,8 @@ def load_sra_data_to_bigquery():
     load_csv_to_bigquery('omicidx_etl',
                          'sra_accessions',
                          'gs://temp-testing/abc/SRA_Accessions.tab',
-             field_delimiter='\t', null_marker='-')
+                         field_delimiter='\t', null_marker='-',
+                         quote_character = "")
 
 
 @sra.command(help="""ETL query to public schema for all SRA entities""")

@@ -557,65 +557,6 @@ def geo_soft_entity_iterator(fh):
         entity.append(line)
      
 
-
-##############################################
-# This function takes the entire SOFT        #
-# format output from a call to the           #
-# NCBI GEO accession viewer page and         #
-# breaks up into individual entities         #
-# and then calls _parse_single_entity_soft() #
-##############################################
-def geo_soft_iterator(self,txt):
-    tups = [_split_on_first_equal(line) for line in txt]
-    tups = [(re.sub('![^_]+_', '',tup[0]), tup[1]) for tup in tups]
-    d = collections.defaultdict(list)
-    for tup in tups:
-        d[tup[0]].append(tup[1])
-    d2 = dict((k,v) for k, v in d.items())
-    for k in ['status',
-              'title',
-              'summary',
-              'overall_design']:
-        try:
-            d2[k] = d2[k][0]
-        except KeyError:
-            d2[k] = None
-    try:
-        d2['subseries'] = get_subseries_from_relations(d2['relation'])
-        d2['bioprojects'] = get_bioprojects_from_relations(d2['relation'])
-        d2['sra_studies'] = get_SRA_from_relations(d2['relation'])
-    except KeyError:
-        d2['subseries']=[]
-        d2['bioprojects']=[]
-        d2['sra_studies']=[]
-
-    for k in ['last_update_date', 'submission_date']:
-        try:
-            d2[k] = datetime.datetime.strptime(d2[k][0], '%b %d %Y').strftime("%Y-%m-%d %H:%M:%S")
-        except KeyError:
-            d2[k] = None
-    if(d2['status'] is not None):
-        if(d2['status'].startswith('Public on')):
-            published_date_string = d2['status'].replace('Public on ','')
-            d2['status']='public'
-            d2['published_date'] = datetime.datetime.strptime(published_date_string, '%b %d %Y').strftime("%Y-%m-%d %H:%M:%S")
-        else:
-            d2['published_date'] = None
-    else:
-        d2['published_date'] = None
-    for taxid_key in ['sample_taxid', 'platform_taxid']:
-        try:
-            d2[taxid_key]=list([int(x) for x in d2[taxid_key]])
-        except KeyError:
-            d2[taxid_key]=[]
-    for k in d2.keys():
-        if(k.startswith('contact')):
-            d2[k] = d2[k][0]
-    for k in list(filter(lambda k: k.startswith('^'), d2.keys())):
-        del(d2[k])
-    return(d2)
-
-
 import click
 import json
 

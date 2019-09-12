@@ -13,6 +13,9 @@ from xml import etree
 import xml
 from io import StringIO
 import requests
+
+import omicidx.geo.pydantic_models as pydantic_models
+
 logging.basicConfig(level=logging.INFO)
 
 try:
@@ -356,13 +359,26 @@ class GEOSample(GEOEnitity):
 class GEOPlatform(GEOEnitity):
     pass
 
+def _split_geo_name(v):
+    """split name of form first,middle,last into dict"""
+    return dict(zip('first middle last'.split(), v.split(',')))
 
 def _create_contact_from_parsed(d):
     contact_dict = {}
     for k, v in d.items():
         if(k.startswith('contact')):
+            v = v[0]
+            if(v == ''):
+                v = None
+            if(k == 'contact_name'):
+                v = _split_geo_name(v)
             contact_dict[k.replace('contact_','')] = v
-    return GEOContact(contact_dict)
+    return contact_dict
+
+def _split_contributor_names(contribs):
+    if(len(contribs)==0):
+        return []
+    return list([_split_geo_name(v) for v in contribs])
 
 ###############################################
 # Parse a single entity of SOFT format,       #
@@ -422,6 +438,11 @@ def _parse_single_entity_soft(entity_txt):
     if(entity_type=='PLATFORM'):
         return(_parse_single_gpl_soft(d2))
 
+def _fix_date_fields(d):
+    for datefield in ['submission_date', 'last_update_date']:
+        if datefield in d:
+            d[datefield] = datetime.datetime.strptime(d[datefield], '%b %d %Y')
+    return d
     
 #######################################
 # Parse the GSE entity in SOFT format #
@@ -436,14 +457,20 @@ def _parse_single_gse_soft(d2):
         d2['bioprojects']=[]
         d2['sra_studies']=[]
     d2['_entity'] = 'GSE'
-    return GEOSeries(d2)
+    if('contributor' in d2):
+        d2['contributor'] = _split_contributor_names(d2['contributor'])
+    d2 = _fix_date_fields(d2)
+    return pydantic_models.GEOSeries(**d2)
 
             
 def _create_gsm_channel_data(d):
     ch_count = int(d['channel_count'])
     ch_recs = []
     for i in range(0, ch_count):
-        ch_recs.append(GEOChannel(d, i+1))
+        # this GEOChannel just encapsulates the parsing
+        # of channel records.
+        # TODO: refactor to parse directly to dict
+        ch_recs.append(GEOChannel(d, i+1).as_dict())
     return ch_recs
 
 # Search for fields like _ch1 and _ch2 ....
@@ -485,8 +512,13 @@ def _parse_single_gsm_soft(d2):
             supp_files += d2[k]
             del d2[k]
     d2['supplemental_files']=supp_files
+    if(supp_files[0]=='NONE'):
+        supp_files = []
     d2['_entity'] = 'GSM'
-    return GEOSample(d2)
+    d2 = _fix_date_fields(d2)
+    if('contributor' in d2):
+        d2['contributor'] = _split_contributor_names(d2['contributor'])
+    return pydantic_models.GEOSample(**d2)
 
 
 #######################################
@@ -503,7 +535,11 @@ def _parse_single_gpl_soft(d2):
         except KeyError:
             d2[k] = None
     d2['_entity'] = 'GPL'
-    return GEOPlatform(d2)
+    d2 = _fix_date_fields(d2)
+    if('contributor' in d2):
+        d2['contributor'] = _split_contributor_names(d2['contributor'])
+    return pydantic_models.GEOPlatform(**d2)
+
 
 
 def geo_soft_entity_iterator(fh):
@@ -567,7 +603,7 @@ def cli():
 def _gse_to_json(gse):
     res = []
     for z in geo_soft_entity_iterator(get_geo_accession_soft(gse)):
-        res.append(json.dumps(z.as_dict()))
+        res.append(z.json())
     return("\n".join(res))
 
 @cli.command()

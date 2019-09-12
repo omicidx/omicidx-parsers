@@ -13,6 +13,7 @@ from xml import etree
 import xml
 from io import StringIO
 import requests
+logging.basicConfig(level=logging.INFO)
 
 try:
     from urllib.error import HTTPError  # for Python 3
@@ -83,17 +84,23 @@ def get_geo_accessions(etyp='GSE', batch_size = 1000, add_term = None, email = "
                                              rettype="acc", retmode="xml",
                                              retstart=start, retmax=batch_size,
                                              webenv=webenv, query_key=query_key)
+                for g in entrez.read(fetch_handle):
+                    n+=1
+                    yield(g['Accession'])
+
                 break
-            except HTTPError as err:
-                print("Received error from server %s" % err)
-                print("Attempt %i of 10" % attempt)
+            except (HTTPError, RuntimeError) as err:
                 import time
-                time.sleep(1*attempt*attempt)
+                if(isinstance(err, HTTPError)):
+                    logging.error("Received error from server %s" % err)
+                    logging.error("Attempt %i of 10" % attempt)
+                    time.sleep(1*attempt*attempt)
+                else:
+                    logging.error("RuntimeError received: {}".format(err))
+                    logging.error("Attempt %i of 10" % attempt)
+                    time.sleep(1)
             else:
                 raise
-        for g in entrez.read(fetch_handle):
-            n+=1
-            yield(g['Accession'])
 
         
 def get_geo_accession_xml(accession):
@@ -111,7 +118,7 @@ def get_geo_accession_xml(accession):
             time.sleep(1*attempt)
 
             
-def get_geo_accession_soft(accession, targ = 'all'):
+def get_geo_accession_soft(accession, targ = 'all', view = "brief"):
     """Open a connection to get the GEO SOFT for an accession
 
     Parameters
@@ -127,8 +134,9 @@ def get_geo_accession_soft(accession, targ = 'all'):
     >>> handle = get_geo_accession_soft('GSE2553')
     >>> handle.readlines()
     """
-    url = ("https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?targ={}&acc={}&form=text&view=quick"
-           .format(targ, accession))
+    logging.info(f'Accessing accession {accession} in SOFT format')
+    url = ("https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?targ={}&acc={}&form=text&view={}"
+           .format(targ, accession, view))
     attempt = 0
     while attempt < 10:
         attempt += 1
@@ -173,6 +181,7 @@ def get_geo_entities(txt):
     -------
     A dict of entities keyed by accession and values a list of txt lines
     """
+    logging.info('Parsing out geo entities')
     entities = {}
     accession = None
     for line in txt:
@@ -183,6 +192,7 @@ def get_geo_entities(txt):
             accession = _split_on_first_equal(line)[1]
             entity = []
         entity.append(line)
+    logging.info(f'found {len(entities.keys())}')
     return entities
 
 
@@ -506,13 +516,14 @@ def geo_soft_entity_iterator(fh):
 
     Parameters
     ----------
-    fh: anything that can iterate over lines of text
+    fh: Iterable[str]
+       Anything that can iterate over lines of text
        Could be a list of text lines, a file handle, or
        an open url.
     
     Yields
     ------
-    Iterator of GEO entities
+    Iterator of GEO entities as classes
 
 
     >>> for i in geo_soft_entity_iterator(get_geo_accession_soft('GSE2553')):

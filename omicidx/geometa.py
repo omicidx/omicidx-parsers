@@ -256,15 +256,16 @@ def get_biosample_from_relations(relation_list):
 def get_channel_characteristics(d, ch):
     ch_items = list([k for k in d.keys() if k.endswith('ch{}'.format(ch))])
     characteristics = []
+    ret = {}
     for k in ch_items:
         if(k.startswith('characteristics')):
             for characteristic in d[k]:
                 characteristics.append(tuple(characteristic.split(': ')))
             continue
         newk = k.replace("_ch{}".format(ch), "")
-        self.__setattr__(k.replace("_ch{}".format(ch), ""), "\n".join(d[k]))
+        ret[k.replace("_ch{}".format(ch), "")]= "\n".join(d[k])
         if(newk == 'taxid'):
-            self.__setattr__(newk, list([int(x) for x in self.__getattribute__(newk).split('\n')]))
+            ret[newk] = list([int(x) for x in ret[newk].split('\n')])
     char = []
     for v in characteristics:
         if(len(v)==1):
@@ -277,7 +278,8 @@ def get_channel_characteristics(d, ch):
             tag = v[0]
             val = ":".join(v[1:])
         char.append({"tag": tag, "value": val})
-    return char
+    ret['characteristics'] = char
+    return ret
 
         
 def _split_geo_name(v):
@@ -466,6 +468,7 @@ def _parse_single_gpl_soft(d2):
             d2[k] = None
     d2['_entity'] = 'GPL'
     d2 = _fix_date_fields(d2)
+    d2['manufacture_protocol'] = "\n".join(d2['manufacture_protocol'])
     if('contributor' in d2):
         d2['contributor'] = _split_contributor_names(d2['contributor'])
     return pydantic_models.GEOPlatform(**d2)

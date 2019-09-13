@@ -44,6 +44,9 @@ class GEOPlatform(GEOBase):
     manufacturer: List[str] = []
     data_row_count: int = None
     contributor: List[GEOName] = []
+    relation: List[str] = []
+    manufacture_protocol: str = None
+    
 
 class GEOCharacteristic(BaseModel):
     tag: str

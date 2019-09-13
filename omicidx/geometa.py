@@ -106,8 +106,25 @@ def get_geo_accessions(etyp='GSE', batch_size = 1000, add_term = None, email = "
                 raise
 
         
-def get_geo_accession_xml(accession):
-    url = "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?targ=self&acc={}&form=xml&view=quick".format(accession)
+def get_geo_accession_xml(accession, targ = 'all', view = 'brief'):
+    """Open a connection to get the GEO SOFT for an accession
+
+    Parameters
+    ==========
+    accession: str the GEO accesssion
+    targ: str what to fetch. One of "all", "series", "platform", 
+        "samples", "self"
+    view: str amount to return.
+
+    Returns
+    =======
+    A file-like object for reading or readlines
+    
+    >>> handle = get_geo_accession_xml('GSE2553')
+    >>> handle.readlines()
+    """
+    url = ("https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?targ={}&acc={}&form=xml&view={}"
+           .format(targ, accession, view))
     attempt = 0
     while attempt < 10:
         attempt += 1
@@ -129,6 +146,7 @@ def get_geo_accession_soft(accession, targ = 'all', view = "brief"):
     accession: str the GEO accesssion
     targ: str what to fetch. One of "all", "series", "platform", 
         "samples", "self"
+    view: str amount to return.
 
     Returns
     =======
@@ -235,130 +253,33 @@ def get_biosample_from_relations(relation_list):
     return ret
 
 
-class GEOBase(object):
-    """GEO Base class
-    """
-    def as_dict(self):
-        """Return object as a dict"""
-        return self.__dict__
+def get_channel_characteristics(d, ch):
+    ch_items = list([k for k in d.keys() if k.endswith('ch{}'.format(ch))])
+    characteristics = []
+    for k in ch_items:
+        if(k.startswith('characteristics')):
+            for characteristic in d[k]:
+                characteristics.append(tuple(characteristic.split(': ')))
+            continue
+        newk = k.replace("_ch{}".format(ch), "")
+        self.__setattr__(k.replace("_ch{}".format(ch), ""), "\n".join(d[k]))
+        if(newk == 'taxid'):
+            self.__setattr__(newk, list([int(x) for x in self.__getattribute__(newk).split('\n')]))
+    char = []
+    for v in characteristics:
+        if(len(v)==1):
+            tag = v[0]
+            val = None
+        elif(len(v)==2):
+            tag = v[0]
+            val = v[1]
+        elif(len(v)>2):
+            tag = v[0]
+            val = ":".join(v[1:])
+        char.append({"tag": tag, "value": val})
+    return char
 
-class GEOContact(GEOBase):
-    def __init__(self, d):
-        """Create a new GEOContact
-
-        Generally will not be called by a user, but when
-        the parsing occurs by the parser itself.
         
-        * filters to include any fields starting with "contact"
-        * strips off "contact_" from key names
-        * converts values to scalar strings from list
-        * converts empty values to `None`
-        
-        Parameters
-        ----------
-        d: dict
-            A dict as created by parsing the key/value
-            pairs of a GEO accession header. 
-        
-        Returns
-        -------
-        A GEOContact object
-        """
-        for k, v in d.items():
-            # convert to scalar for all keys
-            v = v[0]
-            # And empty string to None
-            if(v == ''):
-                v = None
-            self.__setattr__(k, v)
-
-
-
-class GEOEnitity(GEOBase):
-    def __init__(self, d):
-        """Create a new GEO Entity
-
-        Generally will not be called by a user, but when
-        the parsing occurs by the parser itself.
-        
-        * filters to include any fields starting with "contact"
-        * strips off "contact_" from key names
-        * converts values to scalar strings from list
-        * converts empty values to `None`
-        
-        Parameters
-        ----------
-        d: dict
-            A dict as created by parsing the key/value
-            pairs of a GEO accession header. 
-        
-        Returns
-        -------
-        A GEO Entity object
-        """
-        for k, v in d.items():
-            self.__setattr__(k, v)
-
-    def __repr__(self):
-        return "<GEO {}>".format(self.accession)
-
-    def as_dict(self):
-        d = {}
-        for k, v in self.__dict__.items():
-            if(isinstance(v, GEOBase)):
-                d[k] = v.as_dict()
-            else:
-                d[k] = v
-        return(d)
-
-
-class GEOChannel(GEOBase):
-    """Captures a single channel from a GSM"""
-    
-    def __init__(self, d, ch):
-        ch_items = list([k for k in d.keys() if k.endswith('ch{}'.format(ch))])
-        characteristics = []
-        for k in ch_items:
-            if(k.startswith('characteristics')):
-                for characteristic in d[k]:
-                    characteristics.append(tuple(characteristic.split(': ')))
-                continue
-            newk = k.replace("_ch{}".format(ch), "")
-            self.__setattr__(k.replace("_ch{}".format(ch), ""), "\n".join(d[k]))
-            if(newk == 'taxid'):
-                self.__setattr__(newk, list([int(x) for x in self.__getattribute__(newk).split('\n')]))
-        char = []
-        for v in characteristics:
-            if(len(v)==1):
-                tag = v[0]
-                val = None
-            elif(len(v)==2):
-                tag = v[0]
-                val = v[1]
-            elif(len(v)>2):
-                tag = v[0]
-                val = ":".join(v[1:])
-            char.append({"tag": tag, "value": val})
-        self.characteristics = char
-
-class GEOSeries(GEOEnitity):
-    pass
-
-
-class GEOSample(GEOEnitity):
-
-    def as_dict(self):
-        res = super().as_dict()
-        chdata = []
-        for i in res['channels']:
-            chdata.append(i.as_dict())
-        res['channels'] = chdata
-        return(res)
-
-
-class GEOPlatform(GEOEnitity):
-    pass
-
 def _split_geo_name(v):
     """split name of form first,middle,last into dict"""
     return dict(zip('first middle last'.split(), v.split(',')))
@@ -441,12 +362,18 @@ def _parse_single_entity_soft(entity_txt):
     if(entity_type=='PLATFORM'):
         return(_parse_single_gpl_soft(d2))
 
+
+###############################################################################
+#        Update date fields of format 'month day year' to date type.          #
+###############################################################################
 def _fix_date_fields(d):
     for datefield in ['submission_date', 'last_update_date']:
         if datefield in d:
             d[datefield] = datetime.datetime.strptime(d[datefield], '%b %d %Y')
     return d
-    
+
+
+
 #######################################
 # Parse the GSE entity in SOFT format #
 #######################################
@@ -473,7 +400,7 @@ def _create_gsm_channel_data(d):
         # this GEOChannel just encapsulates the parsing
         # of channel records.
         # TODO: refactor to parse directly to dict
-        ch_recs.append(GEOChannel(d, i+1).as_dict())
+        ch_recs.append(get_channel_characteristics(d, i+1))
     return ch_recs
 
 # Search for fields like _ch1 and _ch2 ....
@@ -544,7 +471,9 @@ def _parse_single_gpl_soft(d2):
     return pydantic_models.GEOPlatform(**d2)
 
 
-
+###############################################################################
+#                   This is the main entrypoint for parsing.                  #
+###############################################################################
 def geo_soft_entity_iterator(fh):
     """Returns an iterator of GEO entities
 
@@ -562,7 +491,7 @@ def geo_soft_entity_iterator(fh):
     
     Yields
     ------
-    Iterator of GEO entities as classes
+    Iterator of GEO entities as pydantic models
 
 
     >>> for i in geo_soft_entity_iterator(get_geo_accession_soft('GSE2553')):
@@ -578,14 +507,20 @@ def geo_soft_entity_iterator(fh):
         except:
             pass
         line = line.strip()
+
+        # ignore table details for now
+
         if(line.endswith('table_begin')):
             in_table=True
         if(line.endswith('table_end')):
             in_table=False
             continue
-        if(line.startswith('#')):
+        if(in_table): 
             continue
-        if(in_table):
+        
+        # ignore comments
+
+        if(line.startswith('#')):
             continue
         if(line.startswith('^')):
             if(accession is not None):

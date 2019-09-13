@@ -372,6 +372,9 @@ def _create_contact_from_parsed(d):
                 v = None
             if(k == 'contact_name'):
                 v = _split_geo_name(v)
+            if(k == 'contact_web_link'):
+                if(not v.startswith('http')):
+                    v = 'http://'+v
             contact_dict[k.replace('contact_','')] = v
     return contact_dict
 

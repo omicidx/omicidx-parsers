@@ -368,7 +368,9 @@ def _fix_date_fields(d):
         if datefield in d:
             d[datefield] = datetime.datetime.strptime(d[datefield], '%b %d %Y')
     return d
-    
+
+
+
 #######################################
 # Parse the GSE entity in SOFT format #
 #######################################
@@ -466,7 +468,9 @@ def _parse_single_gpl_soft(d2):
     return pydantic_models.GEOPlatform(**d2)
 
 
-
+###############################################################################
+#                   This is the main entrypoint for parsing.                  #
+###############################################################################
 def geo_soft_entity_iterator(fh):
     """Returns an iterator of GEO entities
 
@@ -484,7 +488,7 @@ def geo_soft_entity_iterator(fh):
     
     Yields
     ------
-    Iterator of GEO entities as classes
+    Iterator of GEO entities as pydantic models
 
 
     >>> for i in geo_soft_entity_iterator(get_geo_accession_soft('GSE2553')):
@@ -500,14 +504,20 @@ def geo_soft_entity_iterator(fh):
         except:
             pass
         line = line.strip()
+
+        # ignore table details for now
+
         if(line.endswith('table_begin')):
             in_table=True
         if(line.endswith('table_end')):
             in_table=False
             continue
-        if(line.startswith('#')):
+        if(in_table): 
             continue
-        if(in_table):
+        
+        # ignore comments
+
+        if(line.startswith('#')):
             continue
         if(line.startswith('^')):
             if(accession is not None):

@@ -235,84 +235,7 @@ def get_biosample_from_relations(relation_list):
     return ret
 
 
-class GEOBase(object):
-    """GEO Base class
-    """
-    def as_dict(self):
-        """Return object as a dict"""
-        return self.__dict__
-
-class GEOContact(GEOBase):
-    def __init__(self, d):
-        """Create a new GEOContact
-
-        Generally will not be called by a user, but when
-        the parsing occurs by the parser itself.
-        
-        * filters to include any fields starting with "contact"
-        * strips off "contact_" from key names
-        * converts values to scalar strings from list
-        * converts empty values to `None`
-        
-        Parameters
-        ----------
-        d: dict
-            A dict as created by parsing the key/value
-            pairs of a GEO accession header. 
-        
-        Returns
-        -------
-        A GEOContact object
-        """
-        for k, v in d.items():
-            # convert to scalar for all keys
-            v = v[0]
-            # And empty string to None
-            if(v == ''):
-                v = None
-            self.__setattr__(k, v)
-
-
-
-class GEOEnitity(GEOBase):
-    def __init__(self, d):
-        """Create a new GEO Entity
-
-        Generally will not be called by a user, but when
-        the parsing occurs by the parser itself.
-        
-        * filters to include any fields starting with "contact"
-        * strips off "contact_" from key names
-        * converts values to scalar strings from list
-        * converts empty values to `None`
-        
-        Parameters
-        ----------
-        d: dict
-            A dict as created by parsing the key/value
-            pairs of a GEO accession header. 
-        
-        Returns
-        -------
-        A GEO Entity object
-        """
-        for k, v in d.items():
-            self.__setattr__(k, v)
-
-    def __repr__(self):
-        return "<GEO {}>".format(self.accession)
-
-    def as_dict(self):
-        d = {}
-        for k, v in self.__dict__.items():
-            if(isinstance(v, GEOBase)):
-                d[k] = v.as_dict()
-            else:
-                d[k] = v
-        return(d)
-
-
-class GEOChannel(GEOBase):
+class GEOChannel(object):
     """Captures a single channel from a GSM"""
     
     def __init__(self, d, ch):
@@ -341,24 +264,7 @@ class GEOChannel(GEOBase):
             char.append({"tag": tag, "value": val})
         self.characteristics = char
 
-class GEOSeries(GEOEnitity):
-    pass
-
-
-class GEOSample(GEOEnitity):
-
-    def as_dict(self):
-        res = super().as_dict()
-        chdata = []
-        for i in res['channels']:
-            chdata.append(i.as_dict())
-        res['channels'] = chdata
-        return(res)
-
-
-class GEOPlatform(GEOEnitity):
-    pass
-
+        
 def _split_geo_name(v):
     """split name of form first,middle,last into dict"""
     return dict(zip('first middle last'.split(), v.split(',')))

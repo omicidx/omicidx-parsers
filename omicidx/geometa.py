@@ -468,7 +468,8 @@ def _parse_single_gpl_soft(d2):
             d2[k] = None
     d2['_entity'] = 'GPL'
     d2 = _fix_date_fields(d2)
-    d2['manufacture_protocol'] = "\n".join(d2['manufacture_protocol'])
+    if('manufacture_protocol' in d2):
+        d2['manufacture_protocol'] = "\n".join(d2['manufacture_protocol'])
     if('contributor' in d2):
         d2['contributor'] = _split_contributor_names(d2['contributor'])
     return pydantic_models.GEOPlatform(**d2)

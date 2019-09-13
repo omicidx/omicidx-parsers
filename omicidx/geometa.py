@@ -106,8 +106,25 @@ def get_geo_accessions(etyp='GSE', batch_size = 1000, add_term = None, email = "
                 raise
 
         
-def get_geo_accession_xml(accession):
-    url = "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?targ=self&acc={}&form=xml&view=quick".format(accession)
+def get_geo_accession_xml(accession, targ = 'all', view = 'brief'):
+    """Open a connection to get the GEO SOFT for an accession
+
+    Parameters
+    ==========
+    accession: str the GEO accesssion
+    targ: str what to fetch. One of "all", "series", "platform", 
+        "samples", "self"
+    view: str amount to return.
+
+    Returns
+    =======
+    A file-like object for reading or readlines
+    
+    >>> handle = get_geo_accession_xml('GSE2553')
+    >>> handle.readlines()
+    """
+    url = ("https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?targ={}&acc={}&form=xml&view={}"
+           .format(targ, accession, view))
     attempt = 0
     while attempt < 10:
         attempt += 1
@@ -129,6 +146,7 @@ def get_geo_accession_soft(accession, targ = 'all', view = "brief"):
     accession: str the GEO accesssion
     targ: str what to fetch. One of "all", "series", "platform", 
         "samples", "self"
+    view: str amount to return.
 
     Returns
     =======

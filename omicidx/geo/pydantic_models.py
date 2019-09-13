@@ -47,7 +47,7 @@ class GEOPlatform(GEOBase):
 
 class GEOCharacteristic(BaseModel):
     tag: str
-    value: str
+    value: str = None # there are apparently some of these
     
 class GEOChannel(BaseModel):
     label: str = None

@@ -24,7 +24,7 @@ class GEOContact(BaseModel):
     address: str = None
     department: str = None
     country: str = None
-    web_link: UrlStr = None
+    web_link: str = None
     institute: str = None
     zip_postal_code: str = None
     phone: str = None

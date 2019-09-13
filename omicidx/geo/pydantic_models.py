@@ -77,7 +77,7 @@ class GEOSample(GEOBase):
     data_row_count: int=0
     library_source: str = None
     overall_design: str = None
-    sra_experiment: constr(regex = 'SRX\d+') = None
+    sra_experiment: constr(regex = '[ES]RX\d+') = None
     data_processing: str = None
     supplemental_files: List[str] = []
     channels: List[GEOChannel] = []
@@ -87,7 +87,7 @@ class GEOSeries(GEOBase):
     accession: constr(regex = 'GSE\d+')
     subseries: List[constr(regex = 'GSE\d+')] = []
     bioprojects: List[constr(regex = 'PRJNA\d+')] = []
-    sra_studies: List[constr(regex = 'SRP\d+')] = []
+    sra_studies: List[constr(regex = '[ES]RP\d+')] = []
     _entity: str = "GSE"
     contact: GEOContact = None
     type: List[str] = []

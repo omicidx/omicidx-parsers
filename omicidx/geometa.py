@@ -253,34 +253,31 @@ def get_biosample_from_relations(relation_list):
     return ret
 
 
-class GEOChannel(object):
-    """Captures a single channel from a GSM"""
-    
-    def __init__(self, d, ch):
-        ch_items = list([k for k in d.keys() if k.endswith('ch{}'.format(ch))])
-        characteristics = []
-        for k in ch_items:
-            if(k.startswith('characteristics')):
-                for characteristic in d[k]:
-                    characteristics.append(tuple(characteristic.split(': ')))
-                continue
-            newk = k.replace("_ch{}".format(ch), "")
-            self.__setattr__(k.replace("_ch{}".format(ch), ""), "\n".join(d[k]))
-            if(newk == 'taxid'):
-                self.__setattr__(newk, list([int(x) for x in self.__getattribute__(newk).split('\n')]))
-        char = []
-        for v in characteristics:
-            if(len(v)==1):
-                tag = v[0]
-                val = None
-            elif(len(v)==2):
-                tag = v[0]
-                val = v[1]
-            elif(len(v)>2):
-                tag = v[0]
-                val = ":".join(v[1:])
-            char.append({"tag": tag, "value": val})
-        self.characteristics = char
+def get_channel_characteristics(d, ch):
+    ch_items = list([k for k in d.keys() if k.endswith('ch{}'.format(ch))])
+    characteristics = []
+    for k in ch_items:
+        if(k.startswith('characteristics')):
+            for characteristic in d[k]:
+                characteristics.append(tuple(characteristic.split(': ')))
+            continue
+        newk = k.replace("_ch{}".format(ch), "")
+        self.__setattr__(k.replace("_ch{}".format(ch), ""), "\n".join(d[k]))
+        if(newk == 'taxid'):
+            self.__setattr__(newk, list([int(x) for x in self.__getattribute__(newk).split('\n')]))
+    char = []
+    for v in characteristics:
+        if(len(v)==1):
+            tag = v[0]
+            val = None
+        elif(len(v)==2):
+            tag = v[0]
+            val = v[1]
+        elif(len(v)>2):
+            tag = v[0]
+            val = ":".join(v[1:])
+        char.append({"tag": tag, "value": val})
+    return char
 
         
 def _split_geo_name(v):
@@ -362,6 +359,10 @@ def _parse_single_entity_soft(entity_txt):
     if(entity_type=='PLATFORM'):
         return(_parse_single_gpl_soft(d2))
 
+
+###############################################################################
+#        Update date fields of format 'month day year' to date type.          #
+###############################################################################
 def _fix_date_fields(d):
     for datefield in ['submission_date', 'last_update_date']:
         if datefield in d:
@@ -394,7 +395,7 @@ def _create_gsm_channel_data(d):
         # this GEOChannel just encapsulates the parsing
         # of channel records.
         # TODO: refactor to parse directly to dict
-        ch_recs.append(GEOChannel(d, i+1).as_dict())
+        ch_recs.append(get_channel_characteristics(d, i+1))
     return ch_recs
 
 # Search for fields like _ch1 and _ch2 ....

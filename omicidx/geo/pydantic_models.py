@@ -80,7 +80,7 @@ class GEOSample(GEOBase):
     data_row_count: int=0
     library_source: str = None
     overall_design: str = None
-    sra_experiment: constr(regex = '[ES]RX\d+') = None
+    sra_experiment: constr(regex = '[DES]RX\d+') = None
     data_processing: str = None
     supplemental_files: List[str] = []
     channels: List[GEOChannel] = []

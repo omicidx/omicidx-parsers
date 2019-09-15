@@ -70,7 +70,7 @@ class GEOSample(GEOBase):
     anchor: str = None
     _entity: None
     accession: constr(regex = 'GSM\d+')
-    biosample: constr(regex = 'SAMN\d+') = None
+    biosample: constr(regex = 'SAM[A-Z]\d+') = None
     tag_count: int = None
     tag_length: float = None
     platform_id: constr(regex = 'GPL\d+')

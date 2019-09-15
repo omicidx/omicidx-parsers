@@ -89,8 +89,8 @@ class GEOSample(GEOBase):
 class GEOSeries(GEOBase):
     accession: constr(regex = 'GSE\d+')
     subseries: List[constr(regex = 'GSE\d+')] = []
-    bioprojects: List[constr(regex = 'PRJNA\d+')] = []
-    sra_studies: List[constr(regex = '[ES]RP\d+')] = []
+    bioprojects: List[constr(regex = 'PRJ[A-Z]+\d+')] = []
+    sra_studies: List[constr(regex = '[ESD]RP\d+')] = []
     _entity: str = "GSE"
     contact: GEOContact = None
     type: List[str] = []

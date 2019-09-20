@@ -2,8 +2,6 @@
 
 # New process
 
-```
-
 
 ## Steps
 

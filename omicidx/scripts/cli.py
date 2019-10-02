@@ -205,7 +205,7 @@ SELECT
   CAST(acc.Published as DATETIME) as published,
   CAST(acc.Received as DATETIME) as received
 FROM 
-    `isb-cgc-01-0006.omicidx_etl.study` study
+    `isb-cgc-01-0006.omicidx_etl.sra_study` study
   JOIN 
     `isb-cgc-01-0006.omicidx_etl.sra_accessions` acc
   ON acc.Accession = study.accession

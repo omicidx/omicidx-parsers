@@ -1,3 +1,4 @@
+"""Simple utility functions for EBI ENA"""
 import urllib.request
 import xml.etree.ElementTree as etree
 import csv

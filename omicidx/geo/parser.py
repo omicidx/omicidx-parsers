@@ -533,56 +533,65 @@ def geo_soft_entity_iterator(fh):
             entity = []
             
         entity.append(line)
-     
 
-import click
-import json
-
-@click.group()
-def cli():
-    pass
-
-def _gse_to_json(gse):
+def gse_to_json(gse):
+    """Return json version of GSE record as text
+    
+    Parameters
+    ----------
+    gse : str
+        The GSE accession to convert
+    """
     res = []
     for z in geo_soft_entity_iterator(get_geo_accession_soft(gse)):
         res.append(z.json())
     return("\n".join(res))
 
-@cli.command()
-@click.option('--gse',
-              help='A single GSE accession')
-def gse_to_json(gse):
-    print(_gse_to_json(gse))
 
-@cli.command()
-@click.option('--term',
-              help='something like "2019/01/28:2019/02/28[PDAT]"')
-@click.option("--outfile", type=click.File('w'),
-              help="output file name, default is stdout")
-def bulk_gse(term, outfile):
+def bulk_gse_to_json(term, outfile = '/dev/stdout'):
+    """Bulk process GSEs to json
+
+    This function takes a term (see below) and does a search. Results
+    from the search of GSE records are returned as json lines to the
+    output file in `outfile`.
+
+    Parameters
+    ----------
+    term : str
+        A search string like "2019/01/28:2019/02/28[PDAT]" as an example.
+        Passed to entrez search.
+    outfile: str
+        The output file to which to write
+    """
     for gse in get_geo_accessions(add_term = term):
         if(outfile is not None):
-            logging.info("writing accession {}".format(gse))
-            res = _gse_to_json(gse)
+            logging.info(f'writing accession {gse}')
+            res = gse_to_json(gse)
             if(res is not None):
                 outfile.write(res + "\n")
             else:
-                logging.warning("Accession {} not found, it appears.".format(gse))
-                
-@cli.command()
-@click.option('--term',
-              help='something like "2019/01/28:2019/02/28[PDAT]"')
-@click.option("--outfile",
-              help="output file name, default is stdout")
-def gse_accessions(term, outfile):
+                logging.warning(f'Accession {gse} not found, it appears.')
+
+def gse_accessions(term, outfile = '/dev/stdout'):
+    """Output list of gse accessions based on term search
+
+    Writes to a file.
+
+    Parameters
+    ----------
+    term : str
+        A search string like "2019/01/28:2019/02/28[PDAT]" as an example.
+        Passed to entrez search.
+    outfile: str
+        The output file to which to write
+
+    """
+    
     with open(outfile, 'w') as ofile:
         n = 0
         for gse in get_geo_accessions(add_term = term, batch_size=1000):
             n+=1
             if(n % 5000 ==0):
-                print(n)
+                logging.info(f'Processed {n} records')
             ofile.write(gse + "\n")
-        print(n)
-
-if __name__ == '__main__':
-    cli()
+        logging.info(f'Processed {n} records')

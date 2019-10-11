@@ -33,6 +33,7 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.autosummary',
     'sphinx_click.ext',
+    'sphinx.ext.graphviz',
     'sphinx.ext.napoleon'
 ]
 

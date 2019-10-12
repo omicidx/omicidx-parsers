@@ -24,7 +24,7 @@ import urllib.request
 import xml.etree.ElementTree as etree
 import io
 import gzip
-from .sra import pydantic_models
+from . import pydantic_models
 import logging
 from typing import Iterator, List, Dict, Iterable
 

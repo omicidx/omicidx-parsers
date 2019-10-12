@@ -1,8 +1,9 @@
-from . import parser
 # these are just to test types
 import Bio
 import http
 import pydantic
+
+from omicidx.geo import parser
 
 TEST_GSE = 'GSE10'
 

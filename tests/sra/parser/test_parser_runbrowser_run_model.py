@@ -1,6 +1,6 @@
 import pytest
 
-from omicidx import sra_parsers as s
+from omicidx.sra import parser as s
 import datetime
 
 EXAMPLE_SRR = 'DRR165601'

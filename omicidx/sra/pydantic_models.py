@@ -1,8 +1,8 @@
+import pydantic
+from pydantic import BaseModel
+import json
 from datetime import datetime
 from typing import List, Dict
-from pydantic import BaseModel
-from pydantic.types import UrlStr
-import json
 
 class Attribute(BaseModel):
     tag: str = None

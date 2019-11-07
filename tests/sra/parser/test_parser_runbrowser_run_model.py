@@ -3,7 +3,7 @@ import pytest
 from omicidx.sra import parser as s
 import datetime
 
-EXAMPLE_SRR = 'DRR165601'
+EXAMPLE_SRR = 'SRR390728'
 
 @pytest.fixture
 def example_runbrowser_model():

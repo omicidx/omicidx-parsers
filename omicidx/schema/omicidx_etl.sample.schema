@@ -1,113 +1,116 @@
-[
-  {
-    "mode": "NULLABLE", 
-    "name": "accession", 
-    "type": "STRING"
-  }, 
-  {
-    "mode": "NULLABLE", 
-    "name": "alias", 
-    "type": "STRING"
-  }, 
-  {
-    "mode": "NULLABLE", 
-    "name": "title", 
-    "type": "STRING"
-  }, 
-  {
-    "mode": "NULLABLE", 
-    "name": "center_name", 
-    "type": "STRING"
-  }, 
-  {
-    "mode": "NULLABLE", 
-    "name": "broker_name", 
-    "type": "STRING"
-  }, 
-  {
-    "mode": "NULLABLE", 
-    "name": "description", 
-    "type": "STRING"
-  }, 
-  {
-    "fields": [
-      {
-        "mode": "NULLABLE", 
-        "name": "value", 
-        "type": "STRING"
-      }, 
-      {
-        "mode": "NULLABLE", 
-        "name": "tag", 
-        "type": "STRING"
-      }
-    ], 
-    "mode": "REPEATED", 
-    "name": "attributes", 
-    "type": "RECORD"
-  }, 
-  {
-    "fields": [
-      {
-        "mode": "NULLABLE", 
-        "name": "id", 
-        "type": "STRING"
-      }, 
-      {
-        "mode": "NULLABLE", 
-        "name": "uuid", 
-        "type": "STRING"
-      }, 
-      {
-        "mode": "NULLABLE", 
-        "name": "namespace", 
-        "type": "STRING"
-      }
-    ], 
-    "mode": "REPEATED", 
-    "name": "identifiers", 
-    "type": "RECORD"
-  }, 
-  {
-    "mode": "NULLABLE", 
-    "name": "organism", 
-    "type": "STRING"
-  }, 
-  {
-    "mode": "NULLABLE", 
-    "name": "sample_accession", 
-    "type": "STRING"
-  }, 
-  {
-    "mode": "NULLABLE", 
-    "name": "GEO", 
-    "type": "STRING"
-  }, 
-  {
-    "mode": "NULLABLE", 
-    "name": "BioSample", 
-    "type": "STRING"
-  }, 
-  {
-    "mode": "NULLABLE", 
-    "name": "taxon_id", 
-    "type": "INTEGER"
-  }, 
-  {
-    "fields": [
-      {
-        "mode": "NULLABLE", 
-        "name": "id", 
-        "type": "STRING"
-      }, 
-      {
-        "mode": "NULLABLE", 
-        "name": "db", 
-        "type": "STRING"
-      }
-    ], 
-    "mode": "REPEATED", 
-    "name": "xrefs", 
-    "type": "RECORD"
-  }
-]
+{
+  "fields": [
+    {
+      "type": "STRING",
+      "name": "value",
+      "mode": "NULLABLE"
+    },
+    {
+      "type": "STRING",
+      "name": "tag",
+      "mode": "NULLABLE"
+    }
+  ],
+  "type": "RECORD",
+  "name": "attributes",
+  "mode": "REPEATED"
+}
+{
+  "fields": [
+    {
+      "type": "STRING",
+      "name": "id",
+      "mode": "NULLABLE"
+    },
+    {
+      "type": "STRING",
+      "name": "db",
+      "mode": "NULLABLE"
+    }
+  ],
+  "type": "RECORD",
+  "name": "xrefs",
+  "mode": "REPEATED"
+}
+{
+  "fields": [
+    {
+      "type": "STRING",
+      "name": "id",
+      "mode": "NULLABLE"
+    },
+    {
+      "type": "STRING",
+      "name": "namespace",
+      "mode": "NULLABLE"
+    }
+  ],
+  "type": "RECORD",
+  "name": "identifiers",
+  "mode": "REPEATED"
+}
+{
+  "type": "DATETIME",
+  "name": "lastupdate",
+  "mode": "NULLABLE"
+}
+{
+  "type": "DATETIME",
+  "name": "published",
+  "mode": "NULLABLE"
+}
+{
+  "type": "STRING",
+  "name": "status",
+  "mode": "NULLABLE"
+}
+{
+  "type": "BOOLEAN",
+  "name": "insdc",
+  "mode": "NULLABLE"
+}
+{
+  "type": "STRING",
+  "name": "organism",
+  "mode": "NULLABLE"
+}
+{
+  "type": "STRING",
+  "name": "accession",
+  "mode": "NULLABLE"
+}
+{
+  "type": "STRING",
+  "name": "description",
+  "mode": "NULLABLE"
+}
+{
+  "type": "STRING",
+  "name": "geo",
+  "mode": "NULLABLE"
+}
+{
+  "type": "STRING",
+  "name": "BioSample",
+  "mode": "NULLABLE"
+}
+{
+  "type": "STRING",
+  "name": "alias",
+  "mode": "NULLABLE"
+}
+{
+  "type": "INTEGER",
+  "name": "taxon_id",
+  "mode": "NULLABLE"
+}
+{
+  "type": "DATETIME",
+  "name": "received",
+  "mode": "NULLABLE"
+}
+{
+  "type": "STRING",
+  "name": "title",
+  "mode": "NULLABLE"
+}

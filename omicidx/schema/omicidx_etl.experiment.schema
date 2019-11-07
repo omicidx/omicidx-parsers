@@ -1,0 +1,143 @@
+[
+  {
+    "type": "STRING",
+    "name": "study_accession"
+  },
+  {
+    "type": "STRING",
+    "name": "library_source"
+  },
+  {
+    "type": "FLOAT",
+    "name": "library_layout_length"
+  },
+  {
+    "fields": [
+      {
+        "type": "STRING",
+        "name": "id"
+      },
+      {
+        "type": "STRING",
+        "name": "namespace"
+      }
+    ],
+    "type": "RECORD",
+    "name": "identifiers",
+    "mode": "REPEATED"
+  },
+  {
+    "type": "STRING",
+    "name": "library_layout_orientation"
+  },
+  {
+    "type": "STRING",
+    "name": "library_construction_protocol"
+  },
+  {
+    "type": "FLOAT",
+    "name": "library_layout_sdev"
+  },
+  {
+    "type": "STRING",
+    "name": "instrument_model"
+  },
+  {
+    "type": "STRING",
+    "name": "library_selection"
+  },
+  {
+    "type": "STRING",
+    "name": "sample_accession"
+  },
+  {
+    "type": "STRING",
+    "name": "design"
+  },
+  {
+    "type": "STRING",
+    "name": "alias"
+  },
+  {
+    "type": "STRING",
+    "name": "description"
+  },
+  {
+    "fields": [
+      {
+        "type": "STRING",
+        "name": "id"
+      },
+      {
+        "type": "STRING",
+        "name": "db"
+      }
+    ],
+    "type": "RECORD",
+    "name": "xrefs",
+    "mode": "REPEATED"
+  },
+  {
+    "type": "STRING",
+    "name": "center_name"
+  },
+  {
+    "type": "STRING",
+    "name": "accession"
+  },
+  {
+    "type": "STRING",
+    "name": "library_name"
+  },
+  {
+    "type": "STRING",
+    "name": "platform"
+  },
+  {
+    "type": "STRING",
+    "name": "status"
+  },
+  {
+    "type": "STRING",
+    "name": "title"
+  },
+  {
+    "type": "STRING",
+    "name": "library_layout"
+  },
+  {
+    "type": "STRING",
+    "name": "library_strategy"
+  },
+  {
+    "fields": [
+      {
+        "type": "STRING",
+        "name": "value"
+      },
+      {
+        "type": "STRING",
+        "name": "tag"
+      }
+    ],
+    "type": "RECORD",
+    "name": "attributes",
+    "mode": "REPEATED"
+  },
+  {
+    "type": "BOOLEAN",
+    "name": "insdc"
+  },
+  {
+    "type": "DATETIME",
+    "name": "lastupdate"
+  },
+  {
+    "type": "DATETIME",
+    "name": "published"
+  },
+  {
+    "type": "DATETIME",
+    "name": "received"
+  }
+]

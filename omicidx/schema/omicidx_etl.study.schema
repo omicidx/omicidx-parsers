@@ -1,0 +1,116 @@
+[
+  {
+    "type": "INTEGER",
+    "name": "pubmed_ids",
+    "mode": "REPEATED"
+  },
+  {
+    "fields": [
+      {
+        "type": "STRING",
+        "name": "value",
+        "mode": "NULLABLE"
+      },
+      {
+        "type": "STRING",
+        "name": "tag",
+        "mode": "NULLABLE"
+      }
+    ],
+    "type": "RECORD",
+    "name": "attributes",
+    "mode": "REPEATED"
+  },
+  {
+    "type": "STRING",
+    "name": "broker_name",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "BioProject",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "published",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "study_type",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "description",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "alias",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "Geo",
+    "mode": "NULLABLE"
+  },
+  {
+    "fields": [
+      {
+        "type": "STRING",
+        "name": "id",
+        "mode": "NULLABLE"
+      },
+      {
+        "type": "STRING",
+        "name": "namespace",
+        "mode": "NULLABLE"
+      }
+    ],
+    "type": "RECORD",
+    "name": "identifiers",
+    "mode": "REPEATED"
+  },
+  {
+    "type": "STRING",
+    "name": "abstract",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "accession",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "lastupdate",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "title",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "center_name",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "status",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "BOOLEAN",
+    "name": "insdc",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "received",
+    "mode": "NULLABLE"
+  }
+]

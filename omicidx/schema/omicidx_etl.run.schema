@@ -1,138 +1,140 @@
-{
-  "type": "STRING",
-  "name": "tax_analysis",
-  "mode": "NULLABLE"
-}
-{
-  "type": "STRING",
-  "name": "reads",
-  "mode": "NULLABLE"
-}
-{
-  "type": "STRING",
-  "name": "base_counts",
-  "mode": "NULLABLE"
-}
-{
-  "type": "STRING",
-  "name": "files",
-  "mode": "NULLABLE"
-}
-{
-  "fields": [
-    {
-      "type": "STRING",
-      "name": "value",
-      "mode": "NULLABLE"
-    },
-    {
-      "type": "STRING",
-      "name": "tag",
-      "mode": "NULLABLE"
-    }
-  ],
-  "type": "RECORD",
-  "name": "attributes",
-  "mode": "REPEATED"
-}
-{
-  "type": "STRING",
-  "name": "alias",
-  "mode": "NULLABLE"
-}
-{
-  "type": "INTEGER",
-  "name": "static_data_available",
-  "mode": "NULLABLE"
-}
-{
-  "type": "BOOLEAN",
-  "name": "load_done",
-  "mode": "NULLABLE"
-}
-{
-  "type": "STRING",
-  "name": "run_center",
-  "mode": "NULLABLE"
-}
-{
-  "type": "STRING",
-  "name": "status",
-  "mode": "NULLABLE"
-}
-{
-  "type": "INTEGER",
-  "name": "size",
-  "mode": "NULLABLE"
-}
-{
-  "type": "STRING",
-  "name": "experiment_accession",
-  "mode": "NULLABLE"
-}
-{
-  "type": "FLOAT",
-  "name": "avg_length",
-  "mode": "NULLABLE"
-}
-{
-  "type": "INTEGER",
-  "name": "total_bases",
-  "mode": "NULLABLE"
-}
-{
-  "type": "STRING",
-  "name": "accession",
-  "mode": "NULLABLE"
-}
-{
-  "type": "STRING",
-  "name": "center_name",
-  "mode": "NULLABLE"
-}
-{
-  "type": "STRING",
-  "name": "qualities",
-  "mode": "REPEATED"
-}
-{
-  "description": "bq-datetime",
-  "type": "TIMESTAMP",
-  "name": "run_date",
-  "mode": "NULLABLE"
-}
-{
-  "type": "STRING",
-  "name": "cluster_name",
-  "mode": "NULLABLE"
-}
-{
-  "type": "INTEGER",
-  "name": "total_spots",
-  "mode": "NULLABLE"
-}
-{
-  "type": "STRING",
-  "name": "lastupdate",
-  "mode": "NULLABLE"
-}
-{
-  "type": "STRING",
-  "name": "published",
-  "mode": "NULLABLE"
-}
-{
-  "type": "BOOLEAN",
-  "name": "insdc",
-  "mode": "NULLABLE"
-}
-{
-  "type": "BOOLEAN",
-  "name": "is_public",
-  "mode": "NULLABLE"
-}
-{
-  "type": "STRING",
-  "name": "received",
-  "mode": "NULLABLE"
-}
+[
+  {
+    "type": "STRING",
+    "name": "tax_analysis",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "reads",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "base_counts",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "files",
+    "mode": "NULLABLE"
+  },
+  {
+    "fields": [
+      {
+        "type": "STRING",
+        "name": "value",
+        "mode": "NULLABLE"
+      },
+      {
+        "type": "STRING",
+        "name": "tag",
+        "mode": "NULLABLE"
+      }
+    ],
+    "type": "RECORD",
+    "name": "attributes",
+    "mode": "REPEATED"
+  },
+  {
+    "type": "STRING",
+    "name": "alias",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "INTEGER",
+    "name": "static_data_available",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "BOOLEAN",
+    "name": "load_done",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "run_center",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "status",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "INTEGER",
+    "name": "size",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "experiment_accession",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "FLOAT",
+    "name": "avg_length",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "INTEGER",
+    "name": "total_bases",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "accession",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "center_name",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "qualities",
+    "mode": "REPEATED"
+  },
+  {
+    "description": "bq-datetime",
+    "type": "TIMESTAMP",
+    "name": "run_date",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "cluster_name",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "INTEGER",
+    "name": "total_spots",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "lastupdate",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "published",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "BOOLEAN",
+    "name": "insdc",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "BOOLEAN",
+    "name": "is_public",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "received",
+    "mode": "NULLABLE"
+  }
+]

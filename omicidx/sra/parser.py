@@ -439,14 +439,18 @@ def _parse_taxon(node):
     def crawl(node, d=[]):
         for i in node:
             rank = i.get('rank', 'Unkown')
+            parent = None
+            if(node.get('tax_id') is not None):
+                parent = int(node.get('tax_id'))
             d.append({
                 'rank': rank,
                 'name': i.get('name').replace('.', '_').replace('$', ''),
-                'parent': int(node.get('tax_id')),
+                'parent': parent,
                 'total_count': int(i.get('total_count')),
                 'self_count': int(i.get('self_count')),
                 'tax_id': int(i.get('tax_id')),
                 })
+
             if(len(list(i))>0):
                 d = d + crawl(i)
         return d
@@ -841,8 +845,8 @@ def srastatrep(accessions):
     """
     if(not isinstance(accessions, list)):
         accessions = [accessions]
-    with urllib.request.urlopen('https://www.ncbi.nlm.nih.gov/Traces/sra/status/srastatrep.fcgi/acc-mirroring?acc={}'.format(",".join(accessions))) as response:
-        vals = ujson.load(response)
+    with request.get('https://www.ncbi.nlm.nih.gov/Traces/sra/status/srastatrep.fcgi/acc-mirroring?acc={}'.format(",".join(accessions))) as response:
+        vals = response.json
         cnames = vals['column_names']
         StatRep = namedtuple("StatRep", field_names = list([cname.lower() for cname in cnames]))
         ret = {}
@@ -861,9 +865,9 @@ def load_experiment_xml_by_accession(accession):
 
 
 def load_runbrowser_xml_by_accession(accession):
-    with urllib.request.urlopen("https://trace.ncbi.nlm.nih.gov/Traces/sra/?run={}&retmode=xml".format(accession)) as response:
-        xml = etree.parse(response)
-        
+    import requests
+    with requests.get("https://trace.ncbi.nlm.nih.gov/Traces/sra/?run={}&retmode=xml".format(accession)) as response:
+        xml = etree.fromstring(response.content)
         return xml
 
     
@@ -891,10 +895,13 @@ def results_from_runbrowser(accession):
     """
     
     runbrowser_xml = load_runbrowser_xml_by_accession(accession)
-    root = runbrowser_xml.getroot()
+    print(runbrowser_xml)
+    root = runbrowser_xml
     error = root.find('./ERROR')
     # This finds errors like "XXXXX has been removed"
     if(error is not None):
+        print(root.find('.//RUN'))
+        print(error)
         return("ERROR: " + error.text)
     res = {}
     try:
@@ -920,14 +927,18 @@ def models_from_runbrowser(accession):
     if(not isinstance(res, dict)):
         return "error"
     mapper = {'experiment': pydantic_models.SraExperiment,
-              'run': pydantic_models.SraRun,
+              'run': pydantic_models.FullSraRun,
               'sample': pydantic_models.SraSample,
               'study': pydantic_models.SraStudy}
     ret = {}
     for k in res.keys():
         if(k in mapper):
             ret[k] = mapper[k](**res[k])
-    return ret
+    ret['run'].experiment = ret['experiment']
+    ret['run'].sample = ret['sample']
+    ret['run'].study = ret['study']
+    
+    return ret['run']
               
               
 def run_iterator(from_date="2001-01-01",to_date="2050-01-01",

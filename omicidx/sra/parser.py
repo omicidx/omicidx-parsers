@@ -442,7 +442,7 @@ def _parse_taxon(node):
             d.append({
                 'rank': rank,
                 'name': i.get('name').replace('.', '_').replace('$', ''),
-                'parent': node.get('name'),
+                'parent': int(node.get('tax_id')),
                 'total_count': int(i.get('total_count')),
                 'self_count': int(i.get('self_count')),
                 'tax_id': int(i.get('tax_id')),

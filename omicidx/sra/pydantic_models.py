@@ -41,9 +41,9 @@ class BaseQualities(List[Dict[int, int]]):
     
 
 class TaxCountEntry(BaseModel):
-    rank: str
-    name: str
-    parent: str = None
+    rank: str = None
+    name: str = None
+    parent: int = None
     total_count: int = 0
     self_count: int = 0
     tax_id: int

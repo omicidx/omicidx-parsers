@@ -105,7 +105,7 @@ class SraStudy(LiveList, BaseModel):
     center_name: str = None
     broker_name: str = None
     description: str = None
-    study_type: str
+    study_type: str = None
     title: str = None
     identifiers: List[Identifier] = None
     attributes: List[Attribute] = None

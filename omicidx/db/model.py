@@ -53,11 +53,6 @@ class SraNamespace(Base):
     identifiers = relationship('SraSampleIdentifier')
 
 
-class SraIdentifierMixin(object):
-    identifier = Column(Text, primary_key=True)
-    namespace = Column(ForeignKey('sra_namespace.namespace'), primary_key=True)
-
-
 class SraStudyIdentifier(Base):
     __tablename__ = 'sra_study_identifier'
 
@@ -91,49 +86,49 @@ class SraStudy(Base):
 class LibrarySource(Base):
     __tablename__ = 'library_source'
 
-    id = Column(Integer, primary_key = True)
+    id = Column(Integer, primary_key=True)
     value = Column(String)
 
 
 class LibraryStrategy(Base):
     __tablename__ = 'library_strategy'
 
-    id = Column(Integer, primary_key = True)
+    id = Column(Integer, primary_key=True)
     value = Column(String)
 
 
 class LibrarySelection(Base):
     __tablename__ = 'library_selection'
 
-    id = Column(Integer, primary_key = True)
+    id = Column(Integer, primary_key=True)
     value = Column(String)
 
 
 class LibraryLayout(Base):
     __tablename__ = 'library_layout'
 
-    id = Column(Integer, primary_key = True)
+    id = Column(Integer, primary_key=True)
     value = Column(String)
 
 
 class CenterName(Base):
     __tablename__ = 'center_name'
 
-    id = Column(Integer, primary_key = True)
+    id = Column(Integer, primary_key=True)
     value = Column(String)
 
 
 class InstrumentModel(Base):
     __tablename__ = 'instrument_model'
 
-    id = Column(Integer, primary_key = True)
+    id = Column(Integer, primary_key=True)
     value = Column(String)
 
 
 class Platform(Base):
     __tablename__ = 'platform'
 
-    id = Column(Integer, primary_key = True)
+    id = Column(Integer, primary_key=True)
     value = Column(String)
 
 
@@ -173,21 +168,21 @@ class SraExperiment(Base):
     library_layout_length = Column(Numeric)
     library_layout_sdev = Column(Numeric)
     library_selection_id = Column(Integer,
-                               ForeignKey('library_selection.id'),
-                               index=True)
+                                  ForeignKey('library_selection.id'),
+                                  index=True)
     library_strategy_id = Column(Integer,
-                              ForeignKey('library_strategy.id'),
-                              index=True)
+                                 ForeignKey('library_strategy.id'),
+                                 index=True)
     library_source_id = Column(Integer,
-                            ForeignKey('library_source.id'),
-                            index=True)
+                               ForeignKey('library_source.id'),
+                               index=True)
     library_layout_id = Column(Integer,
-                            ForeignKey('library_layout.id'),
-                            index=True)
+                               ForeignKey('library_layout.id'),
+                               index=True)
     platform_id = Column(Integer,
-                      ForeignKey('platform.id'),
-                      index=True,
-                      comment='The sequencing platform')
+                         ForeignKey('platform.id'),
+                         index=True,
+                         comment='The sequencing platform')
     # xreefs
     sample_accession = Column(String(20),
                               ForeignKey('sra_sample.accession'),
@@ -229,12 +224,70 @@ class SraSample(Base):
     experiments = relationship('SraExperiment', backref='sample')
     # leaving out organism
     # TODO: Taxonomy link
-    taxon_id = Column(Integer, index=True)
+    taxon_id = Column(ForeignKey('taxonomy.id'), index=True)
     description = Column(Text)
     identifiers = relationship('SraSampleIdentifier', back_populates='sample')
     # attributes
     # xrefs
     # link to experiment
+
+
+class BaseCounts(Base):
+    __tablename__ = 'base_counts'
+
+    sra_run_accession = Column(ForeignKey('sra_run.accession'),
+                               index=True,
+                               primary_key=True)
+    base = Column(String(1), primary_key=True)
+    count = Column(Integer)
+
+
+class BaseQualities(Base):
+    __tablename__ = 'base_quality'
+
+    sra_run_accession = Column(ForeignKey('sra_run.accession'),
+                               index=True,
+                               primary_key=True)
+    quality = Column(Integer, primary_key=True)
+    count = Column(Integer)
+
+
+class RunRead(Base):
+    __tablename__ = 'run_read'
+
+    sra_run_accession = Column(ForeignKey('sra_run.accession'),
+                               index=True,
+                               primary_key=True)
+    index = Column(Integer, primary_key=True)
+    mean_length = Column(Numeric)
+    sd_length = Column(Numeric)
+
+
+class RunFileAlternative(Base):
+    __tablename__ = 'run_file_alternative'
+    __table_args__ = (UniqueConstraint('run_fileset_id', 'url'), )
+
+    id = Column(Integer, primary_key=True)
+    run_fileset_id = Column(ForeignKey('run_fileset.id'), index=True)
+    url = Column(String)
+    free_egress = Column(String)  # TODO: consider foreign key
+    access_type = Column(String)  # TODO: consider foreign key
+    org = Column(String, index=True)
+
+
+class RunFileSet(Base):
+    __tablename__ = 'run_fileset'
+    __table_args__ = (UniqueConstraint('run_accession', 'filename'), )
+
+    id = Column(Integer, primary_key=True)
+    run_accession = Column(String(20), ForeignKey('sra_run.accession'))
+    filename = Column(String)
+    url = Column(String)
+    size = Column(Integer)
+    date = Column(DateTime)
+    md5 = Column(String)
+    alternatives = relationship('run_file_alternative', backref='run_fileset')
+    sratoolkit = Column(String)
 
 
 class SraRun(Base):
@@ -264,6 +317,37 @@ class SraRun(Base):
     # reads
 
 
+class TaxonCountAnalysis(Base):
+    __tablename__ = 'taxon_count_analysis'
+
+    id = Column(Integer, primary_key=True)
+    nspot_analyze = Column(Integer, index=True)
+    total_spots = Column(Integer, index=True)
+    run_accession = Column(ForeignKey("sra_run.accession"), index=True)
+    run = relationship('SraRun', backref='taxon_analysis')
+
+
+class Taxonomy(Base):
+    __tablename__ = "taxonomy"
+
+    id = Column(Integer, primary_key=True)
+    rank = Column(String, index=True)  # ? normalize further?
+    name = Column(String, index=True)  # ? unique
+    parent = Column(Integer, ForeignKey('taxonomy.id'), index=True)
+
+
+class TaxonCountEntry(Base):
+    __tablename__ = 'taxon_count_entry'
+
+    taxon_analysis_id = Column(Integer,
+                               ForeignKey('taxon_count_analysis.id'),
+                               primary_key=True)
+    taxon_id = Column(Integer, ForeignKey('taxonomy.id'), primary_key=True)
+    self_count = Column(Integer)
+    total_count = Column(Integer)
+    taxon_analysis = relationship('TaxonCountAnalysis', backref='taxon_counts')
+
+
 geo_series_contributors = Table(
     'geo_series_contributors', Base.metadata,
     Column('gse_accession',
@@ -271,34 +355,8 @@ geo_series_contributors = Table(
            primary_key=True),
     Column('geo_name_id', ForeignKey('geo_name.id'), primary_key=True))
 
-class TaxonCountAnalysis(Base):
-    __tablename__ = 'taxon_count_analysis'
 
-    id = Column(Integer, primary_key = True)
-    nspot_analyze = Column(Integer, index=True)
-    total_spots = Column(Integer, index = True)
-    run_accession = Column(ForeignKey("sra_run.accession"), index=True)
-    run = relationship('SraRun', backref = 'taxon_analysis')
-
-class Taxonomy(Base):
-    __tablename__ = "taxonomy"
-
-    id = Column(Integer, primary_key = True)
-    rank = Column(String, index = True) # ? normalize further?
-    name = Column(String, index = True) # ? unique
-    parent = Column(Integer, ForeignKey('taxonomy.id'), index = True)
-    
-class TaxonCountEntry(Base):
-    __tablename__ = 'taxon_count_entry'
-
-    taxon_analysis_id = Column(Integer, ForeignKey('taxon_count_analysis.id'), primary_key=True)
-    taxon_id = Column(Integer, ForeignKey('taxonomy.id'), primary_key = True)
-    self_count = Column(Integer)
-    total_count = Column(Integer)
-    taxon_analysis = relationship('TaxonCountAnalysis', backref = 'taxon_counts')
-
-
-class GEOName(Base):
+class GeoName(Base):
     __tablename__ = 'geo_name'
     __table_args__ = (UniqueConstraint('first_name',
                                        'middle_name',
@@ -313,9 +371,43 @@ class GEOName(Base):
     series = relationship('GEOSeries', secondary=geo_series_contributors)
 
 
-class GEOSeries(Base):
+class GeoContact(Base):
+    __tablename__ = 'geo_contact'
+
+    id = Column(Integer, primary_key=True)
+    name_id = Column(ForeignKey('geo_name.id'), index=True)
+    email = Column(String)
+    state = Column(String)
+    address = Column(String)
+    department = Column(String)
+    country = Column(String)
+    web_link = Column(String)
+    institute = Column(String)
+    zip_postal_code = Column(String)
+    phone = Column(String)
+
+
+class GeoSeriesType(Base):
+    __tablename__ = 'geo_series_type'
+
+    id = Column(Integer, primary_key=True)
+    value = Column(String, unique=True)
+
+
+class GeoSeries(Base):
     __tablename__ = 'geo_series'
 
     accession = Column(String(15), primary_key=True)
     summary = Column(String)
-    contributors = relationship('GEOName', secondary=geo_series_contributors)
+    contributors = relationship('GeoName', secondary=geo_series_contributors)
+    # TODO: form relationshop
+    # sra_studies = relationship('SraStudy', secondary=geo_series_sra_study)
+    # contact ? many-to-one?
+    # TODO: type (many-to-many)
+    # TODO: pubmed (many-to-many)
+    # TODO: samples (many-to-many)
+    # TODO: taxid (many-to-many)
+    # TODO: platform (many-to-many)
+    data_processing = Column(String)
+    description = Column(String)
+    overall_design = Column(String)

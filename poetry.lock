@@ -204,7 +204,6 @@ version = "1.14.3"
 [package.dependencies]
 google-auth = ">=0.4.0,<2.0dev"
 googleapis-common-protos = ">=1.6.0,<2.0dev"
-grpcio = ">=1.8.2,<2.0dev"
 protobuf = ">=3.4.0"
 pytz = "*"
 requests = ">=2.18.0,<3.0.0dev"
@@ -333,7 +332,6 @@ python-versions = "*"
 version = "1.6.0"
 
 [package.dependencies]
-grpcio = ">=1.0.0"
 protobuf = ">=3.6.0"
 
 [[package]]
@@ -857,6 +855,17 @@ version = "1.1"
 
 [[package]]
 category = "dev"
+description = "Python interface to Graphviz's Dot"
+name = "pydot"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+version = "1.4.1"
+
+[package.dependencies]
+pyparsing = ">=2.1.4"
+
+[[package]]
+category = "dev"
 description = "Pygments is a syntax highlighting package written in Python."
 name = "pygments"
 optional = false
@@ -1079,6 +1088,18 @@ version = "1.3.11"
 
 [[package]]
 category = "dev"
+description = "Package to create ER diagrams from SQLAlchemy schemas using Graphviz."
+name = "sqlalchemyviz"
+optional = false
+python-versions = "*"
+version = "0.4"
+
+[package.dependencies]
+pydot = "*"
+sqlalchemy = "*"
+
+[[package]]
+category = "dev"
 description = "ANSII Color formatting for output in terminal."
 name = "termcolor"
 optional = false
@@ -1214,7 +1235,7 @@ version = "0.6.0"
 more-itertools = "*"
 
 [metadata]
-content-hash = "7aa6bac7969960504ae69b2634817d10a6d9db9015b00da65880f53b0e8cd0bd"
+content-hash = "7a5b3c4b5e5a2b3cd1ee9a5811505d1b80bb56975b5e35497f3f1009fbac599a"
 python-versions = "^3.7"
 
 [metadata.hashes]
@@ -1294,6 +1315,7 @@ py = ["64f65755aee5b381cea27766a3a147c3f15b9b6b9ac88676de66ba2ae36793fa", "dc639
 pyasn1 = ["1321d4b2f051410fe7302bb1619903d30b24ba1451d019c11d242d11b2a35444", "2860a047f666afd23b197a65f33145313511c368ce919b2d9b1853ffd3e9d32d", "2919babd43b3b44247c23201b71072c0c65a636daa595cad5bcd276094dbfc2d", "437a23121602c0bb6c65320b27e31e334ffd73a9ca5c6c075b66b6270b1a8184", "5a89df3c62688261e27439d5715fd0d3ca6bf7bf1067e2171642e92aff17e817", "62cdade8b5530f0b185e09855dd422bc05c0bbff6b72ff61381c09dac7befd8c", "67a43aec85f4ea96e72a7b22227ba7a45cf03b7297e1a53418be164bbf68335e", "813b198c169e9442f340743f77093435bf3e1de8d1731f3abc45d44afba17556", "96c44b5604e7674e53e27fce98f3fc68821d9546151b98842c27b533122649da", "a9495356ca1d66ed197a0f72b41eb1823cf7ea8b5bd07191673e8147aecf8604", "bcac468e38d16e94fee4c8f76eef1feb9a06a911e93465f2351a4140fa66d303", "c39d11c72f0e5e71faa35c8c8ef5ee9b810ec99a3c64f05133f1325fe5636bba", "f124185ccc1c1c5e782aa58d46bc28be279673a482334d70de6735d05d8b4b10"]
 pyasn1-modules = ["0c35a52e00b672f832e5846826f1fb7507907f7d52fba6faa9e3c4cbe874fe4b", "13a6955947d8a554de78fc305a4d651f20fb5580b88612a5f0661d4f189d27ac", "233f55c840e821e76828262db976ac894b285909d22d060c2bdb522e7bf28cc6", "24d54188cb7abd750e0a2cba61b7b46a75608175a0c3c1b1eee08322915d8d21", "27581362b4253b9c999882a64df974124cde12be0bf2c04148a0d68bc6bbb7b8", "33c220a2701032261a23eea6e9881404ac6fc7ff96f183b5353fea8fc8962547", "64f6aecf26e93f6a3ba3725b4eb9f532551747d7a63ca9ff43aef12f4bf11eac", "7b4edf07ca2f759d7cf693184be09f22e067c2eb52b03c770d0a2e9de1c67dfd", "9b972f81f59d896cebb9ebb1d44296f1acb28bf7869443c37551f4eed8d74f83", "9ca5e376a6d9dee35bb3a62608dfa2e6698798aa6b8db3c7afd0eb31af0d63c7", "b6ada4f840fe51abf5a6bd545b45bf537bea62221fa0dde2e8a553ed9f06a4e3", "c14b107a67ee36a7f183ae9f4803ffde4a03b67f3192eab0a62e851af71371d3", "eaf35047a0b068e3e0c2a99618b13b65c98c329661daa78c9d44a4ef0fe8139e"]
 pydantic = ["2588e5c68b7927fd44c4bf2c5768cdaff7948fc4ae0e3f602376b76b1913c3b0", "2d8d8c14b6349066e27aca9bfd3fb973fb2c45a860a6ba83fbea16ee42efbfd1", "40b62f5e8db4957221e4aa06cea015c4a74740405edea0e11def4c6418e7c62c", "43f8ac74e114aaac0d844040fea971fc6c53434f24cee2e1aa0486e6601817b4", "4f3baf0b4ef8f68021186448efddbcc259ed473e18acf4433ef75dd13d795594", "f85a63028003d8778dc3bf27c5c5cd25da64593422ab82a696cca32b1ce3e750"]
+pydot = ["67be714300c78fda5fd52f79ec994039e3f76f074948c67b5ff539b433ad354f", "d49c9d4dd1913beec2a997f831543c8cbd53e535b1a739e921642fe416235f01"]
 pygments = ["71e430bc85c88a430f000ac1d9b331d2407f681d6f6aec95e8bcfbc3df5b0127", "881c4c157e45f30af185c1ffe8d549d48ac9127433f2c380c24b84572ad66297"]
 pyparsing = ["20f995ecd72f2a1f4bf6b072b63b22e2eb457836601e76d6e5dfcd75436acc1f", "4ca62001be367f01bd3e92ecbb79070272a9d4964dce6a48a82ff0b8bc7e683a"]
 pyrsistent = ["eb6545dbeb1aa69ab1fb4809bfbf5a8705e44d92ef8fc7c2361682a47c46c778"]
@@ -1315,6 +1337,7 @@ sd-cloud-utils = ["0b2fc1405b6bb0132af2371921f07a7f58d7195a84fb0b302885543340cc8
 send2trash = ["60001cc07d707fe247c94f74ca6ac0d3255aabcb930529690897ca2a39db28b2", "f1691922577b6fa12821234aeb57599d887c4900b9ca537948d2dac34aea888b"]
 six = ["1f1b7d42e254082a9db6279deae68afb421ceba6158efa6131de7b3003ee93fd", "30f610279e8b2578cab6db20741130331735c781b56053c59c4076da27f06b66"]
 sqlalchemy = ["afa5541e9dea8ad0014251bc9d56171ca3d8b130c9627c6cb3681cff30be3f8a"]
+sqlalchemyviz = ["68d442ef8718f2a938302f7c34371ed73c2a2d4f2e98a70a4fe79e7ab2304c29"]
 termcolor = ["1d6d69ce66211143803fbc56652b41d73b4a400a2891d7bf7a1cdf4c02de613b"]
 terminado = ["4804a774f802306a7d9af7322193c5390f1da0abb429e082a10ef1d46e6fb2c2", "a43dcb3e353bc680dd0783b1d9c3fc28d529f190bc54ba9a229f72fe6e7a54d7"]
 testpath = ["60e0a3261c149755f4399a1fff7d37523179a70fdc3abdf78de9fc2604aeec7e", "bfcf9411ef4bf3db7579063e0546938b1edda3d69f4e1fb8756991f5951f85d4"]

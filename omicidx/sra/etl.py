@@ -5,6 +5,7 @@
 3. load_livelist_table()
 4. load_all_json_tables()
 5. do_all_join_tables()
+
   # Does copy into SRA schema from etl
   #   AFTER deleting!
   # may need to delete_table('sra.experiment'), ... first
@@ -12,6 +13,7 @@
   2. sample_join_accessions()
   3. experiment_join_accessions()
   4. run_join_accessions()
+
 """
 
 
@@ -23,16 +25,16 @@ import google
 ETL_DATASET = 'omicidx_etl'
 LIVE_DATASET = 'sra'
 
-client = bigquery.Client()
-try:
-    sra = client.create_dataset(ETL_DATASET)
-except google.cloud.exceptions.Conflict:
-    sra = client.get_dataset(ETL_DATASET)
+# client = bigquery.Client()
+# try:
+#     sra = client.create_dataset(ETL_DATASET)
+# except google.cloud.exceptions.Conflict:
+#     sra = client.get_dataset(ETL_DATASET)
 
-try:
-    sra_live = client.create_dataset(LIVE_DATASET)
-except google.cloud.exceptions.Conflict:
-    sra_live = client.get_dataset(LIVE_DATASET)
+# try:
+#     sra_live = client.create_dataset(LIVE_DATASET)
+# except google.cloud.exceptions.Conflict:
+#     sra_live = client.get_dataset(LIVE_DATASET)
 
 
 ############################################

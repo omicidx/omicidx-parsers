@@ -355,6 +355,13 @@ geo_series_contributors = Table(
            primary_key=True),
     Column('geo_name_id', ForeignKey('geo_name.id'), primary_key=True))
 
+geo_sample_contributors = Table(
+    'geo_sample_contributors', Base.metadata,
+    Column('gsm_accession',
+           ForeignKey('geo_sample.accession'),
+           primary_key=True),
+    Column('geo_name_id', ForeignKey('geo_name.id'), primary_key=True))
+
 
 class GeoName(Base):
     __tablename__ = 'geo_name'
@@ -392,6 +399,42 @@ class GeoSeriesType(Base):
 
     id = Column(Integer, primary_key=True)
     value = Column(String, unique=True)
+
+
+class GeoCharacterisricTag(Base):
+    __tablename__ = 'geo_characteristic_tag'
+
+    id = Column(Integer, primary_key=True)
+    tag = Column(String, unique=True)
+    
+class GeoCharacteristic(Base):
+    __tablename__ = 'geo_characteristic'
+
+    id = Column(Integer, primary_key=True)
+    tag_id = Column(ForeignKey('geo_characteristic_tag.id'))
+    value = Column(String)
+    
+    
+class GeoSample(Base):
+    __tablename__ = 'geo_sample'
+
+    accession = Column(String(15), primary_key=True)
+    type = Column(String, index=True)
+    biosample = Column(String, index=True)  # TODO: convert to foreign key?
+    tag_count = Column(Integer)
+    tag_length = Column(Integer)
+    platform_accession = Column(String(15), index=True)
+    # TODO: This is currently a list--should be collapsed
+    hyb_protocol = Column(String)
+    channel_count = Column(Integer)
+    # TODO: This is currently a list--should be collapsed
+    scan_protocol = Column(String)
+    data_row_count = Column(Integer)
+    library_source = Column(String)
+    overall_design = Column(String)
+    sra_experiment = Column(String)  # TODO: convert to foreign keys
+    data_processing = Column(String)
+    contributors = relationship('GeoName', secondary=geo_sample_contributors)
 
 
 class GeoSeries(Base):

@@ -27,3 +27,7 @@ pip-wheel-metadata
 config.ini
 .mypy*
 isb-cgc-01-0006-fc4b4026d179.json
+alembic/
+.coverage
+.venv
+.env

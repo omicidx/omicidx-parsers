@@ -75,10 +75,10 @@ description = "The AWS SDK for Python"
 name = "boto3"
 optional = false
 python-versions = "*"
-version = "1.10.8"
+version = "1.10.30"
 
 [package.dependencies]
-botocore = ">=1.13.8,<1.14.0"
+botocore = ">=1.13.30,<1.14.0"
 jmespath = ">=0.7.1,<1.0.0"
 s3transfer = ">=0.2.0,<0.3.0"
 
@@ -88,7 +88,7 @@ description = "Low-level, data-driven core of boto 3."
 name = "botocore"
 optional = false
 python-versions = "*"
-version = "1.13.8"
+version = "1.13.30"
 
 [package.dependencies]
 docutils = ">=0.10,<0.16"
@@ -96,7 +96,7 @@ jmespath = ">=0.7.1,<1.0.0"
 
 [package.dependencies.python-dateutil]
 python = ">=2.7"
-version = ">=2.1,<3.0.0"
+version = ">=2.1,<2.8.1"
 
 [package.dependencies.urllib3]
 python = ">=3.4"
@@ -198,7 +198,7 @@ version = "0.3"
 category = "dev"
 description = "Simple entity relation (ER) diagrams generation"
 name = "eralchemy"
-optional = false
+optional = true
 python-versions = "*"
 version = "1.2.10"
 
@@ -346,7 +346,6 @@ python-versions = "*"
 version = "1.6.0"
 
 [package.dependencies]
-grpcio = ">=1.0.0"
 protobuf = ">=3.6.0"
 
 [[package]]
@@ -895,7 +894,7 @@ version = "2.5.2"
 category = "dev"
 description = "Python interface to Graphviz"
 name = "pygraphviz"
-optional = false
+optional = true
 python-versions = "*"
 version = "1.5"
 
@@ -970,8 +969,8 @@ category = "main"
 description = "Extensions to the standard Python datetime module"
 name = "python-dateutil"
 optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
-version = "2.8.1"
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
+version = "2.8.0"
 
 [package.dependencies]
 six = ">=1.5"
@@ -1262,8 +1261,11 @@ version = "0.6.0"
 [package.dependencies]
 more-itertools = "*"
 
+[extras]
+eralchemy = []
+
 [metadata]
-content-hash = "f2486a3911d746f9a13c90c1bb6909ced847a48414ac7a61117dded314b81bf1"
+content-hash = "d195e6ea760b8ec29e120edec43d3b695968a41d4e1373bc13b5d92529493776"
 python-versions = "^3.7"
 
 [metadata.hashes]
@@ -1274,8 +1276,8 @@ attrs = ["08a96c641c3a74e44eb59afb61a24f2cb9f4d7188748e76ba4bb5edfa3cb7d1c", "f7
 backcall = ["38ecd85be2c1e78f77fd91700c76e14667dc21e2713b63876c0eb901196e01e4", "bbbf4b1e5cd2bdb08f915895b51081c041bac22394fdfcfdfbe9f14b77c08bf2"]
 biopython = ["004ff16d5303dae2c99b83afc3c31457cdba3b35d795c70665eca1dd5cd27758", "036d9cde523edaf72c8e2b207c0ce80ef45d57eedd4297fa19e36b9ef49527b9", "055d95a566aa61d59abe62e987a119a3f687e247ef6ff55097d1571a505e6126", "076b24b0da176f07f15b1f23894f6f486350f3cb757a793c2932346dc0bef712", "1a32a009fac153a319eac7736b9072f17de88d44160c41c32f252a2154f469f7", "2654c854f47c0cd309581504c82df35df1901658366225e11b8536f5324dfc16", "2cd9e6bfcf1f758a4e1fa727cac5a9e0a2d9d007bb74423c7fda4c402cb46965", "42ff0a69e5cf1f79a1179d0ff66c32c71de34d34bd1ecc438c5a82543e759173", "5060e4ef29c2bc214749733634051be5b8d11686c6590fa155c3443dcaa89906", "5d61aca91a4e88ee8cbc0f896f951d5799c23987c2470768354198b9ab98a9f8", "5e30f4fa8aafd8000eca300c0a1a8f5266bb21dd066a4481824741888a705df9", "62f25b04ca283bd28aa06328353279a909cbb8899d62d483776e28f83c52058a", "6dd5d66082f5d6844ddb6be91475f61b1b959f34bb6e399e47c0c7adeaa18d25", "8c3f28921aa7dde0b0a81b6fbdca56aaf99e535d3589ae3257f042d6b657564a", "9476393b148a418aeed19330d541fbb1921d248ab10e62dc1c6c5d3a3d13c719", "98fc563aacf20a43a5476bf243a6ea6ccaf5781cb5d8d91a8a5a7c0503410574", "a0cd7f1eb199b203f92e51b05f232d0b215e3918faabd0dcd07de590e5cbff53", "a260e5cc7b14362f8b18ab4a97293617f9fa95881fb95e0e9b7bd24cf23ca55a", "ad24b02020ae69ee0e59ade3509af83eb119bdc3a84d7b7695477096994d7cc7", "c017b8796be410610f7cc3ded4bce5415634797f61224f9b693a93d8ebe34edb", "c2488d8567847ac5ee3577b22f1d08f3a53aeb6f76f17520604f92f6064e6c64", "c29b2c268574d90bdfa1e5d3c1c9b52083350a08a3ce6e7907676a1ac873aac9", "ddd1aca6aab4dc665933e949c43356b550c54a76629e1a1399d4a4459fac774a", "f0a578282167d62f426b5b695f18c00069074aaad4704799e6071832a9bfad86", "f2d4cfc9683b3ed1c407fc7278e9a95c72fc6713ec795c4a521e58e93b7e6d5b", "faa3d95809e1a98011f58ab6bc32d04cf5b7e780cdd89529445c49130649323b"]
 bleach = ["213336e49e102af26d9cde77dd2d0397afabc5a6bf2fed985dc35b5d1e285a16", "3fdf7f77adcf649c9911387df51254b813185e32b2c6619f690b593a617e19fa"]
-boto3 = ["16425b461149e57cecf1afef53382f187ed325dddb764b1047aa47f78197d9e2", "593f67dcf6417b8c39641236761604cf47134bc27c25ef4d7c3d22da824e2c05"]
-botocore = ["5cc7e0bfa41eb2789674485fdda62ce44ff5e3fee8accb4e0ef317ebdf1a319a", "b565ce26203ce94fc94f8056951fedc16e1e0b02d1fbdbf8dca420e1fbe05d81"]
+boto3 = ["259b795fc577ba0c8c085509d18bc7b9a7c7e813c93c2d72278affb922f64d8d", "cf887435085e90ab2fdce50ea77b4569b8728faf9a8d86b16f382161af6bd441"]
+botocore = ["9857929cab4366badda0cc9d2066bb1f71269344ef7523186f6a1b26924bbc15", "ced50943d83d7007fe02b91739e849f36b64ed5c5ab7af3b771bff21aca554a7"]
 cachetools = ["428266a1c0d36dc5aca63a2d7c5942e88c2c898d72139fca0e97fdd2380517ae", "8ea2d3ce97850f31e4a08b0e2b5e6c34997d7216a9d2c98e0f3978630d4da69a"]
 certifi = ["017c25db2a153ce562900032d5bc68e9f191e44e9a0f762f373977de9df1fbb3", "25b64c7da4cd7479594d035c08c2d809eb4aab3a26e5a990ea98cc450c320f1f"]
 chardet = ["84ab92ed1c4d4f16916e05906b6b75a6c0fb5db821cc65e70cbd64a3e2a5eaae", "fc323ffcaeaed0e0a02bf4d117757b98aed530d9ed4531e3e15460124c106691"]
@@ -1352,7 +1354,7 @@ pyrsistent = ["f3b280d030afb652f79d67c5586157c5c1355c9a58dfc7940566e28d28f3df1b"
 pytest = ["63344a2e3bce2e4d522fd62b4fdebb647c019f1f9e4ca075debbd13219db4418", "f67403f33b2b1d25a6756184077394167fe5e2f9d8bdaab30707d19ccec35427"]
 pytest-cov = ["cc6742d8bac45070217169f5f72ceee1e0e55b0221f54bcf24845972d3a47f2b", "cdbdef4f870408ebdbfeb44e63e07eb18bb4619fae852f6e760645fa36172626"]
 pytest-sugar = ["26cf8289fe10880cbbc130bd77398c4e6a8b936d8393b116a5c16121d95ab283", "fcd87a74b2bce5386d244b49ad60549bfbc4602527797fac167da147983f58ab"]
-python-dateutil = ["73ebfe9dbf22e832286dafa60473e4cd239f8592f699aa5adaf10050e6e1823c", "75bb3f31ea686f1197762692a9ee6a7550b59fc6ca3a1f4b5d7e32fb98e2da2a"]
+python-dateutil = ["7e6584c74aeed623791615e26efd690f29817a27c73085b78e4bad02493df2fb", "c89805f6f4d64db21ed966fda138f8a5ed7a4fdbc1a8ee329ce1b74e3c74da9e"]
 python-editor = ["1bf6e860a8ad52a14c3ee1252d5dc25b2030618ed80c022598f00176adc8367d", "51fda6bcc5ddbbb7063b2af7509e43bd84bfc32a4ff71349ec7847713882327b", "5f98b069316ea1c2ed3f67e7f5df6c0d8f10b689964a4a811ff64f0106819ec8", "c3da2053dbab6b29c94e43c486ff67206eafbe7eb52dbec7390b5e2fb05aac77", "ea87e17f6ec459e780e4221f295411462e0d0810858e055fc514684350a2f522"]
 pytz = ["1c557d7d0e871de1f5ccd5833f60fb2550652da6be2693c1e02300743d21500d", "b02c06db6cf09c12dd25137e563b31700d3b80fcc4ad23abb7a315f2789819be"]
 pywin32 = ["300a2db938e98c3e7e2093e4491439e62287d0d493fe07cce110db070b54c0be", "31f88a89139cb2adc40f8f0e65ee56a8c585f629974f9e07622ba80199057511", "371fcc39416d736401f0274dd64c2302728c9e034808e37381b5e1b22be4a6b0", "47a3c7551376a865dd8d095a98deba954a98f326c6fe3c72d8726ca6e6b15507", "4cdad3e84191194ea6d0dd1b1b9bdda574ff563177d2adf2b4efec2a244fa116", "7c1ae32c489dc012930787f06244426f8356e129184a02c25aef163917ce158e", "7f18199fbf29ca99dff10e1f09451582ae9e372a892ff03a28528a24d55875bc", "9b31e009564fb95db160f154e2aa195ed66bcc4c058ed72850d047141b36f3a2", "a929a4af626e530383a579431b70e512e736e9588106715215bf685a3ea508d4", "c054c52ba46e7eb6b7d7dfae4dbd987a1bb48ee86debe3f245a2884ece46e295", "f27cec5e7f588c3d1051651830ecc00294f90728d19c3bf6916e6dba93ea357c", "f4c5be1a293bae0076d93c88f37ee8da68136744588bc5e2be2f299a34ceb7aa"]

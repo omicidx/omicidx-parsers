@@ -879,6 +879,11 @@ def run_from_runbrowser(accession):
     return parse_run(runbrowser_xml.getroot().find('.//RUN'))
 
 
+class SRAAccessionUnavailableException(Exception):
+    """When an SRA API call suggests that an accession is not available"""
+    def __init__(self, errormsg):
+        Exception.__init__(self, errormsg)
+
 
 def results_from_runbrowser(accession):
     """Return complete record from runbrowser
@@ -894,15 +899,14 @@ def results_from_runbrowser(accession):
     a dict with experiment, run, study, and sample records
     """
     
+    n = 0
     runbrowser_xml = load_runbrowser_xml_by_accession(accession)
     print(runbrowser_xml)
     root = runbrowser_xml
     error = root.find('./ERROR')
     # This finds errors like "XXXXX has been removed"
     if(error is not None):
-        print(root.find('.//RUN'))
-        print(error)
-        return("ERROR: " + error.text)
+        raise SRAAccessionUnavailableException(error.text)
     res = {}
     try:
         res['run'] = parse_run(root.find('.//RUN'))
@@ -923,9 +927,12 @@ def results_from_runbrowser(accession):
     return res
 
 def models_from_runbrowser(accession):
-    res = results_from_runbrowser(accession)
-    if(not isinstance(res, dict)):
-        return "error"
+    try: 
+        res = results_from_runbrowser(accession)
+        if(not isinstance(res, dict)):
+            return "error"
+    except SRAAccessionUnavailableException:
+        return None
     mapper = {'experiment': pydantic_models.SraExperiment,
               'run': pydantic_models.FullSraRun,
               'sample': pydantic_models.SraSample,
@@ -947,8 +954,6 @@ def run_iterator(from_date="2001-01-01",to_date="2050-01-01",
         yield(models_from_runbrowser(res['Accession']))
 
 
-
-
 def get_accession_list(from_date="2001-01-01",to_date="2050-01-01",
                        count = 100, offset = 0, type="EXPERIMENT"):
     column_names = ["Accession", "Submission", "Type",
@@ -958,7 +963,7 @@ def get_accession_list(from_date="2001-01-01",to_date="2050-01-01",
           "srastatrep.fcgi/acc-mirroring?" + \
           "from_date={}&to_date={}&count={}&type={}&offset={}"
     url = url.format(from_date, to_date, count, type, offset)
-    logger.debug(url)
+    logger.error(url)
     res = None
     with urllib.request.urlopen(url) as response:
         res = ujson.loads(response.read().decode('UTF-8'))

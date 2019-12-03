@@ -308,7 +308,7 @@ class SraRun(Base):
     avg_length = Column(Numeric, index=True)
     experiment_accession = Column(String(20),
                                   ForeignKey('sra_experiment.accession'),
-                                  index=True)
+                                  index=True, nullable=False)
     experiment = relationship('SraExperiment', back_populates='runs')
     # attributes
     # files
@@ -454,3 +454,11 @@ class GeoSeries(Base):
     data_processing = Column(String)
     description = Column(String)
     overall_design = Column(String)
+
+def render_erd(fname = 'omicidx_erd.pdf'):
+    """Render the entire schema as a pdf/png based on filename suffix"""
+    try: 
+        from eralchemy import render_er
+        render_er(Base, fname)
+    except:
+        logging.error('need to install eralchemy for this functionality')

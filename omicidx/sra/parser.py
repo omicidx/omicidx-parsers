@@ -865,8 +865,8 @@ def load_experiment_xml_by_accession(accession):
 
 
 def load_runbrowser_xml_by_accession(accession):
-    import requests
-    with requests.get("https://trace.ncbi.nlm.nih.gov/Traces/sra/?run={}&retmode=xml".format(accession)) as response:
+    from ..utils import requests_retry_session as session
+    with session().get("https://trace.ncbi.nlm.nih.gov/Traces/sra/?run={}&retmode=xml".format(accession)) as response:
         xml = etree.fromstring(response.content)
         return xml
 

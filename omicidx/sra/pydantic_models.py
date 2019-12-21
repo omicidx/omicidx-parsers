@@ -13,6 +13,7 @@ class Xref(BaseModel):
     db: str = None
     id: str = None
 
+    
 class Identifier(BaseModel):
     namespace: str = None
     id: str = None
@@ -23,7 +24,7 @@ class FileAlternative(BaseModel):
     free_egress: str = None
     access_type: str = None
     org: str = None
-    
+
 
 class FileSet(BaseModel):
     cluster: str = "public"
@@ -36,7 +37,11 @@ class FileSet(BaseModel):
     alternatives: List[FileAlternative]
 
 
-class BaseQualities(List[Dict[int, int]]):
+class BaseQualityCount(BaseModel):
+    quality: int = 0
+    count: int = 0
+    
+class BaseQualities(List[BaseQualityCount]):
     pass
     
 

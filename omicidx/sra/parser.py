@@ -208,7 +208,7 @@ def parse_run(xml):
     d = try_update(d, _parse_run_files(xml.find("SRAFiles")))
     d = try_update(d, _parse_run_stats(xml.find("Statistics")))
     d = try_update(d, _parse_run_bases(xml.find("Bases")))
-    d.update(_parse_run_qualities(xml))
+    d = try_update(d, _parse_run_qualities(xml))
     try:
         # already have accession, so no need for this
         del(d['run_accession'])
@@ -426,7 +426,8 @@ def _parse_run_qualities(node):
     qualrecs = node.findall(".//Quality")
     for qual in qualrecs:
         try:
-            d['qualities'].append({int(qual.get('value')): int(qual.get('count'))})
+            d['qualities'].append({"quality": int(qual.get('value')),
+                                   "count": int(qual.get('count'))})
         except:
             pass
 

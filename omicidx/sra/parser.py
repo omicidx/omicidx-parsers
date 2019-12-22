@@ -877,7 +877,7 @@ def run_from_runbrowser(accession):
     """Just the run part of runbrowser output"""
     
     runbrowser_xml = load_runbrowser_xml_by_accession(accession)
-    return parse_run(runbrowser_xml.getroot().find('.//RUN'))
+    return parse_run(runbrowser_xml.find('.//RUN'))
 
 
 class SRAAccessionUnavailableException(Exception):

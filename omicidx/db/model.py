@@ -424,10 +424,8 @@ class GeoSample(Base):
     tag_count = Column(Integer)
     tag_length = Column(Integer)
     platform_accession = Column(String(15), index=True)
-    # TODO: This is currently a list--should be collapsed
     hyb_protocol = Column(String)
     channel_count = Column(Integer)
-    # TODO: This is currently a list--should be collapsed
     scan_protocol = Column(String)
     data_row_count = Column(Integer)
     library_source = Column(String)

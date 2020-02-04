@@ -73,9 +73,9 @@ class GEOSample(GEOBase):
     tag_count: int = None
     tag_length: float = None
     platform_id: constr(regex = 'GPL\d+')
-    hyb_protocol: List[str] = []
+    hyb_protocol: str = None
     channel_count: int=0
-    scan_protocol: List[str] = []
+    scan_protocol: str = None
     data_row_count: int=0
     library_source: str = None
     overall_design: str = None

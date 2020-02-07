@@ -205,14 +205,15 @@ def get_geo_entities(txt):
     logging.info('Parsing out geo entities')
     entities = {}
     accession = None
+    entity = []
     for line in txt:
         line = line.strip()
         if(line.startswith('^')):
-            if(accession is not None):
-                entities[accession] = entity
             accession = _split_on_first_equal(line)[1]
+            entities[accession] = entity
             entity = []
         entity.append(line)
+    entities[accession] = entity
     logging.info(f'found {len(entities.keys())}')
     return entities
 
@@ -530,6 +531,7 @@ def geo_soft_entity_iterator(fh):
 
         if(line.startswith('#')):
             continue
+
         if(line.startswith('^')):
             if(accession is not None):
                 yield(_parse_single_entity_soft(entity))
@@ -537,7 +539,8 @@ def geo_soft_entity_iterator(fh):
             entity = []
             
         entity.append(line)
-
+    yield(_parse_single_entity_soft(entity))
+    
 def gse_to_json(gse):
     """Return json version of GSE record as text
     

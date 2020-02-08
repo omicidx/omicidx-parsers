@@ -1,4 +1,4 @@
-from sra_parsers import *
+from .sra_parsers import *
 import logging
 import boto3
 import decimal

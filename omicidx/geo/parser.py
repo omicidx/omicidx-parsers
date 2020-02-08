@@ -436,6 +436,8 @@ def _parse_single_gsm_soft(d2):
     except:
         d2['biosample']=None
         d2['sra_experiment']=None
+    if('contributor' in d2):
+        d2['contributor'] = _split_contributor_names(d2['contributor'])
     d2['channels'] = _create_gsm_channel_data(d2)
     supp_files = []
     for k in list(d2.keys()):

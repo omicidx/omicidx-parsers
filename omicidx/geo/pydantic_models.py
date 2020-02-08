@@ -68,6 +68,8 @@ class GEOSample(GEOBase):
     type: str
     anchor: str = None
     _entity: None
+    contact: GEOContact = None
+    description: str = None
     accession: constr(regex = 'GSM\d+')
     biosample: constr(regex = 'SAM[A-Z]+\d+') = None
     tag_count: int = None

@@ -31,7 +31,7 @@ def test_get_geo_entities():
     txt = res.readlines()
     entities = parser.get_geo_entities(txt)
     assert isinstance(entities, dict)
-    assert len(entities.keys()) == 5
+    assert len(entities.keys()) == 6
 
 
 def test_geo_soft_entity_iterator():
@@ -41,5 +41,5 @@ def test_geo_soft_entity_iterator():
     for j in i:
         n +=1
         isinstance(j, pydantic.BaseModel)
-    assert n == 5 # should be five entities in TEST_GSE
+    assert n == 6 # should be five entities in TEST_GSE
     

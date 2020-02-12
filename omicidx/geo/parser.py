@@ -1,6 +1,5 @@
 """Usage
 
-python -m omicidx.geometa --help
 """
 
 from Bio import Entrez
@@ -45,7 +44,7 @@ def get_geo_accessions(etyp='GSE',
                        batch_size=1000,
                        add_term=None,
                        email="user@example.com"):
-    """get GEO accessions
+    """Get GEO accessions by etyp
 
     Useful for getting all the ETYP accessions for
     later bulk processing
@@ -59,7 +58,8 @@ def get_geo_accessions(etyp='GSE',
         Transparent to the user, as this returns an iterator.
     add_term: str
         Add a search term for the query. Useful to limit
-        by date or search for specific text.
+        by date or search for specific text. For example, 
+        to limit by date: '2007/01/01:2007/03/01[PDAT]'
     email: str
         user email (not important)
 
@@ -117,7 +117,7 @@ def get_geo_accessions(etyp='GSE',
 
 
 def get_geo_accession_xml(accession, targ='all', view='brief'):
-    """Open a connection to get the GEO SOFT for an accession
+    """Open a connection to get the GEO XML for an accession
 
     Parameters
     ==========
@@ -505,7 +505,7 @@ def _parse_single_gpl_soft(d2):
 ###############################################################################
 #                   This is the main entrypoint for parsing.                  #
 ###############################################################################
-def geo_soft_entity_iterator(fh):
+def geo_entity_iterator(geo: str, targ:str = 'self', view: str = 'brief'):
     """Returns an iterator of GEO entities
 
     Given a GEO accession (typically a GSE,
@@ -525,12 +525,13 @@ def geo_soft_entity_iterator(fh):
     Iterator of GEO entities as pydantic models
 
 
-    >>> for i in geo_soft_entity_iterator(get_geo_accession_soft('GSE2553')):
+    >>> for i in geo_soft_entity_iterator('GSE2553'):
     ...     print(i)
     """
     entity = []
     accession = None
     in_table = False
+    fh = get_geo_accession_soft(geo, targ=targ, view=view)
     for line in fh:
         try:
             if (isinstance(line, bytes)):

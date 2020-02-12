@@ -409,6 +409,8 @@ def _parse_single_gse_soft(d2):
         d2['subseries'] = get_subseries_from_relations(d2['relation'])
         d2['bioprojects'] = get_bioprojects_from_relations(d2['relation'])
         d2['sra_studies'] = get_SRA_from_relations(d2['relation'])
+        # GEO sometimes references SRS and SRR from series--filter those out
+        d2['sra_studies'] = filter(lambda a : a.find('P')>0, d2['sra_studies'])
     except KeyError:
         d2['subseries'] = []
         d2['bioprojects'] = []

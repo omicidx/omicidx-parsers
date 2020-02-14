@@ -106,6 +106,6 @@ class GEOSeries(GEOBase):
     platform_organism: List[str] = []
     data_processing: str = None
     description: str = None
-    supplemental_file: List[str] = []
+    supplemental_files: List[str] = []
     overall_design: str = None
     contributor: List[GEOName] = []

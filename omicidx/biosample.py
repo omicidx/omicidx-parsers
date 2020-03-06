@@ -98,3 +98,102 @@ class BioSampleParser(object):
                 #res = es.index(index="bioes", doc_type='biosample', id=bios['id'], body=bios)
                 elem.clear()
                 return bios
+
+
+from pydantic import BaseModel
+from typing import List
+
+class BioProject(BaseModel):
+    name: str
+    title: str
+    description: str = None
+    pubs: List[dict]
+
+class BioProjectParser(object):
+    """Parse a BioProject xml file.
+
+    Implemented as an iterator"""
+
+    
+    def __init__(self,fname):
+        """Init
+
+        Handles .gz as well as plain text"""
+        self.fhandle = None
+        if(fname.endswith('gz')):
+            self.fhandle = gzip.open(fname)
+        else:
+            self.fhandle = open(fname)
+        self.context = ET.iterparse(self.fhandle, events=("start", "end"))
+        event, self.root = next(self.context)
+
+        
+    def __iter__(self):
+        return(self)
+
+    
+    def __next__(self):
+        for event, elem in self.context:
+            if event == "end" and elem.tag == "Package":
+                projtop = elem.find('./Project')
+                d2 = {}
+                d2['title'] = projtop.findtext('./Project/ProjectDescr/Title')
+                d2['description'] = projtop.findtext('./Project/ProjectDescr/Description')
+                d2['name'] = projtop.findtext('./Project/ProjectDescr/Name')
+                pubs =  []
+                for pub in projtop.findall(".//Publication"):
+                    pubs.append({"pubdate":pub.attrib['date'],
+                                 "id": pub.attrib['id'],
+                                 "db": pub.findtext('./DbType').replace('^e','',1)})
+                d2['publications'] = pubs
+                ext_links = []
+                for link in projtop.findall(".//ExternalLink"):
+                    ext_links.append({"category":link.attrib['category'],
+                                 "label": link.attrib['label'],
+                                 "url": link.findtext('./URL')})
+                d2['external_links'] = ext_links
+                return d2
+                                 
+            
+                # bios = BioProject()
+                # bios['is_reference']=None
+                # for k,v in elem.items():
+                #     bios[k] = v
+                # bios['id_recs'] = []
+                # bios['ids'] = []
+                # bios['sra_sample']=None
+                # bios['dbgap']=None
+                # bios['gsm']=None
+                # for id in elem.iterfind('.//Id'):
+                #     idrec = {'db': id.get('db'), 'label': id.get('db_label'), 'id':id.text}
+                #     bios['ids'].append(idrec['id'])
+                #     bios['id_recs'].append(idrec)
+                #     # add xref fields for SRA, dbGaP, and GEO
+                    
+                #     if(id.get('db')=='SRA'):
+                #         bios['sra_sample']=id.text
+                #     if(id.get('db')=='dbGaP'):
+                #         bios['dbgap']=id.text
+                #     if(id.get('db')=='GEO'):
+                #         bios['gsm']=id.text
+                # bios['title'] = elem.findtext('.//Description/Title')
+                # bios['description'] = elem.findtext('.//Description/Comment/Paragraph')
+                # organism = elem.find('.//Organism')
+                # bios['taxonomy_name'] = organism.get('taxonomy_name')
+                # bios['taxon_id'] = int(organism.get('taxonomy_id'))
+                # bios['attribute_recs'] = []
+                # bios['attributes'] = []
+                # for attribute in elem.findall('.//Attribute'):
+                #     attrec = attribute.attrib
+                #     attrec['value'] = attribute.text
+                #     bios['attribute_recs'].append(attrec)
+                #     try:
+                #         bios['attributes'].append(attrec['harmonized_name'])
+                #     except:
+                #         bios['attributes'].append(attrec['attribute_name'])
+                        
+                # bios['model'] = elem.findtext('.//Model')
+                # #print(json.dumps(bios))
+                # #res = es.index(index="bioes", doc_type='biosample', id=bios['id'], body=bios)
+                # elem.clear()
+                # return bios

@@ -1,0 +1,1165 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>omicidx.sra package &#8212; OmicIDX  documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="omicidx.scripts package" href="omicidx.scripts.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="omicidx-sra-package">
+<h1>omicidx.sra package<a class="headerlink" href="#omicidx-sra-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="omicidx-sra-ebiutils-module">
+<h2>omicidx.sra.ebiutils module<a class="headerlink" href="#omicidx-sra-ebiutils-module" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-omicidx.sra.parser">
+<span id="omicidx-sra-parser-module"></span><h2>omicidx.sra.parser module<a class="headerlink" href="#module-omicidx.sra.parser" title="Permalink to this headline">¶</a></h2>
+<p>SRA parsers including:</p>
+<ul class="simple">
+<li><p>study</p></li>
+<li><p>sample</p></li>
+<li><p>experiment</p></li>
+<li><p>run</p></li>
+</ul>
+<p>These parsers each parse XML format files of the format
+available from the fullxml api.</p>
+<p>The main entry point into this module is the <cite>parse_xml_file</cite>
+function.</p>
+<dl class="py class">
+<dt id="omicidx.sra.parser.LiveList">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.sra.parser.</code><code class="sig-name descname">LiveList</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">from_date</span><span class="o">=</span><span class="default_value">'2004-01-01'</span></em>, <em class="sig-param"><span class="n">to_date</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">count</span><span class="o">=</span><span class="default_value">2500</span></em>, <em class="sig-param"><span class="n">offset</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">entity</span><span class="o">=</span><span class="default_value">'EXPERIMENT'</span></em>, <em class="sig-param"><span class="n">status</span><span class="o">=</span><span class="default_value">'live'</span></em>, <em class="sig-param"><span class="n">max_retries</span><span class="o">=</span><span class="default_value">5</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/parser.html#LiveList"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.parser.LiveList" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">collections.abc.Iterable</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">typing.Generic</span></code></p>
+<p>Return an iterator of pydantic_models</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt id="omicidx.sra.parser.SRAAccessionUnavailableException">
+<em class="property">exception </em><code class="sig-prename descclassname">omicidx.sra.parser.</code><code class="sig-name descname">SRAAccessionUnavailableException</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">errormsg</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/parser.html#SRAAccessionUnavailableException"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.parser.SRAAccessionUnavailableException" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>When an SRA API call suggests that an accession is not available</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="omicidx.sra.parser.SRAExperimentPackage">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.sra.parser.</code><code class="sig-name descname">SRAExperimentPackage</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/parser.html#SRAExperimentPackage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.parser.SRAExperimentPackage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="omicidx.sra.parser.SRAExperimentPackage.expanded_experiment">
+<code class="sig-name descname">expanded_experiment</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/parser.html#SRAExperimentPackage.expanded_experiment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.parser.SRAExperimentPackage.expanded_experiment" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="omicidx.sra.parser.SRAExperimentPackage.experiment">
+<code class="sig-name descname">experiment</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/parser.html#SRAExperimentPackage.experiment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.parser.SRAExperimentPackage.experiment" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="omicidx.sra.parser.SRAExperimentPackage.nested_runs">
+<code class="sig-name descname">nested_runs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/parser.html#SRAExperimentPackage.nested_runs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.parser.SRAExperimentPackage.nested_runs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="omicidx.sra.parser.SRAExperimentPackage.runs">
+<code class="sig-name descname">runs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/parser.html#SRAExperimentPackage.runs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.parser.SRAExperimentPackage.runs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="omicidx.sra.parser.SRAExperimentPackage.sample">
+<code class="sig-name descname">sample</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/parser.html#SRAExperimentPackage.sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.parser.SRAExperimentPackage.sample" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="omicidx.sra.parser.SRAExperimentPackage.study">
+<code class="sig-name descname">study</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/parser.html#SRAExperimentPackage.study"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.parser.SRAExperimentPackage.study" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="omicidx.sra.parser.SRAExperimentRecord">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.sra.parser.</code><code class="sig-name descname">SRAExperimentRecord</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xml</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/parser.html#SRAExperimentRecord"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.parser.SRAExperimentRecord" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#omicidx.sra.parser.SRAXMLRecord" title="omicidx.sra.parser.SRAXMLRecord"><code class="xref py py-class docutils literal notranslate"><span class="pre">omicidx.sra.parser.SRAXMLRecord</span></code></a></p>
+<dl class="py method">
+<dt id="omicidx.sra.parser.SRAExperimentRecord.parse_xml">
+<code class="sig-name descname">parse_xml</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/parser.html#SRAExperimentRecord.parse_xml"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.parser.SRAExperimentRecord.parse_xml" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse an SRA xml EXPERIMENT element</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="omicidx.sra.parser.SRARunRecord">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.sra.parser.</code><code class="sig-name descname">SRARunRecord</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xml</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/parser.html#SRARunRecord"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.parser.SRARunRecord" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#omicidx.sra.parser.SRAXMLRecord" title="omicidx.sra.parser.SRAXMLRecord"><code class="xref py py-class docutils literal notranslate"><span class="pre">omicidx.sra.parser.SRAXMLRecord</span></code></a></p>
+<dl class="py method">
+<dt id="omicidx.sra.parser.SRARunRecord.parse_xml">
+<code class="sig-name descname">parse_xml</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/parser.html#SRARunRecord.parse_xml"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.parser.SRARunRecord.parse_xml" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="omicidx.sra.parser.SRASampleRecord">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.sra.parser.</code><code class="sig-name descname">SRASampleRecord</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xml</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/parser.html#SRASampleRecord"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.parser.SRASampleRecord" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#omicidx.sra.parser.SRAXMLRecord" title="omicidx.sra.parser.SRAXMLRecord"><code class="xref py py-class docutils literal notranslate"><span class="pre">omicidx.sra.parser.SRAXMLRecord</span></code></a></p>
+<dl class="py method">
+<dt id="omicidx.sra.parser.SRASampleRecord.parse_xml">
+<code class="sig-name descname">parse_xml</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/parser.html#SRASampleRecord.parse_xml"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.parser.SRASampleRecord.parse_xml" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="omicidx.sra.parser.SRAStudyRecord">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.sra.parser.</code><code class="sig-name descname">SRAStudyRecord</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xml</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/parser.html#SRAStudyRecord"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.parser.SRAStudyRecord" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#omicidx.sra.parser.SRAXMLRecord" title="omicidx.sra.parser.SRAXMLRecord"><code class="xref py py-class docutils literal notranslate"><span class="pre">omicidx.sra.parser.SRAXMLRecord</span></code></a></p>
+<dl class="py method">
+<dt id="omicidx.sra.parser.SRAStudyRecord.parse_xml">
+<code class="sig-name descname">parse_xml</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/parser.html#SRAStudyRecord.parse_xml"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.parser.SRAStudyRecord.parse_xml" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="omicidx.sra.parser.SRASubmissionRecord">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.sra.parser.</code><code class="sig-name descname">SRASubmissionRecord</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xml</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/parser.html#SRASubmissionRecord"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.parser.SRASubmissionRecord" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#omicidx.sra.parser.SRAXMLRecord" title="omicidx.sra.parser.SRAXMLRecord"><code class="xref py py-class docutils literal notranslate"><span class="pre">omicidx.sra.parser.SRAXMLRecord</span></code></a></p>
+<dl class="py method">
+<dt id="omicidx.sra.parser.SRASubmissionRecord.parse_xml">
+<code class="sig-name descname">parse_xml</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/parser.html#SRASubmissionRecord.parse_xml"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.parser.SRASubmissionRecord.parse_xml" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="omicidx.sra.parser.SRAXMLRecord">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.sra.parser.</code><code class="sig-name descname">SRAXMLRecord</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xml</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/parser.html#SRAXMLRecord"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.parser.SRAXMLRecord" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="omicidx.sra.parser.SRAXMLRecord.parse_xml">
+<code class="sig-name descname">parse_xml</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/parser.html#SRAXMLRecord.parse_xml"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.parser.SRAXMLRecord.parse_xml" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="omicidx.sra.parser.dict_from_single_xml">
+<code class="sig-prename descclassname">omicidx.sra.parser.</code><code class="sig-name descname">dict_from_single_xml</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">txt</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/parser.html#dict_from_single_xml"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.parser.dict_from_single_xml" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="omicidx.sra.parser.get_accession_list">
+<code class="sig-prename descclassname">omicidx.sra.parser.</code><code class="sig-name descname">get_accession_list</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">from_date</span><span class="o">=</span><span class="default_value">'2001-01-01'</span></em>, <em class="sig-param"><span class="n">to_date</span><span class="o">=</span><span class="default_value">'2050-01-01'</span></em>, <em class="sig-param"><span class="n">count</span><span class="o">=</span><span class="default_value">100</span></em>, <em class="sig-param"><span class="n">offset</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">type</span><span class="o">=</span><span class="default_value">'EXPERIMENT'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/parser.html#get_accession_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.parser.get_accession_list" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="omicidx.sra.parser.lambda_handler">
+<code class="sig-prename descclassname">omicidx.sra.parser.</code><code class="sig-name descname">lambda_handler</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">event</span></em>, <em class="sig-param"><span class="n">context</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/parser.html#lambda_handler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.parser.lambda_handler" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="omicidx.sra.parser.load_experiment_xml_by_accession">
+<code class="sig-prename descclassname">omicidx.sra.parser.</code><code class="sig-name descname">load_experiment_xml_by_accession</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">accession</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/parser.html#load_experiment_xml_by_accession"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.parser.load_experiment_xml_by_accession" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="omicidx.sra.parser.load_runbrowser_xml_by_accession">
+<code class="sig-prename descclassname">omicidx.sra.parser.</code><code class="sig-name descname">load_runbrowser_xml_by_accession</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">accession</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/parser.html#load_runbrowser_xml_by_accession"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.parser.load_runbrowser_xml_by_accession" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="omicidx.sra.parser.model_from_single_xml">
+<code class="sig-prename descclassname">omicidx.sra.parser.</code><code class="sig-name descname">model_from_single_xml</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">txt</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/parser.html#model_from_single_xml"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.parser.model_from_single_xml" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="omicidx.sra.parser.models_from_runbrowser">
+<code class="sig-prename descclassname">omicidx.sra.parser.</code><code class="sig-name descname">models_from_runbrowser</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">accession</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/parser.html#models_from_runbrowser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.parser.models_from_runbrowser" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="omicidx.sra.parser.open_file">
+<code class="sig-prename descclassname">omicidx.sra.parser.</code><code class="sig-name descname">open_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fname</span></em>, <em class="sig-param"><span class="n">encoding</span><span class="o">=</span><span class="default_value">'UTF-8'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/parser.html#open_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.parser.open_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Open a file, generalized to deal with gzip files</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>fname</strong> (<em>string</em>) – The filename. If ends in ‘.gz’, is opened with
+gzip.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>an open file handle</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="omicidx.sra.parser.parse_addons_info">
+<code class="sig-prename descclassname">omicidx.sra.parser.</code><code class="sig-name descname">parse_addons_info</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fname</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/parser.html#parse_addons_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.parser.parse_addons_info" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="omicidx.sra.parser.parse_experiment">
+<code class="sig-prename descclassname">omicidx.sra.parser.</code><code class="sig-name descname">parse_experiment</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xml</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/parser.html#parse_experiment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.parser.parse_experiment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse an SRA xml EXPERIMENT element</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>xml</strong> (<em>xml.etree.ElementTree.Element</em>) – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>a dict of experiment</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="omicidx.sra.parser.parse_livelist">
+<code class="sig-prename descclassname">omicidx.sra.parser.</code><code class="sig-name descname">parse_livelist</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fname</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/parser.html#parse_livelist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.parser.parse_livelist" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="omicidx.sra.parser.parse_run">
+<code class="sig-prename descclassname">omicidx.sra.parser.</code><code class="sig-name descname">parse_run</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xml</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/parser.html#parse_run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.parser.parse_run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse an SRA xml RUN element</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>xml</strong> (<em>an xml.etree Element</em>) – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>A dict object parsed from the XML</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="omicidx.sra.parser.parse_run_info">
+<code class="sig-prename descclassname">omicidx.sra.parser.</code><code class="sig-name descname">parse_run_info</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fname</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/parser.html#parse_run_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.parser.parse_run_info" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="omicidx.sra.parser.parse_sample">
+<code class="sig-prename descclassname">omicidx.sra.parser.</code><code class="sig-name descname">parse_sample</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xml</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/parser.html#parse_sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.parser.parse_sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse an SRA xml SAMPLE element</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>xml</strong> (<em>an xml.etree Element</em>) – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>A dict object parsed from the XML</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="omicidx.sra.parser.parse_study">
+<code class="sig-prename descclassname">omicidx.sra.parser.</code><code class="sig-name descname">parse_study</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xml</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/parser.html#parse_study"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.parser.parse_study" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse an SRA xml STUDY element</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>xml</strong> (<em>an xml.etree Element</em>) – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>A dict object parsed from the XML</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="omicidx.sra.parser.parse_submission">
+<code class="sig-prename descclassname">omicidx.sra.parser.</code><code class="sig-name descname">parse_submission</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xml</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/parser.html#parse_submission"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.parser.parse_submission" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse an SRA xml SUBMISSION element</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>xml</strong> (<em>xml.etree.ElementTree.Element</em>) – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>a dict of experiment</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="omicidx.sra.parser.parse_xml_file">
+<code class="sig-prename descclassname">omicidx.sra.parser.</code><code class="sig-name descname">parse_xml_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xmlfilename</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/parser.html#parse_xml_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.parser.parse_xml_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse an NCBI SRA mirroring XML file</p>
+<p>This function returns an iterator over the
+records in the xml file, returning a dict
+of parsed records.</p>
+<p>For example:</p>
+<p>wget –mirror -nH –cut-dirs=3 <a class="reference external" href="ftp://ftp.ncbi.nlm.nih.gov/sra/reports/Mirroring/NCBI_SRA_Mirroring_20181027/">ftp://ftp.ncbi.nlm.nih.gov/sra/reports/Mirroring/NCBI_SRA_Mirroring_20181027/</a></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">omicidx.sra_parsers</span> <span class="k">as</span> <span class="nn">sp</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">studies</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">parse_xml_file</span><span class="p">(</span><span class="s2">&quot;NCBI_SRA_Mirroring_20181027/meta_study_set.xml.gz&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">next</span><span class="p">(</span><span class="n">studies</span><span class="p">)</span>
+<span class="gp">...</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>xmlfilename</strong> (<em>string</em>) – the filename to be parsed. Can be gzipped. Must include
+the “entity” name in the filename (eg., “run”, “experiment”)</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>An iterator of dict records from parsing each xml record.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>iterator</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="omicidx.sra.parser.results_from_runbrowser">
+<code class="sig-prename descclassname">omicidx.sra.parser.</code><code class="sig-name descname">results_from_runbrowser</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">accession</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/parser.html#results_from_runbrowser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.parser.results_from_runbrowser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return complete record from runbrowser</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>accession</strong> (<em>string</em>) – Any SRA accession, but the only one-to-one results are
+for SRR records.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>a dict with experiment, run, study, and sample records</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="omicidx.sra.parser.run_from_runbrowser">
+<code class="sig-prename descclassname">omicidx.sra.parser.</code><code class="sig-name descname">run_from_runbrowser</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">accession</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/parser.html#run_from_runbrowser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.parser.run_from_runbrowser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Just the run part of runbrowser output</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="omicidx.sra.parser.run_iterator">
+<code class="sig-prename descclassname">omicidx.sra.parser.</code><code class="sig-name descname">run_iterator</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">from_date</span><span class="o">=</span><span class="default_value">'2001-01-01'</span></em>, <em class="sig-param"><span class="n">to_date</span><span class="o">=</span><span class="default_value">'2050-01-01'</span></em>, <em class="sig-param"><span class="n">count</span><span class="o">=</span><span class="default_value">100</span></em>, <em class="sig-param"><span class="n">offset</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/parser.html#run_iterator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.parser.run_iterator" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="omicidx.sra.parser.sra_object_generator">
+<code class="sig-prename descclassname">omicidx.sra.parser.</code><code class="sig-name descname">sra_object_generator</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fname</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/parser.html#sra_object_generator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.parser.sra_object_generator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate over objects in an SRA meta_XXX_set xml file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Param</dt>
+<dd class="field-odd"><p>fname str() name of xml file, may be gzipped or not</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>An iterator over SRA objects. Access actual data
+as a dict using Object.data</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="omicidx.sra.parser.srastatrep">
+<code class="sig-prename descclassname">omicidx.sra.parser.</code><code class="sig-name descname">srastatrep</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">accessions</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/parser.html#srastatrep"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.parser.srastatrep" title="Permalink to this definition">¶</a></dt>
+<dd><p>Access the SRA statrep api</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>accessions</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – A list (or can be single string) of accessions</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>A named tuple with statrep column names as field_names</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="omicidx.sra.parser.try_update">
+<code class="sig-prename descclassname">omicidx.sra.parser.</code><code class="sig-name descname">try_update</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">d</span></em>, <em class="sig-param"><span class="n">value</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/parser.html#try_update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.parser.try_update" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-omicidx.sra.pydantic_models">
+<span id="omicidx-sra-pydantic-models-module"></span><h2>omicidx.sra.pydantic_models module<a class="headerlink" href="#module-omicidx.sra.pydantic_models" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="omicidx.sra.pydantic_models.Attribute">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.sra.pydantic_models.</code><code class="sig-name descname">Attribute</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">data</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/pydantic_models.html#Attribute"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.pydantic_models.Attribute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pydantic.main.BaseModel</span></code></p>
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.Attribute.tag">
+<code class="sig-name descname">tag</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.Attribute.tag" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.Attribute.value">
+<code class="sig-name descname">value</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.Attribute.value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="omicidx.sra.pydantic_models.BaseCounts">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.sra.pydantic_models.</code><code class="sig-name descname">BaseCounts</code><a class="reference internal" href="_modules/omicidx/sra/pydantic_models.html#BaseCounts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.pydantic_models.BaseCounts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">typing.Generic</span></code></p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="omicidx.sra.pydantic_models.BaseQualities">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.sra.pydantic_models.</code><code class="sig-name descname">BaseQualities</code><a class="reference internal" href="_modules/omicidx/sra/pydantic_models.html#BaseQualities"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.pydantic_models.BaseQualities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">typing.Generic</span></code></p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="omicidx.sra.pydantic_models.BaseQualityCount">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.sra.pydantic_models.</code><code class="sig-name descname">BaseQualityCount</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">data</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/pydantic_models.html#BaseQualityCount"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.pydantic_models.BaseQualityCount" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pydantic.main.BaseModel</span></code></p>
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.BaseQualityCount.count">
+<code class="sig-name descname">count</code><em class="property">: int</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.BaseQualityCount.count" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.BaseQualityCount.quality">
+<code class="sig-name descname">quality</code><em class="property">: int</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.BaseQualityCount.quality" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="omicidx.sra.pydantic_models.FileAlternative">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.sra.pydantic_models.</code><code class="sig-name descname">FileAlternative</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">data</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/pydantic_models.html#FileAlternative"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.pydantic_models.FileAlternative" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pydantic.main.BaseModel</span></code></p>
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.FileAlternative.access_type">
+<code class="sig-name descname">access_type</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.FileAlternative.access_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.FileAlternative.free_egress">
+<code class="sig-name descname">free_egress</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.FileAlternative.free_egress" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.FileAlternative.org">
+<code class="sig-name descname">org</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.FileAlternative.org" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.FileAlternative.url">
+<code class="sig-name descname">url</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.FileAlternative.url" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="omicidx.sra.pydantic_models.FileSet">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.sra.pydantic_models.</code><code class="sig-name descname">FileSet</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">data</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/pydantic_models.html#FileSet"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.pydantic_models.FileSet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pydantic.main.BaseModel</span></code></p>
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.FileSet.alternatives">
+<code class="sig-name descname">alternatives</code><em class="property">: List[FileAlternative]</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.FileSet.alternatives" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.FileSet.cluster">
+<code class="sig-name descname">cluster</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.FileSet.cluster" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.FileSet.date">
+<code class="sig-name descname">date</code><em class="property">: datetime</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.FileSet.date" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.FileSet.filename">
+<code class="sig-name descname">filename</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.FileSet.filename" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.FileSet.md5">
+<code class="sig-name descname">md5</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.FileSet.md5" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.FileSet.size">
+<code class="sig-name descname">size</code><em class="property">: int</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.FileSet.size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.FileSet.sratoolkit">
+<code class="sig-name descname">sratoolkit</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.FileSet.sratoolkit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.FileSet.url">
+<code class="sig-name descname">url</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.FileSet.url" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="omicidx.sra.pydantic_models.FullSraRun">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.sra.pydantic_models.</code><code class="sig-name descname">FullSraRun</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">data</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/pydantic_models.html#FullSraRun"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.pydantic_models.FullSraRun" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="omicidx.sra.pydantic_models.html#omicidx.sra.pydantic_models.SraRun" title="omicidx.sra.pydantic_models.SraRun"><code class="xref py py-class docutils literal notranslate"><span class="pre">omicidx.sra.pydantic_models.SraRun</span></code></a></p>
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.FullSraRun.experiment">
+<code class="sig-name descname">experiment</code><em class="property">: SraExperiment</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.FullSraRun.experiment" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.FullSraRun.sample">
+<code class="sig-name descname">sample</code><em class="property">: SraSample</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.FullSraRun.sample" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.FullSraRun.study">
+<code class="sig-name descname">study</code><em class="property">: SraStudy</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.FullSraRun.study" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="omicidx.sra.pydantic_models.Identifier">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.sra.pydantic_models.</code><code class="sig-name descname">Identifier</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">data</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/pydantic_models.html#Identifier"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.pydantic_models.Identifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pydantic.main.BaseModel</span></code></p>
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.Identifier.id">
+<code class="sig-name descname">id</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.Identifier.id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.Identifier.namespace">
+<code class="sig-name descname">namespace</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.Identifier.namespace" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="omicidx.sra.pydantic_models.LiveList">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.sra.pydantic_models.</code><code class="sig-name descname">LiveList</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">data</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/pydantic_models.html#LiveList"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.pydantic_models.LiveList" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pydantic.main.BaseModel</span></code></p>
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.LiveList.insdc">
+<code class="sig-name descname">insdc</code><em class="property">: bool</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.LiveList.insdc" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.LiveList.lastupdate">
+<code class="sig-name descname">lastupdate</code><em class="property">: datetime</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.LiveList.lastupdate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.LiveList.published">
+<code class="sig-name descname">published</code><em class="property">: datetime</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.LiveList.published" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.LiveList.received">
+<code class="sig-name descname">received</code><em class="property">: datetime</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.LiveList.received" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.LiveList.status">
+<code class="sig-name descname">status</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.LiveList.status" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="omicidx.sra.pydantic_models.RunRead">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.sra.pydantic_models.</code><code class="sig-name descname">RunRead</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">data</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/pydantic_models.html#RunRead"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.pydantic_models.RunRead" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pydantic.main.BaseModel</span></code></p>
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.RunRead.count">
+<code class="sig-name descname">count</code><em class="property">: int</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.RunRead.count" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.RunRead.index">
+<code class="sig-name descname">index</code><em class="property">: int</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.RunRead.index" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.RunRead.mean_length">
+<code class="sig-name descname">mean_length</code><em class="property">: float</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.RunRead.mean_length" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.RunRead.sd_length">
+<code class="sig-name descname">sd_length</code><em class="property">: float</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.RunRead.sd_length" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="omicidx.sra.pydantic_models.SraExperiment">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.sra.pydantic_models.</code><code class="sig-name descname">SraExperiment</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">data</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/pydantic_models.html#SraExperiment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.pydantic_models.SraExperiment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="omicidx.sra.pydantic_models.html#omicidx.sra.pydantic_models.LiveList" title="omicidx.sra.pydantic_models.LiveList"><code class="xref py py-class docutils literal notranslate"><span class="pre">omicidx.sra.pydantic_models.LiveList</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">pydantic.main.BaseModel</span></code></p>
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraExperiment.accession">
+<code class="sig-name descname">accession</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraExperiment.accession" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraExperiment.alias">
+<code class="sig-name descname">alias</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraExperiment.alias" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraExperiment.attributes">
+<code class="sig-name descname">attributes</code><em class="property">: List[Attribute]</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraExperiment.attributes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraExperiment.center_name">
+<code class="sig-name descname">center_name</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraExperiment.center_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraExperiment.description">
+<code class="sig-name descname">description</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraExperiment.description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraExperiment.design">
+<code class="sig-name descname">design</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraExperiment.design" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraExperiment.identifiers">
+<code class="sig-name descname">identifiers</code><em class="property">: List[Identifier]</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraExperiment.identifiers" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraExperiment.instrument_model">
+<code class="sig-name descname">instrument_model</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraExperiment.instrument_model" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraExperiment.library_construction_protocol">
+<code class="sig-name descname">library_construction_protocol</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraExperiment.library_construction_protocol" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraExperiment.library_layout">
+<code class="sig-name descname">library_layout</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraExperiment.library_layout" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraExperiment.library_layout_length">
+<code class="sig-name descname">library_layout_length</code><em class="property">: float</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraExperiment.library_layout_length" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraExperiment.library_layout_orientation">
+<code class="sig-name descname">library_layout_orientation</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraExperiment.library_layout_orientation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraExperiment.library_layout_sdev">
+<code class="sig-name descname">library_layout_sdev</code><em class="property">: float</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraExperiment.library_layout_sdev" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraExperiment.library_name">
+<code class="sig-name descname">library_name</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraExperiment.library_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraExperiment.library_selection">
+<code class="sig-name descname">library_selection</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraExperiment.library_selection" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraExperiment.library_source">
+<code class="sig-name descname">library_source</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraExperiment.library_source" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraExperiment.library_strategy">
+<code class="sig-name descname">library_strategy</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraExperiment.library_strategy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraExperiment.platform">
+<code class="sig-name descname">platform</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraExperiment.platform" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraExperiment.sample_accession">
+<code class="sig-name descname">sample_accession</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraExperiment.sample_accession" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraExperiment.study_accession">
+<code class="sig-name descname">study_accession</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraExperiment.study_accession" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraExperiment.title">
+<code class="sig-name descname">title</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraExperiment.title" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraExperiment.xrefs">
+<code class="sig-name descname">xrefs</code><em class="property">: List[Xref]</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraExperiment.xrefs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="omicidx.sra.pydantic_models.SraRun">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.sra.pydantic_models.</code><code class="sig-name descname">SraRun</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">data</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/pydantic_models.html#SraRun"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.pydantic_models.SraRun" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="omicidx.sra.pydantic_models.html#omicidx.sra.pydantic_models.LiveList" title="omicidx.sra.pydantic_models.LiveList"><code class="xref py py-class docutils literal notranslate"><span class="pre">omicidx.sra.pydantic_models.LiveList</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">pydantic.main.BaseModel</span></code></p>
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraRun.accession">
+<code class="sig-name descname">accession</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraRun.accession" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraRun.alias">
+<code class="sig-name descname">alias</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraRun.alias" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraRun.attributes">
+<code class="sig-name descname">attributes</code><em class="property">: List[Attribute]</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraRun.attributes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraRun.avg_length">
+<code class="sig-name descname">avg_length</code><em class="property">: float</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraRun.avg_length" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraRun.base_counts">
+<code class="sig-name descname">base_counts</code><em class="property">: BaseCounts</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraRun.base_counts" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraRun.center_name">
+<code class="sig-name descname">center_name</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraRun.center_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraRun.cluster_name">
+<code class="sig-name descname">cluster_name</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraRun.cluster_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraRun.experiment_accession">
+<code class="sig-name descname">experiment_accession</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraRun.experiment_accession" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraRun.files">
+<code class="sig-name descname">files</code><em class="property">: List[FileSet]</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraRun.files" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraRun.is_public">
+<code class="sig-name descname">is_public</code><em class="property">: bool</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraRun.is_public" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraRun.load_done">
+<code class="sig-name descname">load_done</code><em class="property">: bool</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraRun.load_done" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraRun.published">
+<code class="sig-name descname">published</code><em class="property">: datetime</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraRun.published" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraRun.qualities">
+<code class="sig-name descname">qualities</code><em class="property">: BaseQualities</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraRun.qualities" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraRun.reads">
+<code class="sig-name descname">reads</code><em class="property">: List[RunRead]</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraRun.reads" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraRun.run_center">
+<code class="sig-name descname">run_center</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraRun.run_center" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraRun.run_date">
+<code class="sig-name descname">run_date</code><em class="property">: datetime</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraRun.run_date" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraRun.size">
+<code class="sig-name descname">size</code><em class="property">: int</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraRun.size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraRun.static_data_available">
+<code class="sig-name descname">static_data_available</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraRun.static_data_available" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraRun.tax_analysis">
+<code class="sig-name descname">tax_analysis</code><em class="property">: TaxCountAnalysis</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraRun.tax_analysis" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraRun.total_bases">
+<code class="sig-name descname">total_bases</code><em class="property">: int</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraRun.total_bases" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraRun.total_spots">
+<code class="sig-name descname">total_spots</code><em class="property">: int</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraRun.total_spots" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="omicidx.sra.pydantic_models.SraSample">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.sra.pydantic_models.</code><code class="sig-name descname">SraSample</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">data</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/pydantic_models.html#SraSample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.pydantic_models.SraSample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="omicidx.sra.pydantic_models.html#omicidx.sra.pydantic_models.LiveList" title="omicidx.sra.pydantic_models.LiveList"><code class="xref py py-class docutils literal notranslate"><span class="pre">omicidx.sra.pydantic_models.LiveList</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">pydantic.main.BaseModel</span></code></p>
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraSample.BioSample">
+<code class="sig-name descname">BioSample</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraSample.BioSample" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraSample.accession">
+<code class="sig-name descname">accession</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraSample.accession" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraSample.alias">
+<code class="sig-name descname">alias</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraSample.alias" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraSample.attributes">
+<code class="sig-name descname">attributes</code><em class="property">: List[Attribute]</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraSample.attributes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraSample.description">
+<code class="sig-name descname">description</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraSample.description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraSample.geo">
+<code class="sig-name descname">geo</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraSample.geo" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraSample.identifiers">
+<code class="sig-name descname">identifiers</code><em class="property">: List[Identifier]</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraSample.identifiers" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraSample.organism">
+<code class="sig-name descname">organism</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraSample.organism" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraSample.taxon_id">
+<code class="sig-name descname">taxon_id</code><em class="property">: int</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraSample.taxon_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraSample.title">
+<code class="sig-name descname">title</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraSample.title" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraSample.xrefs">
+<code class="sig-name descname">xrefs</code><em class="property">: List[Xref]</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraSample.xrefs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="omicidx.sra.pydantic_models.SraStudy">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.sra.pydantic_models.</code><code class="sig-name descname">SraStudy</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">data</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/pydantic_models.html#SraStudy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.pydantic_models.SraStudy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="omicidx.sra.pydantic_models.html#omicidx.sra.pydantic_models.LiveList" title="omicidx.sra.pydantic_models.LiveList"><code class="xref py py-class docutils literal notranslate"><span class="pre">omicidx.sra.pydantic_models.LiveList</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">pydantic.main.BaseModel</span></code></p>
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraStudy.BioProject">
+<code class="sig-name descname">BioProject</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraStudy.BioProject" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraStudy.Geo">
+<code class="sig-name descname">Geo</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraStudy.Geo" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraStudy.abstract">
+<code class="sig-name descname">abstract</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraStudy.abstract" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraStudy.accession">
+<code class="sig-name descname">accession</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraStudy.accession" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraStudy.alias">
+<code class="sig-name descname">alias</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraStudy.alias" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraStudy.attributes">
+<code class="sig-name descname">attributes</code><em class="property">: List[Attribute]</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraStudy.attributes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraStudy.broker_name">
+<code class="sig-name descname">broker_name</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraStudy.broker_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraStudy.center_name">
+<code class="sig-name descname">center_name</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraStudy.center_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraStudy.description">
+<code class="sig-name descname">description</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraStudy.description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraStudy.identifiers">
+<code class="sig-name descname">identifiers</code><em class="property">: List[Identifier]</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraStudy.identifiers" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraStudy.pubmed_ids">
+<code class="sig-name descname">pubmed_ids</code><em class="property">: List[int]</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraStudy.pubmed_ids" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraStudy.study_type">
+<code class="sig-name descname">study_type</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraStudy.study_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.SraStudy.title">
+<code class="sig-name descname">title</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.SraStudy.title" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="omicidx.sra.pydantic_models.TaxCountAnalysis">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.sra.pydantic_models.</code><code class="sig-name descname">TaxCountAnalysis</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">data</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/pydantic_models.html#TaxCountAnalysis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.pydantic_models.TaxCountAnalysis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pydantic.main.BaseModel</span></code></p>
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.TaxCountAnalysis.mapped_spots">
+<code class="sig-name descname">mapped_spots</code><em class="property">: int</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.TaxCountAnalysis.mapped_spots" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.TaxCountAnalysis.nspot_analyze">
+<code class="sig-name descname">nspot_analyze</code><em class="property">: int</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.TaxCountAnalysis.nspot_analyze" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.TaxCountAnalysis.tax_counts">
+<code class="sig-name descname">tax_counts</code><em class="property">: List[TaxCountEntry]</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.TaxCountAnalysis.tax_counts" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.TaxCountAnalysis.total_spots">
+<code class="sig-name descname">total_spots</code><em class="property">: int</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.TaxCountAnalysis.total_spots" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="omicidx.sra.pydantic_models.TaxCountEntry">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.sra.pydantic_models.</code><code class="sig-name descname">TaxCountEntry</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">data</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/pydantic_models.html#TaxCountEntry"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.pydantic_models.TaxCountEntry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pydantic.main.BaseModel</span></code></p>
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.TaxCountEntry.name">
+<code class="sig-name descname">name</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.TaxCountEntry.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.TaxCountEntry.parent">
+<code class="sig-name descname">parent</code><em class="property">: int</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.TaxCountEntry.parent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.TaxCountEntry.rank">
+<code class="sig-name descname">rank</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.TaxCountEntry.rank" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.TaxCountEntry.self_count">
+<code class="sig-name descname">self_count</code><em class="property">: int</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.TaxCountEntry.self_count" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.TaxCountEntry.tax_id">
+<code class="sig-name descname">tax_id</code><em class="property">: int</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.TaxCountEntry.tax_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.TaxCountEntry.total_count">
+<code class="sig-name descname">total_count</code><em class="property">: int</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.TaxCountEntry.total_count" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="omicidx.sra.pydantic_models.Xref">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.sra.pydantic_models.</code><code class="sig-name descname">Xref</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">data</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/sra/pydantic_models.html#Xref"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.sra.pydantic_models.Xref" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pydantic.main.BaseModel</span></code></p>
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.Xref.db">
+<code class="sig-name descname">db</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.Xref.db" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.sra.pydantic_models.Xref.id">
+<code class="sig-name descname">id</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.sra.pydantic_models.Xref.id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-omicidx.sra">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-omicidx.sra" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">OmicIDX</a></h1>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=seandavi&repo=omicidx&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Bigquery.html">OmicIDX dataset on Bigquery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">Commandline Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="genomic_metadata.html">Genomic metadata in OmicIDX</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">omicidx</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="omicidx.html">omicidx package</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">omicidx</a><ul>
+  <li><a href="omicidx.html">omicidx package</a><ul>
+      <li>Previous: <a href="omicidx.scripts.html" title="previous chapter">omicidx.scripts package</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Sean Davis.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/omicidx.sra.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/seandavi/omicidx" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

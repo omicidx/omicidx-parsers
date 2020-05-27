@@ -1,0 +1,209 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>omicidx.mti package &#8212; OmicIDX  documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="omicidx.ontologies package" href="omicidx.ontologies.html" />
+    <link rel="prev" title="omicidx.geo package" href="omicidx.geo.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="omicidx-mti-package">
+<h1>omicidx.mti package<a class="headerlink" href="#omicidx-mti-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-omicidx.mti.parser">
+<span id="omicidx-mti-parser-module"></span><h2>omicidx.mti.parser module<a class="headerlink" href="#module-omicidx.mti.parser" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="omicidx.mti.parser.MTIResult">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.mti.parser.</code><code class="sig-name descname">MTIResult</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">data</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/mti/parser.html#MTIResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.mti.parser.MTIResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pydantic.main.BaseModel</span></code></p>
+<dl class="py attribute">
+<dt id="omicidx.mti.parser.MTIResult.concept">
+<code class="sig-name descname">concept</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.mti.parser.MTIResult.concept" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.mti.parser.MTIResult.entry_type">
+<code class="sig-name descname">entry_type</code><em class="property">: List[str]</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.mti.parser.MTIResult.entry_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.mti.parser.MTIResult.explanation">
+<code class="sig-name descname">explanation</code><em class="property">: List[str]</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.mti.parser.MTIResult.explanation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.mti.parser.MTIResult.identifier">
+<code class="sig-name descname">identifier</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.mti.parser.MTIResult.identifier" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.mti.parser.MTIResult.location">
+<code class="sig-name descname">location</code><em class="property">: List[str]</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.mti.parser.MTIResult.location" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.mti.parser.MTIResult.main">
+<code class="sig-name descname">main</code><em class="property">: bool</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.mti.parser.MTIResult.main" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="omicidx.mti.parser.MTIResult.mti_record_iterator">
+<em class="property">static </em><code class="sig-name descname">mti_record_iterator</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fname</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/mti/parser.html#MTIResult.mti_record_iterator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.mti.parser.MTIResult.mti_record_iterator" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.mti.parser.MTIResult.name">
+<code class="sig-name descname">name</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.mti.parser.MTIResult.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.mti.parser.MTIResult.occurrences">
+<code class="sig-name descname">occurrences</code><em class="property">: List[str]</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.mti.parser.MTIResult.occurrences" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="omicidx.mti.parser.MTIResult.parse_mti_line">
+<em class="property">static </em><code class="sig-name descname">parse_mti_line</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">line</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/mti/parser.html#MTIResult.parse_mti_line"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.mti.parser.MTIResult.parse_mti_line" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.mti.parser.MTIResult.score">
+<code class="sig-name descname">score</code><em class="property">: int</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.mti.parser.MTIResult.score" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.mti.parser.MTIResult.stuff">
+<code class="sig-name descname">stuff</code><em class="property">: List[str]</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.mti.parser.MTIResult.stuff" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="omicidx.mti.parser.main">
+<code class="sig-prename descclassname">omicidx.mti.parser.</code><code class="sig-name descname">main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/mti/parser.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.mti.parser.main" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-omicidx.mti">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-omicidx.mti" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">OmicIDX</a></h1>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=seandavi&repo=omicidx&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Bigquery.html">OmicIDX dataset on Bigquery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">Commandline Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="genomic_metadata.html">Genomic metadata in OmicIDX</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">omicidx</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="omicidx.html">omicidx package</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">omicidx</a><ul>
+  <li><a href="omicidx.html">omicidx package</a><ul>
+      <li>Previous: <a href="omicidx.geo.html" title="previous chapter">omicidx.geo package</a></li>
+      <li>Next: <a href="omicidx.ontologies.html" title="next chapter">omicidx.ontologies package</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Sean Davis.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/omicidx.mti.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/seandavi/omicidx" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

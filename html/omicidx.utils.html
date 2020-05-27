@@ -1,0 +1,174 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>omicidx.utils module &#8212; OmicIDX  documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-omicidx.utils">
+<span id="omicidx-utils-module"></span><h1>omicidx.utils module<a class="headerlink" href="#module-omicidx.utils" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt id="omicidx.utils.open_file">
+<code class="sig-prename descclassname">omicidx.utils.</code><code class="sig-name descname">open_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fname</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">mode</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'rt'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/utils.html#open_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.utils.open_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>open a file, including dealing with gzipped files</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fname</strong> (<em>str</em>) – a filename. If ending in .gz, will use gzip.open().
+Otherwise, a regular open() will be used.</p></li>
+<li><p><strong>mode</strong> (<em>str</em>) – The file opening mode.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="omicidx.utils.requests_retry_session">
+<code class="sig-prename descclassname">omicidx.utils.</code><code class="sig-name descname">requests_retry_session</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">retries</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">3</span></em>, <em class="sig-param"><span class="n">backoff_factor</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.3</span></em>, <em class="sig-param"><span class="n">status_forcelist</span><span class="p">:</span> <span class="n">Tuple<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">500, 502, 504</span></em>, <em class="sig-param"><span class="n">session</span><span class="p">:</span> <span class="n">requests.sessions.Session</span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span> &#x2192; requests.sessions.Session<a class="reference internal" href="_modules/omicidx/utils.html#requests_retry_session"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.utils.requests_retry_session" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a requests session that handles retries</p>
+<blockquote>
+<div><dl class="simple">
+<dt>retries: int</dt><dd><p>Number of retries allowed</p>
+</dd>
+<dt>backoff_factor: float</dt><dd><p>Implements geometric backoff</p>
+</dd>
+<dt>status_forcelist: Tuple[int]</dt><dd><p>Status codes to retry for</p>
+</dd>
+<dt>session: requests.Session</dt><dd><p>Supply a session that will be modified, or
+a new session will be created.</p>
+</dd>
+</dl>
+<p>A new requests.Session with retries enforced.
+<a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a></p>
+</div></blockquote>
+<p>t0 = time.time()
+try:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>response = requests_retry_session().get(</dt><dd><p>‘<a class="reference external" href="http://httpbin.org/delay/10">http://httpbin.org/delay/10</a>’,
+timeout=5</p>
+</dd>
+</dl>
+<p>)</p>
+</div></blockquote>
+<dl class="simple">
+<dt>except Exception as x:</dt><dd><p>print(‘It failed :(‘, x.__class__.__name__)</p>
+</dd>
+<dt>else:</dt><dd><p>print(‘It eventually worked’, response.status_code)</p>
+</dd>
+<dt>finally:</dt><dd><p>t1 = time.time()
+print(‘Took’, t1 - t0, ‘seconds’)
+<a href="#id5"><span class="problematic" id="id6">``</span></a><a href="#id7"><span class="problematic" id="id8">`</span></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">OmicIDX</a></h1>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=seandavi&repo=omicidx&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Bigquery.html">OmicIDX dataset on Bigquery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">Commandline Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="genomic_metadata.html">Genomic metadata in OmicIDX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">omicidx</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Sean Davis.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/omicidx.utils.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/seandavi/omicidx" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

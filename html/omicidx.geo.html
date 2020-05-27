@@ -1,0 +1,815 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>omicidx.geo package &#8212; OmicIDX  documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="omicidx.mti package" href="omicidx.mti.html" />
+    <link rel="prev" title="omicidx.db package" href="omicidx.db.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="omicidx-geo-package">
+<h1>omicidx.geo package<a class="headerlink" href="#omicidx-geo-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-omicidx.geo.parser">
+<span id="omicidx-geo-parser-module"></span><h2>omicidx.geo.parser module<a class="headerlink" href="#module-omicidx.geo.parser" title="Permalink to this headline">¶</a></h2>
+<p>Usage</p>
+<dl class="py function">
+<dt id="omicidx.geo.parser.bulk_gse_to_json">
+<code class="sig-prename descclassname">omicidx.geo.parser.</code><code class="sig-name descname">bulk_gse_to_json</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">term</span></em>, <em class="sig-param"><span class="n">outfile</span><span class="o">=</span><span class="default_value">'/dev/stdout'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/geo/parser.html#bulk_gse_to_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.geo.parser.bulk_gse_to_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bulk process GSEs to json</p>
+<p>This function takes a term (see below) and does a search. Results
+from the search of GSE records are returned as json lines to the
+output file in <cite>outfile</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>term</strong> (<em>str</em>) – A search string like “2019/01/28:2019/02/28[PDAT]” as an example.
+Passed to entrez search.</p></li>
+<li><p><strong>outfile</strong> (<em>str</em>) – The output file to which to write</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="omicidx.geo.parser.geo_entity_iterator">
+<code class="sig-prename descclassname">omicidx.geo.parser.</code><code class="sig-name descname">geo_entity_iterator</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">geo</span><span class="p">:</span> <span class="n">str</span></em>, <em class="sig-param"><span class="n">targ</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'self'</span></em>, <em class="sig-param"><span class="n">view</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'brief'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/geo/parser.html#geo_entity_iterator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.geo.parser.geo_entity_iterator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an iterator of GEO entities</p>
+<p>Given a GEO accession (typically a GSE,
+will return an iterator of the GEO entities
+associated with the record, including all
+GSMs, GPLs, and the GSE record itself</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>fh</strong> (<em>Iterable</em><em>[</em><em>str</em><em>]</em>) – Anything that can iterate over lines of text
+Could be a list of text lines, a file handle, or
+an open url.</p>
+</dd>
+<dt class="field-even">Yields</dt>
+<dd class="field-even"><p><em>Iterator of GEO entities as pydantic models</em></p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">geo_soft_entity_iterator</span><span class="p">(</span><span class="s1">&#39;GSE2553&#39;</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="omicidx.geo.parser.get_SRA_from_relations">
+<code class="sig-prename descclassname">omicidx.geo.parser.</code><code class="sig-name descname">get_SRA_from_relations</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">relation_list</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/geo/parser.html#get_SRA_from_relations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.geo.parser.get_SRA_from_relations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="omicidx.geo.parser.get_bioprojects_from_relations">
+<code class="sig-prename descclassname">omicidx.geo.parser.</code><code class="sig-name descname">get_bioprojects_from_relations</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">relation_list</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/geo/parser.html#get_bioprojects_from_relations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.geo.parser.get_bioprojects_from_relations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="omicidx.geo.parser.get_biosample_from_relations">
+<code class="sig-prename descclassname">omicidx.geo.parser.</code><code class="sig-name descname">get_biosample_from_relations</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">relation_list</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/geo/parser.html#get_biosample_from_relations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.geo.parser.get_biosample_from_relations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="omicidx.geo.parser.get_channel_characteristics">
+<code class="sig-prename descclassname">omicidx.geo.parser.</code><code class="sig-name descname">get_channel_characteristics</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">d</span></em>, <em class="sig-param"><span class="n">ch</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/geo/parser.html#get_channel_characteristics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.geo.parser.get_channel_characteristics" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="omicidx.geo.parser.get_entrez_instance">
+<code class="sig-prename descclassname">omicidx.geo.parser.</code><code class="sig-name descname">get_entrez_instance</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">email</span><span class="o">=</span><span class="default_value">'user&#64;example.com'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/geo/parser.html#get_entrez_instance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.geo.parser.get_entrez_instance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a Bio::Entrez object</p>
+<p># Arguments
+email (str): the email to be used with the Entrez instance</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>A Bio::Entrez instance</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="omicidx.geo.parser.get_geo_accession_soft">
+<code class="sig-prename descclassname">omicidx.geo.parser.</code><code class="sig-name descname">get_geo_accession_soft</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">accession</span></em>, <em class="sig-param"><span class="n">targ</span><span class="o">=</span><span class="default_value">'all'</span></em>, <em class="sig-param"><span class="n">view</span><span class="o">=</span><span class="default_value">'brief'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/geo/parser.html#get_geo_accession_soft"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.geo.parser.get_geo_accession_soft" title="Permalink to this definition">¶</a></dt>
+<dd><p>Open a connection to get the GEO SOFT for an accession</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>accession</strong> (<em>str the GEO accesssion</em>) – </p></li>
+<li><p><strong>targ</strong> (<em>str what to fetch. One of &quot;all&quot;</em><em>, </em><em>&quot;series&quot;</em><em>, </em><em>&quot;platform&quot;</em><em>,</em>) – “samples”, “self”</p></li>
+<li><p><strong>view</strong> (<em>str amount to return.</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>A file-like object for reading or readlines</em></p></li>
+<li><p><em>&gt;&gt;&gt; handle = get_geo_accession_soft(‘GSE2553’)</em></p></li>
+<li><p><em>&gt;&gt;&gt; handle.readlines()</em></p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="omicidx.geo.parser.get_geo_accession_xml">
+<code class="sig-prename descclassname">omicidx.geo.parser.</code><code class="sig-name descname">get_geo_accession_xml</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">accession</span></em>, <em class="sig-param"><span class="n">targ</span><span class="o">=</span><span class="default_value">'all'</span></em>, <em class="sig-param"><span class="n">view</span><span class="o">=</span><span class="default_value">'brief'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/geo/parser.html#get_geo_accession_xml"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.geo.parser.get_geo_accession_xml" title="Permalink to this definition">¶</a></dt>
+<dd><p>Open a connection to get the GEO XML for an accession</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>accession</strong> (<em>str the GEO accesssion</em>) – </p></li>
+<li><p><strong>targ</strong> (<em>str what to fetch. One of &quot;all&quot;</em><em>, </em><em>&quot;series&quot;</em><em>, </em><em>&quot;platform&quot;</em><em>,</em>) – “samples”, “self”</p></li>
+<li><p><strong>view</strong> (<em>str amount to return.</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>A file-like object for reading or readlines</em></p></li>
+<li><p><em>&gt;&gt;&gt; handle = get_geo_accession_xml(‘GSE2553’)</em></p></li>
+<li><p><em>&gt;&gt;&gt; handle.readlines()</em></p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="omicidx.geo.parser.get_geo_accessions">
+<code class="sig-prename descclassname">omicidx.geo.parser.</code><code class="sig-name descname">get_geo_accessions</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">etyp</span><span class="o">=</span><span class="default_value">'GSE'</span></em>, <em class="sig-param"><span class="n">batch_size</span><span class="o">=</span><span class="default_value">1000</span></em>, <em class="sig-param"><span class="n">add_term</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">email</span><span class="o">=</span><span class="default_value">'user&#64;example.com'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/geo/parser.html#get_geo_accessions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.geo.parser.get_geo_accessions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get GEO accessions by etyp</p>
+<p>Useful for getting all the ETYP accessions for
+later bulk processing</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>etyp</strong> (<em>str</em>) – One of GSE, GPL, GSM, GDS</p></li>
+<li><p><strong>batch_size</strong> (<em>int</em>) – the number of accessions to return in one batch.
+Transparent to the user, as this returns an iterator.</p></li>
+<li><p><strong>add_term</strong> (<em>str</em>) – Add a search term for the query. Useful to limit
+by date or search for specific text. For example,
+to limit by date: ‘2007/01/01:2007/03/01[PDAT]’</p></li>
+<li><p><strong>email</strong> (<em>str</em>) – user email (not important)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>an iterator of accessions, each as a string</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="omicidx.geo.parser.get_geo_entities">
+<code class="sig-prename descclassname">omicidx.geo.parser.</code><code class="sig-name descname">get_geo_entities</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">txt</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/geo/parser.html#get_geo_entities"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.geo.parser.get_geo_entities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the text associated with each entity from a block of text</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>txt</strong> (<em>list</em><em>(</em><em>str</em><em>)</em>) – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>A dict of entities keyed by accession and values a list of txt lines</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="omicidx.geo.parser.get_subseries_from_relations">
+<code class="sig-prename descclassname">omicidx.geo.parser.</code><code class="sig-name descname">get_subseries_from_relations</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">relation_list</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/geo/parser.html#get_subseries_from_relations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.geo.parser.get_subseries_from_relations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="omicidx.geo.parser.gse_accessions">
+<code class="sig-prename descclassname">omicidx.geo.parser.</code><code class="sig-name descname">gse_accessions</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">term</span></em>, <em class="sig-param"><span class="n">outfile</span><span class="o">=</span><span class="default_value">'/dev/stdout'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/geo/parser.html#gse_accessions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.geo.parser.gse_accessions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Output list of gse accessions based on term search</p>
+<p>Writes to a file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>term</strong> (<em>str</em>) – A search string like “2019/01/28:2019/02/28[PDAT]” as an example.
+Passed to entrez search.</p></li>
+<li><p><strong>outfile</strong> (<em>str</em>) – The output file to which to write</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="omicidx.geo.parser.gse_to_json">
+<code class="sig-prename descclassname">omicidx.geo.parser.</code><code class="sig-name descname">gse_to_json</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">gse</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/geo/parser.html#gse_to_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.geo.parser.gse_to_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return json version of GSE record as text</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>gse</strong> (<em>str</em>) – The GSE accession to convert</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-omicidx.geo.pydantic_models">
+<span id="omicidx-geo-pydantic-models-module"></span><h2>omicidx.geo.pydantic_models module<a class="headerlink" href="#module-omicidx.geo.pydantic_models" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="omicidx.geo.pydantic_models.GEOBase">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.geo.pydantic_models.</code><code class="sig-name descname">GEOBase</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">data</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/geo/pydantic_models.html#GEOBase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOBase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pydantic.main.BaseModel</span></code></p>
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOBase.last_update_date">
+<code class="sig-name descname">last_update_date</code><em class="property">: date</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOBase.last_update_date" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOBase.status">
+<code class="sig-name descname">status</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOBase.status" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOBase.submission_date">
+<code class="sig-name descname">submission_date</code><em class="property">: date</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOBase.submission_date" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOBase.title">
+<code class="sig-name descname">title</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOBase.title" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="omicidx.geo.pydantic_models.GEOChannel">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.geo.pydantic_models.</code><code class="sig-name descname">GEOChannel</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">data</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/geo/pydantic_models.html#GEOChannel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOChannel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pydantic.main.BaseModel</span></code></p>
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOChannel.characteristics">
+<code class="sig-name descname">characteristics</code><em class="property">: List[GEOCharacteristic]</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOChannel.characteristics" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOChannel.extract_protocol">
+<code class="sig-name descname">extract_protocol</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOChannel.extract_protocol" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOChannel.growth_protocol">
+<code class="sig-name descname">growth_protocol</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOChannel.growth_protocol" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOChannel.label">
+<code class="sig-name descname">label</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOChannel.label" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOChannel.label_protocol">
+<code class="sig-name descname">label_protocol</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOChannel.label_protocol" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOChannel.molecule">
+<code class="sig-name descname">molecule</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOChannel.molecule" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOChannel.organism">
+<code class="sig-name descname">organism</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOChannel.organism" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOChannel.source_name">
+<code class="sig-name descname">source_name</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOChannel.source_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOChannel.taxid">
+<code class="sig-name descname">taxid</code><em class="property">: List[int]</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOChannel.taxid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOChannel.treatment_protocol">
+<code class="sig-name descname">treatment_protocol</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOChannel.treatment_protocol" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="omicidx.geo.pydantic_models.GEOCharacteristic">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.geo.pydantic_models.</code><code class="sig-name descname">GEOCharacteristic</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">data</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/geo/pydantic_models.html#GEOCharacteristic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOCharacteristic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pydantic.main.BaseModel</span></code></p>
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOCharacteristic.tag">
+<code class="sig-name descname">tag</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOCharacteristic.tag" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOCharacteristic.value">
+<code class="sig-name descname">value</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOCharacteristic.value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="omicidx.geo.pydantic_models.GEOContact">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.geo.pydantic_models.</code><code class="sig-name descname">GEOContact</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">data</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/geo/pydantic_models.html#GEOContact"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOContact" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pydantic.main.BaseModel</span></code></p>
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOContact.address">
+<code class="sig-name descname">address</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOContact.address" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOContact.city">
+<code class="sig-name descname">city</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOContact.city" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOContact.country">
+<code class="sig-name descname">country</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOContact.country" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOContact.department">
+<code class="sig-name descname">department</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOContact.department" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOContact.email">
+<code class="sig-name descname">email</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOContact.email" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOContact.institute">
+<code class="sig-name descname">institute</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOContact.institute" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOContact.name">
+<code class="sig-name descname">name</code><em class="property">: GEOName</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOContact.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOContact.phone">
+<code class="sig-name descname">phone</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOContact.phone" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOContact.state">
+<code class="sig-name descname">state</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOContact.state" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOContact.web_link">
+<code class="sig-name descname">web_link</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOContact.web_link" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOContact.zip_postal_code">
+<code class="sig-name descname">zip_postal_code</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOContact.zip_postal_code" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="omicidx.geo.pydantic_models.GEOName">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.geo.pydantic_models.</code><code class="sig-name descname">GEOName</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">data</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/geo/pydantic_models.html#GEOName"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOName" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pydantic.main.BaseModel</span></code></p>
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOName.first">
+<code class="sig-name descname">first</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOName.first" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOName.last">
+<code class="sig-name descname">last</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOName.last" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOName.middle">
+<code class="sig-name descname">middle</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOName.middle" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="omicidx.geo.pydantic_models.GEOPlatform">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.geo.pydantic_models.</code><code class="sig-name descname">GEOPlatform</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">data</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/geo/pydantic_models.html#GEOPlatform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOPlatform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#omicidx.geo.pydantic_models.GEOBase" title="omicidx.geo.pydantic_models.GEOBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">omicidx.geo.pydantic_models.GEOBase</span></code></a></p>
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOPlatform.accession">
+<code class="sig-name descname">accession</code><em class="property">: constr(regex='GPL\\d+')</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOPlatform.accession" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOPlatform.contact">
+<code class="sig-name descname">contact</code><em class="property">: GEOContact</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOPlatform.contact" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOPlatform.contributor">
+<code class="sig-name descname">contributor</code><em class="property">: List[GEOName]</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOPlatform.contributor" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOPlatform.data_row_count">
+<code class="sig-name descname">data_row_count</code><em class="property">: int</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOPlatform.data_row_count" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOPlatform.description">
+<code class="sig-name descname">description</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOPlatform.description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOPlatform.distribution">
+<code class="sig-name descname">distribution</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOPlatform.distribution" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOPlatform.manufacture_protocol">
+<code class="sig-name descname">manufacture_protocol</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOPlatform.manufacture_protocol" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOPlatform.manufacturer">
+<code class="sig-name descname">manufacturer</code><em class="property">: List[str]</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOPlatform.manufacturer" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOPlatform.organism">
+<code class="sig-name descname">organism</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOPlatform.organism" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOPlatform.relation">
+<code class="sig-name descname">relation</code><em class="property">: List[str]</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOPlatform.relation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOPlatform.sample_id">
+<code class="sig-name descname">sample_id</code><em class="property">: List[constr(regex='GSM\\d+')]</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOPlatform.sample_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOPlatform.series_id">
+<code class="sig-name descname">series_id</code><em class="property">: List[constr(regex='GSE\\d+')]</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOPlatform.series_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOPlatform.status">
+<code class="sig-name descname">status</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOPlatform.status" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOPlatform.summary">
+<code class="sig-name descname">summary</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOPlatform.summary" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOPlatform.technology">
+<code class="sig-name descname">technology</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOPlatform.technology" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="omicidx.geo.pydantic_models.GEOSample">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.geo.pydantic_models.</code><code class="sig-name descname">GEOSample</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">data</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/geo/pydantic_models.html#GEOSample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOSample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#omicidx.geo.pydantic_models.GEOBase" title="omicidx.geo.pydantic_models.GEOBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">omicidx.geo.pydantic_models.GEOBase</span></code></a></p>
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOSample.accession">
+<code class="sig-name descname">accession</code><em class="property">: constr(regex='GSM\\d+')</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOSample.accession" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOSample.anchor">
+<code class="sig-name descname">anchor</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOSample.anchor" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOSample.biosample">
+<code class="sig-name descname">biosample</code><em class="property">: constr(regex='SAM[A-Z]+\\d+')</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOSample.biosample" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOSample.channel_count">
+<code class="sig-name descname">channel_count</code><em class="property">: int</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOSample.channel_count" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOSample.channels">
+<code class="sig-name descname">channels</code><em class="property">: List[GEOChannel]</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOSample.channels" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOSample.contact">
+<code class="sig-name descname">contact</code><em class="property">: GEOContact</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOSample.contact" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOSample.contributor">
+<code class="sig-name descname">contributor</code><em class="property">: List[GEOName]</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOSample.contributor" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOSample.data_processing">
+<code class="sig-name descname">data_processing</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOSample.data_processing" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOSample.data_row_count">
+<code class="sig-name descname">data_row_count</code><em class="property">: int</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOSample.data_row_count" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOSample.description">
+<code class="sig-name descname">description</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOSample.description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOSample.hyb_protocol">
+<code class="sig-name descname">hyb_protocol</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOSample.hyb_protocol" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOSample.library_source">
+<code class="sig-name descname">library_source</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOSample.library_source" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOSample.overall_design">
+<code class="sig-name descname">overall_design</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOSample.overall_design" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOSample.platform_id">
+<code class="sig-name descname">platform_id</code><em class="property">: constr(regex='GPL\\d+')</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOSample.platform_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOSample.scan_protocol">
+<code class="sig-name descname">scan_protocol</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOSample.scan_protocol" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOSample.sra_experiment">
+<code class="sig-name descname">sra_experiment</code><em class="property">: constr(regex='[DES]RX\\d+')</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOSample.sra_experiment" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOSample.supplemental_files">
+<code class="sig-name descname">supplemental_files</code><em class="property">: List[str]</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOSample.supplemental_files" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOSample.tag_count">
+<code class="sig-name descname">tag_count</code><em class="property">: int</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOSample.tag_count" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOSample.tag_length">
+<code class="sig-name descname">tag_length</code><em class="property">: float</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOSample.tag_length" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOSample.type">
+<code class="sig-name descname">type</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOSample.type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="omicidx.geo.pydantic_models.GEOSeries">
+<em class="property">class </em><code class="sig-prename descclassname">omicidx.geo.pydantic_models.</code><code class="sig-name descname">GEOSeries</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">data</span><span class="p">:</span> <span class="n">Any</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/omicidx/geo/pydantic_models.html#GEOSeries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOSeries" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#omicidx.geo.pydantic_models.GEOBase" title="omicidx.geo.pydantic_models.GEOBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">omicidx.geo.pydantic_models.GEOBase</span></code></a></p>
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOSeries.accession">
+<code class="sig-name descname">accession</code><em class="property">: constr(regex='GSE\\d+')</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOSeries.accession" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOSeries.bioprojects">
+<code class="sig-name descname">bioprojects</code><em class="property">: List[constr(regex='PRJ[A-Z]+\\d+')]</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOSeries.bioprojects" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOSeries.contact">
+<code class="sig-name descname">contact</code><em class="property">: GEOContact</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOSeries.contact" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOSeries.contributor">
+<code class="sig-name descname">contributor</code><em class="property">: List[GEOName]</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOSeries.contributor" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOSeries.data_processing">
+<code class="sig-name descname">data_processing</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOSeries.data_processing" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOSeries.description">
+<code class="sig-name descname">description</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOSeries.description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOSeries.overall_design">
+<code class="sig-name descname">overall_design</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOSeries.overall_design" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOSeries.platform_id">
+<code class="sig-name descname">platform_id</code><em class="property">: List[constr(regex='GPL\\d+')]</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOSeries.platform_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOSeries.platform_organism">
+<code class="sig-name descname">platform_organism</code><em class="property">: List[str]</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOSeries.platform_organism" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOSeries.platform_taxid">
+<code class="sig-name descname">platform_taxid</code><em class="property">: List[int]</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOSeries.platform_taxid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOSeries.pubmed_id">
+<code class="sig-name descname">pubmed_id</code><em class="property">: List[int]</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOSeries.pubmed_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOSeries.relation">
+<code class="sig-name descname">relation</code><em class="property">: List[str]</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOSeries.relation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOSeries.sample_id">
+<code class="sig-name descname">sample_id</code><em class="property">: List[constr(regex='GSM\\d+')]</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOSeries.sample_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOSeries.sample_organism">
+<code class="sig-name descname">sample_organism</code><em class="property">: List[str]</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOSeries.sample_organism" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOSeries.sample_taxid">
+<code class="sig-name descname">sample_taxid</code><em class="property">: List[int]</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOSeries.sample_taxid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOSeries.sra_studies">
+<code class="sig-name descname">sra_studies</code><em class="property">: List[constr(regex='[ESD]RP\\d+')]</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOSeries.sra_studies" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOSeries.subseries">
+<code class="sig-name descname">subseries</code><em class="property">: List[constr(regex='GSE\\d+')]</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOSeries.subseries" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOSeries.summary">
+<code class="sig-name descname">summary</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOSeries.summary" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOSeries.supplemental_files">
+<code class="sig-name descname">supplemental_files</code><em class="property">: List[str]</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOSeries.supplemental_files" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="omicidx.geo.pydantic_models.GEOSeries.type">
+<code class="sig-name descname">type</code><em class="property">: List[str]</em><em class="property"> = None</em><a class="headerlink" href="#omicidx.geo.pydantic_models.GEOSeries.type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-omicidx.geo">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-omicidx.geo" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">OmicIDX</a></h1>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=seandavi&repo=omicidx&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Bigquery.html">OmicIDX dataset on Bigquery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">Commandline Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="genomic_metadata.html">Genomic metadata in OmicIDX</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">omicidx</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="omicidx.html">omicidx package</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">omicidx</a><ul>
+  <li><a href="omicidx.html">omicidx package</a><ul>
+      <li>Previous: <a href="omicidx.db.html" title="previous chapter">omicidx.db package</a></li>
+      <li>Next: <a href="omicidx.mti.html" title="next chapter">omicidx.mti package</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Sean Davis.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/omicidx.geo.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/seandavi/omicidx" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

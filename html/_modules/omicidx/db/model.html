@@ -1,0 +1,580 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>omicidx.db.model &#8212; OmicIDX  documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for omicidx.db.model</h1><div class="highlight"><pre>
+<span></span><span class="c1"># alembic</span>
+<span class="c1"># need to create schema by hand:</span>
+<span class="c1"># upgrade:     op.execute(&quot;create schema etl&quot;)</span>
+<span class="c1"># downgrade:     op.execute(&quot;drop schema etl&quot;)</span>
+<span class="c1">#  - alembic revision --autogenerate -m &quot;Added SRA study table skeleton&quot;</span>
+<span class="c1">#  - alembic upgrade head</span>
+<span class="c1">#  - alembic history</span>
+<span class="c1">#  - alembic downgrade HASH</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.ext.declarative</span> <span class="kn">import</span> <span class="n">declarative_base</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.dialects.postgresql.json</span> <span class="kn">import</span> <span class="n">JSONB</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="p">(</span><span class="n">Column</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">String</span><span class="p">,</span> <span class="n">UniqueConstraint</span><span class="p">,</span>
+                        <span class="n">ForeignKeyConstraint</span><span class="p">,</span> <span class="n">Table</span><span class="p">,</span> <span class="n">Text</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">,</span>
+                        <span class="n">PrimaryKeyConstraint</span><span class="p">,</span> <span class="n">Boolean</span><span class="p">,</span> <span class="n">DateTime</span><span class="p">,</span> <span class="n">Numeric</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span>
+                        <span class="n">Index</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.orm</span> <span class="kn">import</span> <span class="p">(</span><span class="n">relationship</span><span class="p">)</span>
+
+<span class="n">Base</span> <span class="o">=</span> <span class="n">declarative_base</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="SraStudyJson"><a class="viewcode-back" href="../../../omicidx.db.html#omicidx.db.model.SraStudyJson">[docs]</a><span class="k">class</span> <span class="nc">SraStudyJson</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">&#39;sra_study_json&#39;</span>
+    <span class="n">accession</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">doc</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">JSONB</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SraSampleJson"><a class="viewcode-back" href="../../../omicidx.db.html#omicidx.db.model.SraSampleJson">[docs]</a><span class="k">class</span> <span class="nc">SraSampleJson</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">&#39;sra_sample_json&#39;</span>
+    <span class="n">accession</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">doc</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">JSONB</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SraExperimentJson"><a class="viewcode-back" href="../../../omicidx.db.html#omicidx.db.model.SraExperimentJson">[docs]</a><span class="k">class</span> <span class="nc">SraExperimentJson</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">&#39;sra_experiment_json&#39;</span>
+    <span class="n">accession</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">doc</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">JSONB</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SraRunJson"><a class="viewcode-back" href="../../../omicidx.db.html#omicidx.db.model.SraRunJson">[docs]</a><span class="k">class</span> <span class="nc">SraRunJson</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">&#39;sra_run_json&#39;</span>
+    <span class="n">accession</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">doc</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">JSONB</span><span class="p">)</span></div>
+
+
+<span class="c1">##########</span>
+<span class="c1"># MIXINS #</span>
+<span class="c1">##########</span>
+
+
+<div class="viewcode-block" id="SraNamespace"><a class="viewcode-back" href="../../../omicidx.db.html#omicidx.db.model.SraNamespace">[docs]</a><span class="k">class</span> <span class="nc">SraNamespace</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">&#39;sra_namespace&#39;</span>
+
+    <span class="n">namespace</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">identifiers</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="s1">&#39;SraSampleIdentifier&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SraStudyIdentifier"><a class="viewcode-back" href="../../../omicidx.db.html#omicidx.db.model.SraStudyIdentifier">[docs]</a><span class="k">class</span> <span class="nc">SraStudyIdentifier</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">&#39;sra_study_identifier&#39;</span>
+
+    <span class="n">study_accession</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;sra_study.accession&#39;</span><span class="p">),</span>
+                             <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">study</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="s1">&#39;SraStudy&#39;</span><span class="p">,</span> <span class="n">back_populates</span><span class="o">=</span><span class="s1">&#39;identifiers&#39;</span><span class="p">)</span>
+    <span class="n">identifier</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">namespace</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;sra_namespace.namespace&#39;</span><span class="p">),</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SraStudy"><a class="viewcode-back" href="../../../omicidx.db.html#omicidx.db.model.SraStudy">[docs]</a><span class="k">class</span> <span class="nc">SraStudy</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">&#39;sra_study&#39;</span>
+
+    <span class="n">abstract</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">)</span>
+    <span class="n">BioProject</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">(</span><span class="mi">30</span><span class="p">))</span>
+    <span class="n">Geo</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">(</span><span class="mi">15</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">accession</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">center_name</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">)</span>  <span class="c1"># needs to be pulled out</span>
+    <span class="n">broker_name</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">)</span>  <span class="c1"># needs to be pulled out</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s2">&quot;full description of study&quot;</span><span class="p">)</span>
+    <span class="n">study_type</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">)</span>  <span class="c1"># needs to be pulled out</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">)</span>
+    <span class="n">received</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">DateTime</span><span class="p">)</span>
+    <span class="n">updated</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">DateTime</span><span class="p">)</span>
+    <span class="n">published</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">DateTime</span><span class="p">)</span>
+    <span class="n">status</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">)</span>  <span class="c1"># needs to be pulled out</span>
+    <span class="n">insdc</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Boolean</span><span class="p">)</span>
+    <span class="n">identifiers</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="s1">&#39;SraStudyIdentifier&#39;</span><span class="p">,</span> <span class="n">back_populates</span><span class="o">=</span><span class="s1">&#39;study&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="LibrarySource"><a class="viewcode-back" href="../../../omicidx.db.html#omicidx.db.model.LibrarySource">[docs]</a><span class="k">class</span> <span class="nc">LibrarySource</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">&#39;library_source&#39;</span>
+
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="LibraryStrategy"><a class="viewcode-back" href="../../../omicidx.db.html#omicidx.db.model.LibraryStrategy">[docs]</a><span class="k">class</span> <span class="nc">LibraryStrategy</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">&#39;library_strategy&#39;</span>
+
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="LibrarySelection"><a class="viewcode-back" href="../../../omicidx.db.html#omicidx.db.model.LibrarySelection">[docs]</a><span class="k">class</span> <span class="nc">LibrarySelection</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">&#39;library_selection&#39;</span>
+
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="LibraryLayout"><a class="viewcode-back" href="../../../omicidx.db.html#omicidx.db.model.LibraryLayout">[docs]</a><span class="k">class</span> <span class="nc">LibraryLayout</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">&#39;library_layout&#39;</span>
+
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CenterName"><a class="viewcode-back" href="../../../omicidx.db.html#omicidx.db.model.CenterName">[docs]</a><span class="k">class</span> <span class="nc">CenterName</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">&#39;center_name&#39;</span>
+
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="InstrumentModel"><a class="viewcode-back" href="../../../omicidx.db.html#omicidx.db.model.InstrumentModel">[docs]</a><span class="k">class</span> <span class="nc">InstrumentModel</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">&#39;instrument_model&#39;</span>
+
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Platform"><a class="viewcode-back" href="../../../omicidx.db.html#omicidx.db.model.Platform">[docs]</a><span class="k">class</span> <span class="nc">Platform</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">&#39;platform&#39;</span>
+
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="to_tsvector_ix"><a class="viewcode-back" href="../../../omicidx.db.html#omicidx.db.model.to_tsvector_ix">[docs]</a><span class="k">def</span> <span class="nf">to_tsvector_ix</span><span class="p">(</span><span class="o">*</span><span class="n">columns</span><span class="p">):</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="s2">&quot; || &#39; &#39; || &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">columns</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">func</span><span class="o">.</span><span class="n">to_tsvector</span><span class="p">(</span><span class="s1">&#39;english&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">(</span><span class="n">s</span><span class="p">))</span></div>
+
+
+<span class="kn">from</span> <span class="nn">sqlalchemy.sql</span> <span class="kn">import</span> <span class="n">func</span>
+
+
+<div class="viewcode-block" id="SraExperimentIdentifier"><a class="viewcode-back" href="../../../omicidx.db.html#omicidx.db.model.SraExperimentIdentifier">[docs]</a><span class="k">class</span> <span class="nc">SraExperimentIdentifier</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">&#39;sra_experiment_identifier&#39;</span>
+
+    <span class="n">experiment_accession</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;sra_experiment.accession&#39;</span><span class="p">),</span>
+                                  <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">experiment</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="s1">&#39;SraExperiment&#39;</span><span class="p">,</span> <span class="n">back_populates</span><span class="o">=</span><span class="s1">&#39;identifiers&#39;</span><span class="p">)</span>
+    <span class="n">identifier</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">namespace</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;sra_namespace.namespace&#39;</span><span class="p">),</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SraExperiment"><a class="viewcode-back" href="../../../omicidx.db.html#omicidx.db.model.SraExperiment">[docs]</a><span class="k">class</span> <span class="nc">SraExperiment</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">&#39;sra_experiment&#39;</span>
+
+    <span class="n">accession</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">alias</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+    <span class="c1"># attributes</span>
+    <span class="n">center_name_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;center_name.id&#39;</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">design</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">)</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">)</span>
+    <span class="n">identifiers</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="s1">&#39;SraExperimentIdentifier&#39;</span><span class="p">,</span>
+                               <span class="n">back_populates</span><span class="o">=</span><span class="s1">&#39;experiment&#39;</span><span class="p">)</span>
+    <span class="n">instrument_model</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;instrument_model.id&#39;</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">library_name</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">)</span>
+    <span class="n">library_construction_protocol</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">)</span>
+    <span class="n">library_layout_orientation</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">)</span>  <span class="c1">#appears to always be NULL</span>
+    <span class="n">library_layout_length</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Numeric</span><span class="p">)</span>
+    <span class="n">library_layout_sdev</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Numeric</span><span class="p">)</span>
+    <span class="n">library_selection_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span>
+                                  <span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;library_selection.id&#39;</span><span class="p">),</span>
+                                  <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">library_strategy_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span>
+                                 <span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;library_strategy.id&#39;</span><span class="p">),</span>
+                                 <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">library_source_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span>
+                               <span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;library_source.id&#39;</span><span class="p">),</span>
+                               <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">library_layout_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span>
+                               <span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;library_layout.id&#39;</span><span class="p">),</span>
+                               <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">platform_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span>
+                         <span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;platform.id&#39;</span><span class="p">),</span>
+                         <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                         <span class="n">comment</span><span class="o">=</span><span class="s1">&#39;The sequencing platform&#39;</span><span class="p">)</span>
+    <span class="c1"># xreefs</span>
+    <span class="n">sample_accession</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span>
+                              <span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;sra_sample.accession&#39;</span><span class="p">),</span>
+                              <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">study_accession</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span>
+                             <span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;sra_study.accession&#39;</span><span class="p">),</span>
+                             <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">)</span>
+    <span class="c1"># ?visibility</span>
+    <span class="c1"># ?replacedby</span>
+
+    <span class="c1"># TODO: Need to figure out how to add this with alembic</span>
+    <span class="n">__table_args__</span> <span class="o">=</span> <span class="p">(</span><span class="n">Index</span><span class="p">(</span><span class="s1">&#39;ix_fts_experiment&#39;</span><span class="p">,</span>
+                            <span class="n">to_tsvector_ix</span><span class="p">(</span><span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="s1">&#39;description&#39;</span><span class="p">,</span> <span class="s1">&#39;design&#39;</span><span class="p">,</span>
+                                           <span class="s1">&#39;alias&#39;</span><span class="p">,</span> <span class="s1">&#39;accession&#39;</span><span class="p">),</span>
+                            <span class="n">postgresql_using</span><span class="o">=</span><span class="s1">&#39;gin&#39;</span><span class="p">),</span> <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SraSampleIdentifier"><a class="viewcode-back" href="../../../omicidx.db.html#omicidx.db.model.SraSampleIdentifier">[docs]</a><span class="k">class</span> <span class="nc">SraSampleIdentifier</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">&#39;sra_sample_identifier&#39;</span>
+
+    <span class="n">sample_accession</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;sra_sample.accession&#39;</span><span class="p">),</span>
+                              <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">sample</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="s1">&#39;SraSample&#39;</span><span class="p">,</span> <span class="n">back_populates</span><span class="o">=</span><span class="s1">&#39;identifiers&#39;</span><span class="p">)</span>
+    <span class="n">identifier</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">namespace</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;sra_namespace.namespace&#39;</span><span class="p">),</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SraSample"><a class="viewcode-back" href="../../../omicidx.db.html#omicidx.db.model.SraSample">[docs]</a><span class="k">class</span> <span class="nc">SraSample</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">&#39;sra_sample&#39;</span>
+
+    <span class="n">accession</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="c1"># TODO: foreign key to geo</span>
+    <span class="n">geo</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">(</span><span class="mi">15</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="c1"># TODO: foreigh key to biosample</span>
+    <span class="n">BioSample</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">)</span>
+    <span class="n">alias</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">)</span>
+    <span class="n">experiments</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="s1">&#39;SraExperiment&#39;</span><span class="p">,</span> <span class="n">backref</span><span class="o">=</span><span class="s1">&#39;sample&#39;</span><span class="p">)</span>
+    <span class="c1"># leaving out organism</span>
+    <span class="c1"># TODO: Taxonomy link</span>
+    <span class="n">taxon_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;taxonomy.id&#39;</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Text</span><span class="p">)</span>
+    <span class="n">identifiers</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="s1">&#39;SraSampleIdentifier&#39;</span><span class="p">,</span> <span class="n">back_populates</span><span class="o">=</span><span class="s1">&#39;sample&#39;</span><span class="p">)</span></div>
+    <span class="c1"># attributes</span>
+    <span class="c1"># xrefs</span>
+    <span class="c1"># link to experiment</span>
+
+
+<div class="viewcode-block" id="BaseCounts"><a class="viewcode-back" href="../../../omicidx.db.html#omicidx.db.model.BaseCounts">[docs]</a><span class="k">class</span> <span class="nc">BaseCounts</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">&#39;base_counts&#39;</span>
+
+    <span class="n">sra_run_accession</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;sra_run.accession&#39;</span><span class="p">),</span>
+                               <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                               <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">base</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">count</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BaseQualities"><a class="viewcode-back" href="../../../omicidx.db.html#omicidx.db.model.BaseQualities">[docs]</a><span class="k">class</span> <span class="nc">BaseQualities</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">&#39;base_quality&#39;</span>
+
+    <span class="n">sra_run_accession</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;sra_run.accession&#39;</span><span class="p">),</span>
+                               <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                               <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">quality</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">count</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="RunRead"><a class="viewcode-back" href="../../../omicidx.db.html#omicidx.db.model.RunRead">[docs]</a><span class="k">class</span> <span class="nc">RunRead</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">&#39;run_read&#39;</span>
+
+    <span class="n">sra_run_accession</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;sra_run.accession&#39;</span><span class="p">),</span>
+                               <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                               <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">mean_length</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Numeric</span><span class="p">)</span>
+    <span class="n">sd_length</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Numeric</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="RunFileAlternative"><a class="viewcode-back" href="../../../omicidx.db.html#omicidx.db.model.RunFileAlternative">[docs]</a><span class="k">class</span> <span class="nc">RunFileAlternative</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">&#39;run_file_alternative&#39;</span>
+    <span class="n">__table_args__</span> <span class="o">=</span> <span class="p">(</span><span class="n">UniqueConstraint</span><span class="p">(</span><span class="s1">&#39;run_fileset_id&#39;</span><span class="p">,</span> <span class="s1">&#39;url&#39;</span><span class="p">),</span> <span class="p">)</span>
+
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">run_fileset_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;run_fileset.id&#39;</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+    <span class="n">free_egress</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>  <span class="c1"># TODO: consider foreign key</span>
+    <span class="n">access_type</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>  <span class="c1"># TODO: consider foreign key</span>
+    <span class="n">org</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="RunFileSet"><a class="viewcode-back" href="../../../omicidx.db.html#omicidx.db.model.RunFileSet">[docs]</a><span class="k">class</span> <span class="nc">RunFileSet</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">&#39;run_fileset&#39;</span>
+    <span class="n">__table_args__</span> <span class="o">=</span> <span class="p">(</span><span class="n">UniqueConstraint</span><span class="p">(</span><span class="s1">&#39;run_accession&#39;</span><span class="p">,</span> <span class="s1">&#39;filename&#39;</span><span class="p">),</span> <span class="p">)</span>
+
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">run_accession</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;sra_run.accession&#39;</span><span class="p">))</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+    <span class="n">size</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">date</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">DateTime</span><span class="p">)</span>
+    <span class="n">md5</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+    <span class="n">alternatives</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="s1">&#39;run_file_alternative&#39;</span><span class="p">,</span> <span class="n">backref</span><span class="o">=</span><span class="s1">&#39;run_fileset&#39;</span><span class="p">)</span>
+    <span class="n">sratoolkit</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SraRun"><a class="viewcode-back" href="../../../omicidx.db.html#omicidx.db.model.SraRun">[docs]</a><span class="k">class</span> <span class="nc">SraRun</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">&#39;sra_run&#39;</span>
+
+    <span class="n">accession</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">alias</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+    <span class="n">run_date</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">DateTime</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">run_center</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+    <span class="n">center_name_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;center_name.id&#39;</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">total_spots</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">total_bases</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">size</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">load_done</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Boolean</span><span class="p">)</span>
+    <span class="n">published</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">DateTime</span><span class="p">)</span>
+    <span class="n">is_public</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Boolean</span><span class="p">)</span>
+    <span class="n">cluster_name</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+    <span class="n">avg_length</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Numeric</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">experiment_accession</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span>
+                                  <span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;sra_experiment.accession&#39;</span><span class="p">),</span>
+                                  <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                  <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">experiment</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="s1">&#39;SraExperiment&#39;</span><span class="p">,</span> <span class="n">back_populates</span><span class="o">=</span><span class="s1">&#39;runs&#39;</span><span class="p">)</span></div>
+    <span class="c1"># attributes</span>
+    <span class="c1"># files</span>
+    <span class="c1"># qualities</span>
+    <span class="c1"># basecounts</span>
+    <span class="c1"># reads</span>
+
+
+<div class="viewcode-block" id="TaxonCountAnalysis"><a class="viewcode-back" href="../../../omicidx.db.html#omicidx.db.model.TaxonCountAnalysis">[docs]</a><span class="k">class</span> <span class="nc">TaxonCountAnalysis</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">&#39;taxon_count_analysis&#39;</span>
+
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">nspot_analyze</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">total_spots</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">run_accession</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s2">&quot;sra_run.accession&quot;</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">run</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="s1">&#39;SraRun&#39;</span><span class="p">,</span> <span class="n">backref</span><span class="o">=</span><span class="s1">&#39;taxon_analysis&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Taxonomy"><a class="viewcode-back" href="../../../omicidx.db.html#omicidx.db.model.Taxonomy">[docs]</a><span class="k">class</span> <span class="nc">Taxonomy</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s2">&quot;taxonomy&quot;</span>
+
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">rank</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># ? normalize further?</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># ? unique</span>
+    <span class="n">parent</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;taxonomy.id&#39;</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TaxonCountEntry"><a class="viewcode-back" href="../../../omicidx.db.html#omicidx.db.model.TaxonCountEntry">[docs]</a><span class="k">class</span> <span class="nc">TaxonCountEntry</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">&#39;taxon_count_entry&#39;</span>
+
+    <span class="n">taxon_analysis_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span>
+                               <span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;taxon_count_analysis.id&#39;</span><span class="p">),</span>
+                               <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">taxon_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;taxonomy.id&#39;</span><span class="p">),</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">self_count</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">total_count</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">taxon_analysis</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="s1">&#39;TaxonCountAnalysis&#39;</span><span class="p">,</span> <span class="n">backref</span><span class="o">=</span><span class="s1">&#39;taxon_counts&#39;</span><span class="p">)</span></div>
+
+
+<span class="n">geo_series_contributors</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span>
+    <span class="s1">&#39;geo_series_contributors&#39;</span><span class="p">,</span> <span class="n">Base</span><span class="o">.</span><span class="n">metadata</span><span class="p">,</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s1">&#39;gse_accession&#39;</span><span class="p">,</span>
+           <span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;geo_series.accession&#39;</span><span class="p">),</span>
+           <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s1">&#39;geo_name_id&#39;</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;geo_name.id&#39;</span><span class="p">),</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+
+<span class="n">geo_sample_contributors</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span>
+    <span class="s1">&#39;geo_sample_contributors&#39;</span><span class="p">,</span> <span class="n">Base</span><span class="o">.</span><span class="n">metadata</span><span class="p">,</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s1">&#39;gsm_accession&#39;</span><span class="p">,</span>
+           <span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;geo_sample.accession&#39;</span><span class="p">),</span>
+           <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="n">Column</span><span class="p">(</span><span class="s1">&#39;geo_name_id&#39;</span><span class="p">,</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;geo_name.id&#39;</span><span class="p">),</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+
+
+<div class="viewcode-block" id="GeoName"><a class="viewcode-back" href="../../../omicidx.db.html#omicidx.db.model.GeoName">[docs]</a><span class="k">class</span> <span class="nc">GeoName</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">&#39;geo_name&#39;</span>
+    <span class="n">__table_args__</span> <span class="o">=</span> <span class="p">(</span><span class="n">UniqueConstraint</span><span class="p">(</span><span class="s1">&#39;first_name&#39;</span><span class="p">,</span>
+                                       <span class="s1">&#39;middle_name&#39;</span><span class="p">,</span>
+                                       <span class="s1">&#39;last_name&#39;</span><span class="p">,</span>
+                                       <span class="n">name</span><span class="o">=</span><span class="s1">&#39;ix_uq_geo_name&#39;</span><span class="p">),</span> <span class="p">)</span>
+
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">first_name</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+    <span class="n">middle_name</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+    <span class="n">last_name</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+
+    <span class="n">series</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="s1">&#39;GEOSeries&#39;</span><span class="p">,</span> <span class="n">secondary</span><span class="o">=</span><span class="n">geo_series_contributors</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GeoContact"><a class="viewcode-back" href="../../../omicidx.db.html#omicidx.db.model.GeoContact">[docs]</a><span class="k">class</span> <span class="nc">GeoContact</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">&#39;geo_contact&#39;</span>
+
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">name_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;geo_name.id&#39;</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">email</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+    <span class="n">state</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+    <span class="n">address</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+    <span class="n">department</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+    <span class="n">country</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+    <span class="n">web_link</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+    <span class="n">institute</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+    <span class="n">zip_postal_code</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+    <span class="n">phone</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GeoSeriesType"><a class="viewcode-back" href="../../../omicidx.db.html#omicidx.db.model.GeoSeriesType">[docs]</a><span class="k">class</span> <span class="nc">GeoSeriesType</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">&#39;geo_series_type&#39;</span>
+
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">unique</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GeoCharacterisricTag"><a class="viewcode-back" href="../../../omicidx.db.html#omicidx.db.model.GeoCharacterisricTag">[docs]</a><span class="k">class</span> <span class="nc">GeoCharacterisricTag</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">&#39;geo_characteristic_tag&#39;</span>
+
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">tag</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">unique</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GeoCharacteristic"><a class="viewcode-back" href="../../../omicidx.db.html#omicidx.db.model.GeoCharacteristic">[docs]</a><span class="k">class</span> <span class="nc">GeoCharacteristic</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">&#39;geo_characteristic&#39;</span>
+
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">tag_id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s1">&#39;geo_characteristic_tag.id&#39;</span><span class="p">))</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GeoSample"><a class="viewcode-back" href="../../../omicidx.db.html#omicidx.db.model.GeoSample">[docs]</a><span class="k">class</span> <span class="nc">GeoSample</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">&#39;geo_sample&#39;</span>
+
+    <span class="n">accession</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">(</span><span class="mi">15</span><span class="p">),</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="nb">type</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">biosample</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># TODO: convert to foreign key?</span>
+    <span class="n">tag_count</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">tag_length</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">platform_accession</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">(</span><span class="mi">15</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">hyb_protocol</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+    <span class="n">channel_count</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">scan_protocol</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+    <span class="n">data_row_count</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span>
+    <span class="n">library_source</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+    <span class="n">overall_design</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+    <span class="n">sra_experiment</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>  <span class="c1"># TODO: convert to foreign keys</span>
+    <span class="n">data_processing</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+    <span class="n">contributors</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="s1">&#39;GeoName&#39;</span><span class="p">,</span> <span class="n">secondary</span><span class="o">=</span><span class="n">geo_sample_contributors</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GeoSeries"><a class="viewcode-back" href="../../../omicidx.db.html#omicidx.db.model.GeoSeries">[docs]</a><span class="k">class</span> <span class="nc">GeoSeries</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">&#39;geo_series&#39;</span>
+
+    <span class="n">accession</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">(</span><span class="mi">15</span><span class="p">),</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">summary</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+    <span class="n">contributors</span> <span class="o">=</span> <span class="n">relationship</span><span class="p">(</span><span class="s1">&#39;GeoName&#39;</span><span class="p">,</span> <span class="n">secondary</span><span class="o">=</span><span class="n">geo_series_contributors</span><span class="p">)</span>
+    <span class="c1"># TODO: form relationshop</span>
+    <span class="c1"># sra_studies = relationship(&#39;SraStudy&#39;, secondary=geo_series_sra_study)</span>
+    <span class="c1"># contact ? many-to-one?</span>
+    <span class="c1"># TODO: type (many-to-many)</span>
+    <span class="c1"># TODO: pubmed (many-to-many)</span>
+    <span class="c1"># TODO: samples (many-to-many)</span>
+    <span class="c1"># TODO: taxid (many-to-many)</span>
+    <span class="c1"># TODO: platform (many-to-many)</span>
+    <span class="n">data_processing</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span>
+    <span class="n">overall_design</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="render_erd"><a class="viewcode-back" href="../../../omicidx.db.html#omicidx.db.model.render_erd">[docs]</a><span class="k">def</span> <span class="nf">render_erd</span><span class="p">(</span><span class="n">fname</span><span class="o">=</span><span class="s1">&#39;omicidx_erd.pdf&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Render the entire schema as a pdf/png based on filename suffix&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">eralchemy</span> <span class="kn">import</span> <span class="n">render_er</span>
+        <span class="n">render_er</span><span class="p">(</span><span class="n">Base</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;need to install eralchemy for this functionality&#39;</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">OmicIDX</a></h1>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=seandavi&repo=omicidx&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../Bigquery.html">OmicIDX dataset on Bigquery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../cli.html">Commandline Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../genomic_metadata.html">Genomic metadata in OmicIDX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">omicidx</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Sean Davis.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/seandavi/omicidx" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

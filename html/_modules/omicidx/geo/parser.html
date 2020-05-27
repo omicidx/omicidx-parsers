@@ -1,0 +1,756 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>omicidx.geo.parser &#8212; OmicIDX  documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for omicidx.geo.parser</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Usage</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">Bio</span> <span class="kn">import</span> <span class="n">Entrez</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">urllib</span>
+<span class="kn">from</span> <span class="nn">xml</span> <span class="kn">import</span> <span class="n">etree</span>
+<span class="kn">import</span> <span class="nn">xml</span>
+<span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">StringIO</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+
+<span class="kn">import</span> <span class="nn">omicidx.geo.pydantic_models</span> <span class="k">as</span> <span class="nn">pydantic_models</span>
+
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">urllib.error</span> <span class="kn">import</span> <span class="n">HTTPError</span>  <span class="c1"># for Python 3</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">urllib2</span> <span class="kn">import</span> <span class="n">HTTPError</span>  <span class="c1"># for Python 2</span>
+
+<span class="n">ETYP</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;GSE&#39;</span><span class="p">,</span> <span class="s1">&#39;GSM&#39;</span><span class="p">,</span> <span class="s1">&#39;GPL&#39;</span><span class="p">,</span> <span class="s1">&#39;GDS&#39;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="get_entrez_instance"><a class="viewcode-back" href="../../../omicidx.geo.html#omicidx.geo.parser.get_entrez_instance">[docs]</a><span class="k">def</span> <span class="nf">get_entrez_instance</span><span class="p">(</span><span class="n">email</span><span class="o">=</span><span class="s1">&#39;user@example.com&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return a Bio::Entrez object</span>
+<span class="sd">    </span>
+<span class="sd">    # Arguments</span>
+<span class="sd">    email (str): the email to be used with the Entrez instance</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    =======</span>
+<span class="sd">    A Bio::Entrez instance</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">Entrez</span>
+    <span class="n">ret</span><span class="o">.</span><span class="n">email</span> <span class="o">=</span> <span class="n">email</span>
+    <span class="k">return</span> <span class="n">ret</span></div>
+
+
+<div class="viewcode-block" id="get_geo_accessions"><a class="viewcode-back" href="../../../omicidx.geo.html#omicidx.geo.parser.get_geo_accessions">[docs]</a><span class="k">def</span> <span class="nf">get_geo_accessions</span><span class="p">(</span><span class="n">etyp</span><span class="o">=</span><span class="s1">&#39;GSE&#39;</span><span class="p">,</span>
+                       <span class="n">batch_size</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+                       <span class="n">add_term</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                       <span class="n">email</span><span class="o">=</span><span class="s2">&quot;user@example.com&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get GEO accessions by etyp</span>
+
+<span class="sd">    Useful for getting all the ETYP accessions for</span>
+<span class="sd">    later bulk processing</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    etyp: str</span>
+<span class="sd">        One of GSE, GPL, GSM, GDS</span>
+<span class="sd">    batch_size: int </span>
+<span class="sd">        the number of accessions to return in one batch. </span>
+<span class="sd">        Transparent to the user, as this returns an iterator.</span>
+<span class="sd">    add_term: str</span>
+<span class="sd">        Add a search term for the query. Useful to limit</span>
+<span class="sd">        by date or search for specific text. For example, </span>
+<span class="sd">        to limit by date: &#39;2007/01/01:2007/03/01[PDAT]&#39;</span>
+<span class="sd">    email: str</span>
+<span class="sd">        user email (not important)</span>
+
+<span class="sd">    Return</span>
+<span class="sd">    ------</span>
+<span class="sd">    an iterator of accessions, each as a string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">entrez</span> <span class="o">=</span> <span class="n">get_entrez_instance</span><span class="p">(</span><span class="n">email</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">etyp</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ETYP</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;etype </span><span class="si">{}</span><span class="s2"> not one of the accepted etyps </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">etyp</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">ETYP</span><span class="p">)))</span>
+    <span class="n">handle</span> <span class="o">=</span> <span class="n">entrez</span><span class="o">.</span><span class="n">esearch</span><span class="p">(</span><span class="n">db</span><span class="o">=</span><span class="s1">&#39;gds&#39;</span><span class="p">,</span>
+                            <span class="n">term</span><span class="o">=</span><span class="n">etyp</span> <span class="o">+</span> <span class="s1">&#39;[ETYP]&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">add_term</span><span class="p">),</span>
+                            <span class="n">usehistory</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">)</span>
+    <span class="n">search_results</span> <span class="o">=</span> <span class="n">entrez</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">handle</span><span class="p">)</span>
+    <span class="n">webenv</span> <span class="o">=</span> <span class="n">search_results</span><span class="p">[</span><span class="s2">&quot;WebEnv&quot;</span><span class="p">]</span>
+    <span class="n">query_key</span> <span class="o">=</span> <span class="n">search_results</span><span class="p">[</span><span class="s2">&quot;QueryKey&quot;</span><span class="p">]</span>
+    <span class="n">count</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">search_results</span><span class="p">[</span><span class="s1">&#39;Count&#39;</span><span class="p">])</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;found </span><span class="si">{}</span><span class="s1"> records for </span><span class="si">{}</span><span class="s1"> database&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">count</span><span class="p">,</span> <span class="n">etyp</span><span class="p">))</span>
+    <span class="kn">from</span> <span class="nn">IPython.core.debugger</span> <span class="kn">import</span> <span class="n">set_trace</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">start</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">count</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">):</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">count</span><span class="p">,</span> <span class="n">start</span> <span class="o">+</span> <span class="n">batch_size</span><span class="p">)</span>
+        <span class="n">attempt</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">fetch_handle</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">while</span> <span class="n">attempt</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">:</span>
+            <span class="n">attempt</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">fetch_handle</span> <span class="o">=</span> <span class="n">entrez</span><span class="o">.</span><span class="n">esummary</span><span class="p">(</span><span class="n">db</span><span class="o">=</span><span class="s2">&quot;gds&quot;</span><span class="p">,</span>
+                                               <span class="n">rettype</span><span class="o">=</span><span class="s2">&quot;acc&quot;</span><span class="p">,</span>
+                                               <span class="n">retmode</span><span class="o">=</span><span class="s2">&quot;xml&quot;</span><span class="p">,</span>
+                                               <span class="n">retstart</span><span class="o">=</span><span class="n">start</span><span class="p">,</span>
+                                               <span class="n">retmax</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+                                               <span class="n">webenv</span><span class="o">=</span><span class="n">webenv</span><span class="p">,</span>
+                                               <span class="n">query_key</span><span class="o">=</span><span class="n">query_key</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">entrez</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">fetch_handle</span><span class="p">):</span>
+                    <span class="n">n</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="k">yield</span> <span class="p">(</span><span class="n">g</span><span class="p">[</span><span class="s1">&#39;Accession&#39;</span><span class="p">])</span>
+
+                <span class="k">break</span>
+            <span class="k">except</span> <span class="p">(</span><span class="n">HTTPError</span><span class="p">,</span> <span class="ne">RuntimeError</span><span class="p">)</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+                <span class="kn">import</span> <span class="nn">time</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">err</span><span class="p">,</span> <span class="n">HTTPError</span><span class="p">)):</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Received error from server </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">err</span><span class="p">)</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Attempt </span><span class="si">%i</span><span class="s2"> of 10&quot;</span> <span class="o">%</span> <span class="n">attempt</span><span class="p">)</span>
+                    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span> <span class="o">*</span> <span class="n">attempt</span> <span class="o">*</span> <span class="n">attempt</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;RuntimeError received: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">err</span><span class="p">))</span>
+                    <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Attempt </span><span class="si">%i</span><span class="s2"> of 10&quot;</span> <span class="o">%</span> <span class="n">attempt</span><span class="p">)</span>
+                    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span></div>
+
+
+<div class="viewcode-block" id="get_geo_accession_xml"><a class="viewcode-back" href="../../../omicidx.geo.html#omicidx.geo.parser.get_geo_accession_xml">[docs]</a><span class="k">def</span> <span class="nf">get_geo_accession_xml</span><span class="p">(</span><span class="n">accession</span><span class="p">,</span> <span class="n">targ</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">view</span><span class="o">=</span><span class="s1">&#39;brief&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Open a connection to get the GEO XML for an accession</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ==========</span>
+<span class="sd">    accession: str the GEO accesssion</span>
+<span class="sd">    targ: str what to fetch. One of &quot;all&quot;, &quot;series&quot;, &quot;platform&quot;, </span>
+<span class="sd">        &quot;samples&quot;, &quot;self&quot;</span>
+<span class="sd">    view: str amount to return.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    =======</span>
+<span class="sd">    A file-like object for reading or readlines</span>
+<span class="sd">    </span>
+<span class="sd">    &gt;&gt;&gt; handle = get_geo_accession_xml(&#39;GSE2553&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; handle.readlines()</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?targ=</span><span class="si">{}</span><span class="s2">&amp;acc=</span><span class="si">{}</span><span class="s2">&amp;form=xml&amp;view=</span><span class="si">{}</span><span class="s2">&quot;</span>
+        <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">targ</span><span class="p">,</span> <span class="n">accession</span><span class="p">,</span> <span class="n">view</span><span class="p">))</span>
+    <span class="n">attempt</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="n">attempt</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">:</span>
+        <span class="n">attempt</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+            <span class="k">break</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Received error from server </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">err</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Attempt </span><span class="si">%i</span><span class="s2"> of 3&quot;</span> <span class="o">%</span> <span class="n">attempt</span><span class="p">)</span>
+            <span class="kn">import</span> <span class="nn">time</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span> <span class="o">*</span> <span class="n">attempt</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_geo_accession_soft"><a class="viewcode-back" href="../../../omicidx.geo.html#omicidx.geo.parser.get_geo_accession_soft">[docs]</a><span class="k">def</span> <span class="nf">get_geo_accession_soft</span><span class="p">(</span><span class="n">accession</span><span class="p">,</span> <span class="n">targ</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">view</span><span class="o">=</span><span class="s2">&quot;brief&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Open a connection to get the GEO SOFT for an accession</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ==========</span>
+<span class="sd">    accession: str the GEO accesssion</span>
+<span class="sd">    targ: str what to fetch. One of &quot;all&quot;, &quot;series&quot;, &quot;platform&quot;, </span>
+<span class="sd">        &quot;samples&quot;, &quot;self&quot;</span>
+<span class="sd">    view: str amount to return.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    =======</span>
+<span class="sd">    A file-like object for reading or readlines</span>
+<span class="sd">    </span>
+<span class="sd">    &gt;&gt;&gt; handle = get_geo_accession_soft(&#39;GSE2553&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; handle.readlines()</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Accessing accession </span><span class="si">{accession}</span><span class="s1"> in SOFT format&#39;</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?targ=</span><span class="si">{}</span><span class="s2">&amp;acc=</span><span class="si">{}</span><span class="s2">&amp;form=text&amp;view=</span><span class="si">{}</span><span class="s2">&quot;</span>
+        <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">targ</span><span class="p">,</span> <span class="n">accession</span><span class="p">,</span> <span class="n">view</span><span class="p">))</span>
+    <span class="n">attempt</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="n">attempt</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">:</span>
+        <span class="n">attempt</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">resp</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">StringIO</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+            <span class="k">break</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Received error from server </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">err</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Attempt </span><span class="si">%i</span><span class="s2"> of 10&quot;</span> <span class="o">%</span> <span class="n">attempt</span><span class="p">)</span>
+            <span class="kn">import</span> <span class="nn">time</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span> <span class="o">*</span> <span class="n">attempt</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">_split_on_first_equal</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="s1">&#39;=&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Split a line based on first occurrence of &quot; =&quot;</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    line: str</span>
+<span class="sd">        string to split</span>
+<span class="sd">    split: str</span>
+<span class="sd">        split based on this. Can be multiple characters.</span>
+<span class="sd">    &gt;&gt;&gt; _split_on_first_equal(&quot;this = abc = 1&quot;)</span>
+<span class="sd">    (&#39;this&#39;, &#39;abc = 1&#39;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">l</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">val</span><span class="p">))</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">l</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot; </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">val</span><span class="p">))):</span>
+        <span class="n">l</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">l</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">val</span><span class="p">),</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">l</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot; </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">val</span><span class="p">)</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">l</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span>
+
+
+<div class="viewcode-block" id="get_geo_entities"><a class="viewcode-back" href="../../../omicidx.geo.html#omicidx.geo.parser.get_geo_entities">[docs]</a><span class="k">def</span> <span class="nf">get_geo_entities</span><span class="p">(</span><span class="n">txt</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get the text associated with each entity from a block of text</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    txt: list(str)</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    A dict of entities keyed by accession and values a list of txt lines</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Parsing out geo entities&#39;</span><span class="p">)</span>
+    <span class="n">entities</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">accession</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">entity</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">txt</span><span class="p">:</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;^&#39;</span><span class="p">)):</span>
+            <span class="n">accession</span> <span class="o">=</span> <span class="n">_split_on_first_equal</span><span class="p">(</span><span class="n">line</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">entities</span><span class="p">[</span><span class="n">accession</span><span class="p">]</span> <span class="o">=</span> <span class="n">entity</span>
+            <span class="n">entity</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">entity</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+    <span class="n">entities</span><span class="p">[</span><span class="n">accession</span><span class="p">]</span> <span class="o">=</span> <span class="n">entity</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;found {len(entities.keys())}&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">entities</span></div>
+
+
+<span class="c1">#####################################</span>
+<span class="c1"># Utility functions for GSE parsing #</span>
+<span class="c1">#####################################</span>
+
+
+<div class="viewcode-block" id="get_subseries_from_relations"><a class="viewcode-back" href="../../../omicidx.geo.html#omicidx.geo.parser.get_subseries_from_relations">[docs]</a><span class="k">def</span> <span class="nf">get_subseries_from_relations</span><span class="p">(</span><span class="n">relation_list</span><span class="p">):</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">relation_list</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;SuperSeries of:&quot;</span><span class="p">)):</span>
+            <span class="n">ret</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;SuperSeries of: &#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">ret</span></div>
+
+
+<div class="viewcode-block" id="get_bioprojects_from_relations"><a class="viewcode-back" href="../../../omicidx.geo.html#omicidx.geo.parser.get_bioprojects_from_relations">[docs]</a><span class="k">def</span> <span class="nf">get_bioprojects_from_relations</span><span class="p">(</span><span class="n">relation_list</span><span class="p">):</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">relation_list</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span>
+                <span class="s2">&quot;BioProject: https://www.ncbi.nlm.nih.gov/bioproject/&quot;</span><span class="p">)):</span>
+            <span class="n">ret</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">i</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+                    <span class="s1">&#39;BioProject: https://www.ncbi.nlm.nih.gov/bioproject/&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;&#39;</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">ret</span></div>
+
+
+<div class="viewcode-block" id="get_SRA_from_relations"><a class="viewcode-back" href="../../../omicidx.geo.html#omicidx.geo.parser.get_SRA_from_relations">[docs]</a><span class="k">def</span> <span class="nf">get_SRA_from_relations</span><span class="p">(</span><span class="n">relation_list</span><span class="p">):</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">relation_list</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;SRA: https://www.ncbi.nlm.nih.gov/sra?term=&quot;</span><span class="p">)):</span>
+            <span class="n">ret</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">i</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;SRA: https://www.ncbi.nlm.nih.gov/sra?term=&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">ret</span></div>
+
+
+<div class="viewcode-block" id="get_biosample_from_relations"><a class="viewcode-back" href="../../../omicidx.geo.html#omicidx.geo.parser.get_biosample_from_relations">[docs]</a><span class="k">def</span> <span class="nf">get_biosample_from_relations</span><span class="p">(</span><span class="n">relation_list</span><span class="p">):</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">relation_list</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;BioSample: https://www.ncbi.nlm.nih.gov/biosample/&quot;</span><span class="p">)</span>
+            <span class="p">):</span>
+            <span class="n">ret</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">i</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;BioSample: https://www.ncbi.nlm.nih.gov/biosample/&#39;</span><span class="p">,</span>
+                          <span class="s1">&#39;&#39;</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">ret</span></div>
+
+
+<div class="viewcode-block" id="get_channel_characteristics"><a class="viewcode-back" href="../../../omicidx.geo.html#omicidx.geo.parser.get_channel_characteristics">[docs]</a><span class="k">def</span> <span class="nf">get_channel_characteristics</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">ch</span><span class="p">):</span>
+    <span class="n">ch_items</span> <span class="o">=</span> <span class="nb">list</span><span class="p">([</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;ch</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ch</span><span class="p">))])</span>
+    <span class="n">characteristics</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">ch_items</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;characteristics&#39;</span><span class="p">)):</span>
+            <span class="k">for</span> <span class="n">characteristic</span> <span class="ow">in</span> <span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span>
+                <span class="n">characteristics</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">characteristic</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;: &#39;</span><span class="p">)))</span>
+            <span class="k">continue</span>
+        <span class="n">newk</span> <span class="o">=</span> <span class="n">k</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;_ch</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ch</span><span class="p">),</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">ret</span><span class="p">[</span><span class="n">k</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;_ch</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ch</span><span class="p">),</span> <span class="s2">&quot;&quot;</span><span class="p">)]</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">newk</span> <span class="o">==</span> <span class="s1">&#39;taxid&#39;</span><span class="p">):</span>
+            <span class="n">ret</span><span class="p">[</span><span class="n">newk</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">ret</span><span class="p">[</span><span class="n">newk</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)])</span>
+    <span class="n">char</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">characteristics</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">tag</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">):</span>
+            <span class="n">tag</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">):</span>
+            <span class="n">tag</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="s2">&quot;:&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+        <span class="n">char</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;tag&quot;</span><span class="p">:</span> <span class="n">tag</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="n">val</span><span class="p">})</span>
+    <span class="n">ret</span><span class="p">[</span><span class="s1">&#39;characteristics&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">char</span>
+    <span class="k">return</span> <span class="n">ret</span></div>
+
+
+<span class="k">def</span> <span class="nf">_split_geo_name</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;split name of form first,middle,last into dict&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="s1">&#39;first middle last&#39;</span><span class="o">.</span><span class="n">split</span><span class="p">(),</span> <span class="n">v</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)))</span>
+
+
+<span class="k">def</span> <span class="nf">_create_contact_from_parsed</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
+    <span class="n">contact_dict</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;contact&#39;</span><span class="p">)):</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">v</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">):</span>
+                <span class="n">v</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">k</span> <span class="o">==</span> <span class="s1">&#39;contact_name&#39;</span><span class="p">):</span>
+                <span class="n">v</span> <span class="o">=</span> <span class="n">_split_geo_name</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">k</span> <span class="o">==</span> <span class="s1">&#39;contact_web_link&#39;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">v</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;http&#39;</span><span class="p">)):</span>
+                    <span class="n">v</span> <span class="o">=</span> <span class="s1">&#39;http://&#39;</span> <span class="o">+</span> <span class="n">v</span>
+            <span class="n">contact_dict</span><span class="p">[</span><span class="n">k</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;contact_&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)]</span> <span class="o">=</span> <span class="n">v</span>
+    <span class="k">return</span> <span class="n">contact_dict</span>
+
+
+<span class="k">def</span> <span class="nf">_split_contributor_names</span><span class="p">(</span><span class="n">contribs</span><span class="p">):</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">contribs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[]</span>
+    <span class="k">return</span> <span class="nb">list</span><span class="p">([</span><span class="n">_split_geo_name</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">contribs</span><span class="p">])</span>
+
+
+<span class="c1">###############################################</span>
+<span class="c1"># Parse a single entity of SOFT format,       #</span>
+<span class="c1"># generically. Then pass along to             #</span>
+<span class="c1"># GSE, GSM, or GPL specific parser and return #</span>
+<span class="c1"># appropriate class.                          #</span>
+<span class="c1">###############################################</span>
+<span class="k">def</span> <span class="nf">_parse_single_entity_soft</span><span class="p">(</span><span class="n">entity_txt</span><span class="p">):</span>
+    <span class="c1"># Deal with common stuff first:</span>
+    <span class="n">tups</span> <span class="o">=</span> <span class="p">[</span><span class="n">_split_on_first_equal</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">entity_txt</span><span class="p">]</span>
+    <span class="n">accession</span> <span class="o">=</span> <span class="n">tups</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">entity_type</span> <span class="o">=</span> <span class="n">tups</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;^&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="n">tups</span> <span class="o">=</span> <span class="p">[(</span><span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s1">&#39;![^_]+_&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">tup</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">tup</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="n">tups</span><span class="p">]</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="n">tups</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+        <span class="n">d</span><span class="p">[</span><span class="n">tup</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tup</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">d2</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+    <span class="c1"># int fields</span>
+    <span class="n">INT_FIELDS</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;pubmed_id&#39;</span><span class="p">,</span> <span class="s1">&#39;sample_taxid&#39;</span><span class="p">,</span> <span class="s1">&#39;platform_taxid&#39;</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">INT_FIELDS</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="ow">in</span> <span class="n">d2</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">d2</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">d2</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">d2</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="c1"># change &quot;geo_accesion = [...]&quot; to &quot;accession = ...&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">d2</span><span class="p">[</span><span class="s1">&#39;accession&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">d2</span><span class="p">[</span><span class="s1">&#39;accession&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="n">d2</span><span class="p">[</span><span class="s1">&#39;accession&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">d2</span><span class="p">[</span><span class="s1">&#39;geo_accession&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">del</span> <span class="p">(</span><span class="n">d2</span><span class="p">[</span><span class="s1">&#39;geo_accession&#39;</span><span class="p">])</span>
+    <span class="k">if</span> <span class="p">(</span><span class="s1">&#39;description =&#39;</span> <span class="ow">in</span> <span class="n">d2</span><span class="p">):</span>
+        <span class="k">del</span> <span class="p">(</span><span class="n">d2</span><span class="p">[</span><span class="s1">&#39;description =&#39;</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span>
+            <span class="s1">&#39;status&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;data_processing&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;title&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;summary&#39;</span><span class="p">,</span>  <span class="c1"># GSE only?</span>
+            <span class="s1">&#39;submission_date&#39;</span><span class="p">,</span>  <span class="c1"># to fix later</span>
+            <span class="s1">&#39;last_update_date&#39;</span><span class="p">,</span>  <span class="c1"># to fix later</span>
+            <span class="s1">&#39;overall_design&#39;</span>
+    <span class="p">]:</span>  <span class="c1">#GSE only ]:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">d2</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">d2</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">d2</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="c1"># contact details as object</span>
+    <span class="n">contact</span> <span class="o">=</span> <span class="n">_create_contact_from_parsed</span><span class="p">(</span><span class="n">d2</span><span class="p">)</span>
+    <span class="n">dkeys</span> <span class="o">=</span> <span class="n">d2</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">dkeys</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;contact&#39;</span><span class="p">):</span>
+            <span class="k">del</span> <span class="p">(</span><span class="n">d2</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+    <span class="n">d2</span><span class="p">[</span><span class="s1">&#39;contact&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">contact</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">entity_type</span> <span class="o">==</span> <span class="s1">&#39;SERIES&#39;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">_parse_single_gse_soft</span><span class="p">(</span><span class="n">d2</span><span class="p">))</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">entity_type</span> <span class="o">==</span> <span class="s1">&#39;SAMPLE&#39;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">_parse_single_gsm_soft</span><span class="p">(</span><span class="n">d2</span><span class="p">))</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">entity_type</span> <span class="o">==</span> <span class="s1">&#39;PLATFORM&#39;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">_parse_single_gpl_soft</span><span class="p">(</span><span class="n">d2</span><span class="p">))</span>
+
+
+<span class="c1">###############################################################################</span>
+<span class="c1">#        Update date fields of format &#39;month day year&#39; to date type.          #</span>
+<span class="c1">###############################################################################</span>
+<span class="k">def</span> <span class="nf">_fix_date_fields</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">datefield</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;submission_date&#39;</span><span class="p">,</span> <span class="s1">&#39;last_update_date&#39;</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">datefield</span> <span class="ow">in</span> <span class="n">d</span><span class="p">:</span>
+            <span class="n">d</span><span class="p">[</span><span class="n">datefield</span><span class="p">]</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">datefield</span><span class="p">],</span> <span class="s1">&#39;%b </span><span class="si">%d</span><span class="s1"> %Y&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">d</span>
+
+
+<span class="c1">#######################################</span>
+<span class="c1"># Parse the GSE entity in SOFT format #</span>
+<span class="c1">#######################################</span>
+<span class="k">def</span> <span class="nf">_parse_single_gse_soft</span><span class="p">(</span><span class="n">d2</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">d2</span><span class="p">[</span><span class="s1">&#39;subseries&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_subseries_from_relations</span><span class="p">(</span><span class="n">d2</span><span class="p">[</span><span class="s1">&#39;relation&#39;</span><span class="p">])</span>
+        <span class="n">d2</span><span class="p">[</span><span class="s1">&#39;bioprojects&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_bioprojects_from_relations</span><span class="p">(</span><span class="n">d2</span><span class="p">[</span><span class="s1">&#39;relation&#39;</span><span class="p">])</span>
+        <span class="n">d2</span><span class="p">[</span><span class="s1">&#39;sra_studies&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_SRA_from_relations</span><span class="p">(</span><span class="n">d2</span><span class="p">[</span><span class="s1">&#39;relation&#39;</span><span class="p">])</span>
+        <span class="c1"># GEO sometimes references SRS and SRR from series--filter those out</span>
+        <span class="n">d2</span><span class="p">[</span><span class="s1">&#39;sra_studies&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+            <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">a</span><span class="p">:</span> <span class="n">a</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;P&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">d2</span><span class="p">[</span><span class="s1">&#39;sra_studies&#39;</span><span class="p">]))</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="n">d2</span><span class="p">[</span><span class="s1">&#39;subseries&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">d2</span><span class="p">[</span><span class="s1">&#39;bioprojects&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">d2</span><span class="p">[</span><span class="s1">&#39;sra_studies&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">supp_files</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">d2</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;supplementa&#39;</span><span class="p">)):</span>
+            <span class="n">supp_files</span> <span class="o">+=</span> <span class="n">d2</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+            <span class="k">del</span> <span class="n">d2</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+    <span class="n">d2</span><span class="p">[</span><span class="s1">&#39;supplemental_files&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">supp_files</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">supp_files</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">supp_files</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;NONE&#39;</span><span class="p">):</span>
+            <span class="n">supp_files</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">d2</span><span class="p">[</span><span class="s1">&#39;_entity&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;GSE&#39;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="s1">&#39;contributor&#39;</span> <span class="ow">in</span> <span class="n">d2</span><span class="p">):</span>
+        <span class="n">d2</span><span class="p">[</span><span class="s1">&#39;contributor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_split_contributor_names</span><span class="p">(</span><span class="n">d2</span><span class="p">[</span><span class="s1">&#39;contributor&#39;</span><span class="p">])</span>
+    <span class="n">d2</span> <span class="o">=</span> <span class="n">_fix_date_fields</span><span class="p">(</span><span class="n">d2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">pydantic_models</span><span class="o">.</span><span class="n">GEOSeries</span><span class="p">(</span><span class="o">**</span><span class="n">d2</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_create_gsm_channel_data</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
+    <span class="n">ch_count</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;channel_count&#39;</span><span class="p">])</span>
+    <span class="n">ch_recs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ch_count</span><span class="p">):</span>
+        <span class="c1"># this GEOChannel just encapsulates the parsing</span>
+        <span class="c1"># of channel records.</span>
+        <span class="c1"># TODO: refactor to parse directly to dict</span>
+        <span class="n">ch_recs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">get_channel_characteristics</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">ch_recs</span>
+
+
+<span class="c1"># Search for fields like _ch1 and _ch2 ....</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="n">r1</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;_ch\d+$&#39;</span><span class="p">)</span>
+
+
+<span class="c1">#######################################</span>
+<span class="c1"># Parse the GSM entity in SOFT format #</span>
+<span class="c1">#######################################</span>
+<span class="k">def</span> <span class="nf">_parse_single_gsm_soft</span><span class="p">(</span><span class="n">d2</span><span class="p">):</span>
+    <span class="c1"># to singular:</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span>
+            <span class="s1">&#39;platform_id&#39;</span><span class="p">,</span> <span class="s1">&#39;channel_count&#39;</span><span class="p">,</span> <span class="s1">&#39;library_strategy&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;library_source&#39;</span><span class="p">,</span> <span class="s1">&#39;library_selection&#39;</span><span class="p">,</span> <span class="s1">&#39;instrument_model&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;data_row_count&#39;</span><span class="p">,</span> <span class="s1">&#39;anchor&#39;</span><span class="p">,</span> <span class="s1">&#39;tag_length&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="s1">&#39;tag_count&#39;</span>
+    <span class="p">]:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">d2</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">d2</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">d2</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">d2</span><span class="p">[</span><span class="s1">&#39;biosample&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_biosample_from_relations</span><span class="p">(</span><span class="n">d2</span><span class="p">[</span><span class="s1">&#39;relation&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">d2</span><span class="p">[</span><span class="s1">&#39;sra_experiment&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_SRA_from_relations</span><span class="p">(</span><span class="n">d2</span><span class="p">[</span><span class="s1">&#39;relation&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">d2</span><span class="p">[</span><span class="s1">&#39;biosample&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">d2</span><span class="p">[</span><span class="s1">&#39;sra_experiment&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="p">(</span><span class="s1">&#39;contributor&#39;</span> <span class="ow">in</span> <span class="n">d2</span><span class="p">):</span>
+        <span class="n">d2</span><span class="p">[</span><span class="s1">&#39;contributor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_split_contributor_names</span><span class="p">(</span><span class="n">d2</span><span class="p">[</span><span class="s1">&#39;contributor&#39;</span><span class="p">])</span>
+    <span class="n">d2</span><span class="p">[</span><span class="s1">&#39;channels&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_create_gsm_channel_data</span><span class="p">(</span><span class="n">d2</span><span class="p">)</span>
+    <span class="n">supp_files</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">d2</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+        <span class="k">if</span> <span class="n">r1</span><span class="o">.</span><span class="n">search</span><span class="p">(</span>
+                <span class="n">k</span>
+        <span class="p">):</span>  <span class="c1"># have to use search here because endswith does not take regex</span>
+            <span class="k">del</span> <span class="n">d2</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;supplementa&#39;</span><span class="p">)):</span>
+            <span class="n">supp_files</span> <span class="o">+=</span> <span class="n">d2</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+            <span class="k">del</span> <span class="n">d2</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+    <span class="n">d2</span><span class="p">[</span><span class="s1">&#39;supplemental_files&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">supp_files</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">supp_files</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;NONE&#39;</span><span class="p">):</span>
+        <span class="n">supp_files</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">d2</span><span class="p">[</span><span class="s1">&#39;_entity&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;GSM&#39;</span>
+    <span class="n">d2</span> <span class="o">=</span> <span class="n">_fix_date_fields</span><span class="p">(</span><span class="n">d2</span><span class="p">)</span>
+    <span class="c1"># Collapse protocol fields into single string</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="n">k</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;protocol&#39;</span><span class="p">),</span> <span class="n">d2</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">d2</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">d2</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">d2</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+    <span class="k">if</span> <span class="p">(</span><span class="s1">&#39;contributor&#39;</span> <span class="ow">in</span> <span class="n">d2</span><span class="p">):</span>
+        <span class="n">d2</span><span class="p">[</span><span class="s1">&#39;contributor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_split_contributor_names</span><span class="p">(</span><span class="n">d2</span><span class="p">[</span><span class="s1">&#39;contributor&#39;</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">pydantic_models</span><span class="o">.</span><span class="n">GEOSample</span><span class="p">(</span><span class="o">**</span><span class="n">d2</span><span class="p">)</span>
+
+
+<span class="c1">#######################################</span>
+<span class="c1"># Parse the GPL entity in SOFT format #</span>
+<span class="c1">#######################################</span>
+<span class="k">def</span> <span class="nf">_parse_single_gpl_soft</span><span class="p">(</span><span class="n">d2</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span>
+            <span class="s1">&#39;technology&#39;</span><span class="p">,</span> <span class="s1">&#39;distribution&#39;</span><span class="p">,</span> <span class="s1">&#39;organism&#39;</span><span class="p">,</span> <span class="s1">&#39;taxid&#39;</span><span class="p">,</span> <span class="s1">&#39;data_row_count&#39;</span>
+    <span class="p">]:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">d2</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">d2</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">d2</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">d2</span><span class="p">[</span><span class="s1">&#39;_entity&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;GPL&#39;</span>
+    <span class="n">d2</span> <span class="o">=</span> <span class="n">_fix_date_fields</span><span class="p">(</span><span class="n">d2</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="s1">&#39;manufacture_protocol&#39;</span> <span class="ow">in</span> <span class="n">d2</span><span class="p">):</span>
+        <span class="n">d2</span><span class="p">[</span><span class="s1">&#39;manufacture_protocol&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">d2</span><span class="p">[</span><span class="s1">&#39;manufacture_protocol&#39;</span><span class="p">])</span>
+    <span class="k">if</span> <span class="p">(</span><span class="s1">&#39;contributor&#39;</span> <span class="ow">in</span> <span class="n">d2</span><span class="p">):</span>
+        <span class="n">d2</span><span class="p">[</span><span class="s1">&#39;contributor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_split_contributor_names</span><span class="p">(</span><span class="n">d2</span><span class="p">[</span><span class="s1">&#39;contributor&#39;</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">pydantic_models</span><span class="o">.</span><span class="n">GEOPlatform</span><span class="p">(</span><span class="o">**</span><span class="n">d2</span><span class="p">)</span>
+
+
+<span class="c1">###############################################################################</span>
+<span class="c1">#                   This is the main entrypoint for parsing.                  #</span>
+<span class="c1">###############################################################################</span>
+<div class="viewcode-block" id="geo_entity_iterator"><a class="viewcode-back" href="../../../omicidx.geo.html#omicidx.geo.parser.geo_entity_iterator">[docs]</a><span class="k">def</span> <span class="nf">geo_entity_iterator</span><span class="p">(</span><span class="n">geo</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">targ</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;self&#39;</span><span class="p">,</span> <span class="n">view</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;brief&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Returns an iterator of GEO entities</span>
+
+<span class="sd">    Given a GEO accession (typically a GSE,</span>
+<span class="sd">    will return an iterator of the GEO entities</span>
+<span class="sd">    associated with the record, including all</span>
+<span class="sd">    GSMs, GPLs, and the GSE record itself</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    fh: Iterable[str]</span>
+<span class="sd">       Anything that can iterate over lines of text</span>
+<span class="sd">       Could be a list of text lines, a file handle, or</span>
+<span class="sd">       an open url.</span>
+<span class="sd">    </span>
+<span class="sd">    Yields</span>
+<span class="sd">    ------</span>
+<span class="sd">    Iterator of GEO entities as pydantic models</span>
+
+
+<span class="sd">    &gt;&gt;&gt; for i in geo_soft_entity_iterator(&#39;GSE2553&#39;):</span>
+<span class="sd">    ...     print(i)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">entity</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">accession</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">in_table</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">fh</span> <span class="o">=</span> <span class="n">get_geo_accession_soft</span><span class="p">(</span><span class="n">geo</span><span class="p">,</span> <span class="n">targ</span><span class="o">=</span><span class="n">targ</span><span class="p">,</span> <span class="n">view</span><span class="o">=</span><span class="n">view</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">fh</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)):</span>
+                <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+        <span class="c1"># ignore table details for now</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;table_begin&#39;</span><span class="p">)):</span>
+            <span class="n">in_table</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;table_end&#39;</span><span class="p">)):</span>
+            <span class="n">in_table</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">in_table</span><span class="p">):</span>
+            <span class="k">continue</span>
+
+        <span class="c1"># ignore comments</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">)):</span>
+            <span class="k">continue</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;^&#39;</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">accession</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+                <span class="k">yield</span> <span class="p">(</span><span class="n">_parse_single_entity_soft</span><span class="p">(</span><span class="n">entity</span><span class="p">))</span>
+            <span class="n">accession</span> <span class="o">=</span> <span class="n">_split_on_first_equal</span><span class="p">(</span><span class="n">line</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">entity</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">entity</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+    <span class="k">yield</span> <span class="p">(</span><span class="n">_parse_single_entity_soft</span><span class="p">(</span><span class="n">entity</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="gse_to_json"><a class="viewcode-back" href="../../../omicidx.geo.html#omicidx.geo.parser.gse_to_json">[docs]</a><span class="k">def</span> <span class="nf">gse_to_json</span><span class="p">(</span><span class="n">gse</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return json version of GSE record as text</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    gse : str</span>
+<span class="sd">        The GSE accession to convert</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">z</span> <span class="ow">in</span> <span class="n">geo_soft_entity_iterator</span><span class="p">(</span><span class="n">get_geo_accession_soft</span><span class="p">(</span><span class="n">gse</span><span class="p">)):</span>
+        <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">json</span><span class="p">())</span>
+    <span class="k">return</span> <span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">res</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="bulk_gse_to_json"><a class="viewcode-back" href="../../../omicidx.geo.html#omicidx.geo.parser.bulk_gse_to_json">[docs]</a><span class="k">def</span> <span class="nf">bulk_gse_to_json</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">outfile</span><span class="o">=</span><span class="s1">&#39;/dev/stdout&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Bulk process GSEs to json</span>
+
+<span class="sd">    This function takes a term (see below) and does a search. Results</span>
+<span class="sd">    from the search of GSE records are returned as json lines to the</span>
+<span class="sd">    output file in `outfile`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    term : str</span>
+<span class="sd">        A search string like &quot;2019/01/28:2019/02/28[PDAT]&quot; as an example.</span>
+<span class="sd">        Passed to entrez search.</span>
+<span class="sd">    outfile: str</span>
+<span class="sd">        The output file to which to write</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">gse</span> <span class="ow">in</span> <span class="n">get_geo_accessions</span><span class="p">(</span><span class="n">add_term</span><span class="o">=</span><span class="n">term</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">outfile</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;writing accession </span><span class="si">{gse}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">gse_to_json</span><span class="p">(</span><span class="n">gse</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">res</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+                <span class="n">outfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">res</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Accession </span><span class="si">{gse}</span><span class="s1"> not found, it appears.&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="gse_accessions"><a class="viewcode-back" href="../../../omicidx.geo.html#omicidx.geo.parser.gse_accessions">[docs]</a><span class="k">def</span> <span class="nf">gse_accessions</span><span class="p">(</span><span class="n">term</span><span class="p">,</span> <span class="n">outfile</span><span class="o">=</span><span class="s1">&#39;/dev/stdout&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Output list of gse accessions based on term search</span>
+
+<span class="sd">    Writes to a file.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    term : str</span>
+<span class="sd">        A search string like &quot;2019/01/28:2019/02/28[PDAT]&quot; as an example.</span>
+<span class="sd">        Passed to entrez search.</span>
+<span class="sd">    outfile: str</span>
+<span class="sd">        The output file to which to write</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ofile</span><span class="p">:</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">gse</span> <span class="ow">in</span> <span class="n">get_geo_accessions</span><span class="p">(</span><span class="n">add_term</span><span class="o">=</span><span class="n">term</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
+            <span class="n">n</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">n</span> <span class="o">%</span> <span class="mi">5000</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Processed </span><span class="si">{n}</span><span class="s1"> records&#39;</span><span class="p">)</span>
+            <span class="n">ofile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">gse</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Processed </span><span class="si">{n}</span><span class="s1"> records&#39;</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">OmicIDX</a></h1>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=seandavi&repo=omicidx&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../Bigquery.html">OmicIDX dataset on Bigquery</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../cli.html">Commandline Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../genomic_metadata.html">Genomic metadata in OmicIDX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">omicidx</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Sean Davis.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/seandavi/omicidx" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

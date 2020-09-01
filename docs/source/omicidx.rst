@@ -5,9 +5,12 @@ Subpackages
 -----------
 
 .. toctree::
+   :maxdepth: 4
 
-   omicidx.data
-   omicidx.model
+   omicidx.db
+   omicidx.geo
+   omicidx.mti
+   omicidx.ontologies
    omicidx.schema
    omicidx.scripts
    omicidx.sra
@@ -15,20 +18,46 @@ Subpackages
 Submodules
 ----------
 
-.. toctree::
+omicidx.biosample module
+------------------------
 
-   omicidx.bigquery_utils
-   omicidx.biosample
-   omicidx.db
-   omicidx.elasticsearch_utils
-   omicidx.gcs_utils
-   omicidx.geometa
-   omicidx.lambda_handlers
-   omicidx.models
-   omicidx.schema_tools
-   omicidx.scratch
-   omicidx.sra_parsers
-   omicidx.utils
+.. automodule:: omicidx.biosample
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+omicidx.lambda\_handlers module
+-------------------------------
+
+.. automodule:: omicidx.lambda_handlers
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+omicidx.models module
+---------------------
+
+.. automodule:: omicidx.models
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+omicidx.schema\_tools module
+----------------------------
+
+.. automodule:: omicidx.schema_tools
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+omicidx.utils module
+--------------------
+
+.. automodule:: omicidx.utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 
 Module contents
 ---------------

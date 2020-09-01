@@ -18,7 +18,8 @@ list(cl_item.superclasses())
 from pronto import Ontology
 import requests
 
-ONTOLOGY_CATALOG_URL='http://obofoundry.org/registry/ontologies.jsonld'
+ONTOLOGY_CATALOG_URL = 'http://obofoundry.org/registry/ontologies.jsonld'
+
 
 def ontology_from_obo_library(ontology_short_name: str) -> Ontology:
     """parse an ontology
@@ -37,6 +38,7 @@ def ontology_from_obo_library(ontology_short_name: str) -> Ontology:
     """
     ont = Ontology.from_obo_library(ontology_short_name)
     return ont
+
 
 def get_all_ontologies_from_obo_library():
     """get complete list of ontologies from ontobee

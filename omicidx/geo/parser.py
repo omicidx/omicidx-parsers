@@ -410,7 +410,8 @@ def _parse_single_gse_soft(d2):
         d2['bioprojects'] = get_bioprojects_from_relations(d2['relation'])
         d2['sra_studies'] = get_SRA_from_relations(d2['relation'])
         # GEO sometimes references SRS and SRR from series--filter those out
-        d2['sra_studies'] = list(filter(lambda a : a.find('P')>0, d2['sra_studies']))
+        d2['sra_studies'] = list(
+            filter(lambda a: a.find('P') > 0, d2['sra_studies']))
     except KeyError:
         d2['subseries'] = []
         d2['bioprojects'] = []
@@ -421,8 +422,9 @@ def _parse_single_gse_soft(d2):
             supp_files += d2[k]
             del d2[k]
     d2['supplemental_files'] = supp_files
-    if (supp_files[0] == 'NONE'):
-        supp_files = []
+    if (len(supp_files) > 0):
+        if (supp_files[0] == 'NONE'):
+            supp_files = []
     d2['_entity'] = 'GSE'
     if ('contributor' in d2):
         d2['contributor'] = _split_contributor_names(d2['contributor'])
@@ -515,7 +517,7 @@ def _parse_single_gpl_soft(d2):
 ###############################################################################
 #                   This is the main entrypoint for parsing.                  #
 ###############################################################################
-def geo_entity_iterator(geo: str, targ:str = 'self', view: str = 'brief'):
+def geo_entity_iterator(geo: str, targ: str = 'self', view: str = 'brief'):
     """Returns an iterator of GEO entities
 
     Given a GEO accession (typically a GSE,

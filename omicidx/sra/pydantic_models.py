@@ -2,7 +2,8 @@ import pydantic
 from pydantic import BaseModel
 import json
 from datetime import datetime
-from typing import List, Dict
+from typing import List, Dict, Optional
+
 
 class Attribute(BaseModel):
     tag: str = None
@@ -13,7 +14,7 @@ class Xref(BaseModel):
     db: str = None
     id: str = None
 
-    
+
 class Identifier(BaseModel):
     namespace: str = None
     id: str = None
@@ -40,10 +41,11 @@ class FileSet(BaseModel):
 class BaseQualityCount(BaseModel):
     quality: int = 0
     count: int = 0
-    
+
+
 class BaseQualities(List[BaseQualityCount]):
     pass
-    
+
 
 class TaxCountEntry(BaseModel):
     rank: str = None
@@ -53,11 +55,13 @@ class TaxCountEntry(BaseModel):
     self_count: int = 0
     tax_id: int
 
+
 class TaxCountAnalysis(BaseModel):
     nspot_analyze: int = None
     total_spots: int = None
     mapped_spots: int = None
     tax_counts: List[TaxCountEntry] = None
+
 
 class RunRead(BaseModel):
     index: int
@@ -76,6 +80,7 @@ class LiveList(BaseModel):
     received: datetime = None
     status: str = "live"
     insdc: bool = True
+
 
 class SraRun(LiveList, BaseModel):
     alias: str = None
@@ -154,9 +159,9 @@ class SraSample(LiveList, BaseModel):
     identifiers: List[Identifier] = None
     attributes: List[Attribute] = None
     xrefs: List[Xref] = None
-    
+
+
 class FullSraRun(SraRun):
-    experiment: SraExperiment = None
-    sample: SraSample = None
-    study: SraStudy = None
-    
+    experiment: Optional[SraExperiment] = None
+    sample: Optional[SraSample] = None
+    study: Optional[SraStudy] = None

@@ -20,11 +20,6 @@ jobs:
         uses: abatilo/actions-poetry@v2.0.0
         with:
           poetry-version: ${{ matrix.poetry-version }}
-      
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install libpq-dev 
       - name: View poetry --help
         run: poetry --help
       - name: Test with pytest

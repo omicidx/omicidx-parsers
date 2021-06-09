@@ -30,6 +30,20 @@ from typing import Iterator, List, Dict, Iterable
 
 logger = logging.getLogger('sra_parser')
 
+def parse_xml_url(url: str, entity: str, gz: bool=True):
+    n = 0
+
+    with gzip.open(urllib.request.urlopen(url),'rb') as f:
+        for event, element in etree.iterparse(f):
+            if (event == 'end' and element.tag == entity):
+                rec = globals()['SRA'+entity.title()+"Record"](element).data
+                n += 1
+                if ((n % 100000) == 0):
+                    logger.info('parsed {} {} entries'.format(entity, n))
+                element.clear()
+                yield (rec)
+    logger.info('parsed {} entity entries'.format(n))
+
 
 def parse_xml_file(xmlfilename):
     """Parse an NCBI SRA mirroring XML file
@@ -83,16 +97,6 @@ def parse_xml_file(xmlfilename):
                 element.clear()
                 yield (rec)
     logger.info('parsed {} entity entries'.format(n))
-
-
-def lambda_handler(event, context):
-    accession = event['accession']
-    v = load_experiment_xml_by_accession(accession)
-    s = list([
-        SRAExperimentPackage(exptpkg).data
-        for exptpkg in v.getroot().findall(".//EXPERIMENT_PACKAGE")
-    ])
-    return s
 
 
 def parse_study(xml):
@@ -1025,23 +1029,28 @@ def get_accession_list(from_date="2001-01-01",
             c = 0
 
 
-def sra_object_generator(fname):
+def sra_object_generator(fh):
     """Iterate over objects in an SRA meta_XXX_set xml file
     
-    :param: fname str() name of xml file, may be gzipped or not
+    :param: fh an open filehandle
     
     :returns: An iterator over SRA objects. Access actual data 
         as a dict using Object.data
     
     """
+    from xml.etree import ElementTree as et
+
+    parsers = {
+        'study': SRAStudyRecord,
+        'sample': SRASampleRecord,
+        'run': SRARunRecord,
+        'experiment': SRAExperimentRecord
+    }
     validClasses = ['experiment', 'run', 'study', 'sample']
-    if (fname.endswith("gz")):
-        fh = gzip.GzipFile(fname)
-    else:
-        fh = open(fname)
     for event, element in et.iterparse(fh):
         if ((element.tag.lower() in validClasses) and (event == "end")):
-            yield getattr(s, "SRA" + element.tag.title() + "Record")(element)
+            yield parsers.get(element.tag.title().lower())(element)
+
 
 
 class LiveList(Iterable):

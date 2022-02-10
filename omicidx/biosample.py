@@ -10,11 +10,13 @@ Implemented as an iterator
 
 import os.path
 import xml.etree.ElementTree as ET
+from xml.etree.ElementTree import Element
 import gzip
 import json
 import logging
 import click
 import subprocess
+import re
 
 
 class BioSample(dict):
@@ -115,6 +117,36 @@ class BioProject(BaseModel):
     pubs: List[dict]
 
 
+def parse_bioproject_xml_element(element: Element) -> dict:
+    print(element)
+    projtop = element.find('./Project')
+    d2 = {}
+    d2['title'] = projtop.findtext('./Project/ProjectDescr/Title')
+    d2['description'] = projtop.findtext(
+        './Project/ProjectDescr/Description')
+    d2['name'] = projtop.findtext('./Project/ProjectDescr/Name')
+    pubs = []
+    for pub in projtop.findall(".//Publication"):
+        pubs.append({
+            "pubdate": pub.get('date',None),
+            "id": pub.get('id',None),
+            "db": re.sub('^e','',pub.findtext('./DbType').replace('^e', '', 1))
+        })
+    d2['publications'] = pubs
+    ext_links = []
+    for link in projtop.findall(".//ExternalLink"):
+        ext_links.append({
+            "category": link.get('category', None),
+            "label": link.get('label', None),
+            "url": link.findtext('./URL')
+        })
+    data_types = []
+    for datatype in projtop.findall('.//ProjectDataTypeSet'):
+        data_types.append(datatype.findtext('./DataType'))
+    d2['data_types'] = data_types
+    d2['external_links'] = ext_links
+    return d2
+
 class BioProjectParser(object):
     """Parse a BioProject xml file.
 
@@ -137,32 +169,7 @@ class BioProjectParser(object):
     def __next__(self):
         for event, elem in self.context:
             if event == "end" and elem.tag == "Package":
-                projtop = elem.find('./Project')
-                d2 = {}
-                d2['title'] = projtop.findtext('./Project/ProjectDescr/Title')
-                d2['description'] = projtop.findtext(
-                    './Project/ProjectDescr/Description')
-                d2['name'] = projtop.findtext('./Project/ProjectDescr/Name')
-                pubs = []
-                for pub in projtop.findall(".//Publication"):
-                    pubs.append({
-                        "pubdate":
-                        pub.attrib.get('date',None),
-                        "id":
-                        pub.attrib.get('id',None),
-                        "db":
-                        pub.findtext('./DbType').replace('^e', '', 1)
-                    })
-                d2['publications'] = pubs
-                ext_links = []
-                for link in projtop.findall(".//ExternalLink"):
-                    ext_links.append({
-                        "category": link.attrib['category'],
-                        "label": link.attrib['label'],
-                        "url": link.findtext('./URL')
-                    })
-                d2['external_links'] = ext_links
-                return d2
+                return parse_bioproject_xml_element(elem)
 
                 # bios = BioProject()
                 # bios['is_reference']=None

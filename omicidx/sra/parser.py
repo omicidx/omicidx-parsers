@@ -13,7 +13,7 @@ function.
 
 """
 
-import ujson
+import json
 import csv
 import re
 import requests
@@ -1003,7 +1003,7 @@ def get_accession_list(from_date="2001-01-01",
     logger.error(url)
     res = None
     with urllib.request.urlopen(url) as response:
-        res = ujson.loads(response.read().decode("ascii", errors="surrogateescape"))
+        res = json.loads(response.read().decode("ascii", errors="surrogateescape"))
         c = 0
     while True:
         offset += 1
@@ -1021,7 +1021,7 @@ def get_accession_list(from_date="2001-01-01",
             url = url.format(from_date, to_date, count, type, offset)
             try:
                 with urllib.request.urlopen(url) as response:
-                    res = ujson.loads(response.read().decode('UTF-8'))
+                    res = json.loads(response.read().decode('UTF-8'))
             except urllib.error.HTTPError:
                 continue
             logger.info("fetched: " + str(res['fetched_count']))

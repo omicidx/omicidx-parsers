@@ -4,7 +4,7 @@ to = {format = "setuppy", path = "setup.py"}
 
 [tool.poetry]
 name = "omicidx"
-version = "1.1.0.0"
+version = "1.2.0"
 readme = "README.md"
 description = """The OmicIDX project collects, reprocesses, and then republishes metadata from multiple public genomics repositories. Included are the NCBI SRA, Biosample, and GEO databases. Publication is via the cloud data warehouse platform Bigquery, a set of performant search and retrieval APIs, and a set of json-format files for easy incorporation into other projects."""
 authors = ["Sean Davis <seandavi@gmail.com>"]
@@ -23,6 +23,7 @@ biopython = "1.75"
 sphinx_click = "^2.3.2"
 aiohttp = "^3.6.2"
 gcsfs = "^0.8.0"
+pronto = "^2.4.4"
 
 [tool.poetry.dev-dependencies]
 mypy = "^0.720.0"

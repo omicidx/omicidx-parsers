@@ -104,10 +104,10 @@ class GEOSeries(GEOBase):
     summary: str = None
     relation: List[str] = []
     pubmed_id: List[int] = []
-    sample_id: List[constr(regex='GSM\d+')]
+    sample_id: List[constr(regex='GSM\d+')]=[]
     sample_taxid: List[int] = []
     sample_organism: List[str] = []
-    platform_id: List[constr(regex='GPL\d+')]
+    platform_id: List[constr(regex='GPL\d+')]=[]
     platform_taxid: List[int] = []
     platform_organism: List[str] = []
     data_processing: str = None

@@ -40,7 +40,7 @@ def get_entrez_instance(email='user@example.com'):
     return ret
 
 
-def get_geo_accessions(etyp='GSE',
+def get_geo_accessions(etyp=None,
                        batch_size=1000,
                        add_term=None,
                        email="user@example.com"):
@@ -67,14 +67,24 @@ def get_geo_accessions(etyp='GSE',
     ------
     an iterator of accessions, each as a string
     """
-
+    term = ''
+    if (add_term is not None):
+        term = term + add_term
     entrez = get_entrez_instance(email)
-    if (etyp not in ETYP):
-        raise Exception("etype {} not one of the accepted etyps {}".format(
-            etyp, str(ETYP)))
-    handle = entrez.esearch(db='gds',
-                            term=etyp + '[ETYP]' + str(add_term),
+    if (etyp is not None):
+        if (etyp not in ETYP):
+            raise Exception("etype {} not one of the accepted etyps {}".format(
+                etyp, str(ETYP)))
+        term = term + ' ' + etyp + '[ETYP]'
+    if(term != ''):
+
+        handle = entrez.esearch(db='gds',
+                            term=term,
                             usehistory='y')
+    else:
+        handle = entrez.esearch(db='gds',
+                            usehistory='y')
+       
     search_results = entrez.read(handle)
     webenv = search_results["WebEnv"]
     query_key = search_results["QueryKey"]
@@ -340,6 +350,7 @@ def _parse_single_entity_soft(entity_txt):
     # Deal with common stuff first:
     tups = [_split_on_first_equal(line) for line in entity_txt]
     accession = tups[0][1]
+    
     entity_type = tups[0][0].replace('^', '')
     tups = [(re.sub('![^_]+_', '', tup[0]), tup[1]) for tup in tups]
     d = collections.defaultdict(list)
@@ -586,7 +597,7 @@ def gse_to_json(gse):
         The GSE accession to convert
     """
     res = []
-    for z in geo_soft_entity_iterator(get_geo_accession_soft(gse)):
+    for z in geo_entity_iterator(get_geo_accession_soft(gse)):
         res.append(z.json())
     return ("\n".join(res))
 

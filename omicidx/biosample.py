@@ -118,7 +118,6 @@ class BioProject(BaseModel):
 
 
 def parse_bioproject_xml_element(element: Element) -> dict:
-    print(element)
     projtop = element.find('./Project')
     d2 = {}
     d2['title'] = projtop.findtext('./Project/ProjectDescr/Title')

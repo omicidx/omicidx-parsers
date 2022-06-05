@@ -1,5 +1,9 @@
 """Usage
 
+Common use will be to get a list of accessions using:
+
+
+
 """
 
 from Bio import Entrez
@@ -12,6 +16,9 @@ from xml import etree
 import xml
 from io import StringIO
 import requests
+import httpx
+from tenacity import retry
+from tenacity.stop import stop_after_attempt
 
 import omicidx.geo.pydantic_models as pydantic_models
 
@@ -82,9 +89,7 @@ def get_geo_accessions(etyp=None,
                             term=term,
                             usehistory='y')
     else:
-        handle = entrez.esearch(db='gds',
-                            usehistory='y')
-       
+        raise Exception('term is required for entrez search access')
     search_results = entrez.read(handle)
     webenv = search_results["WebEnv"]
     query_key = search_results["QueryKey"]
@@ -159,7 +164,7 @@ def get_geo_accession_xml(accession, targ='all', view='brief'):
             time.sleep(1 * attempt)
 
 
-def get_geo_accession_soft(accession, targ='all', view="brief"):
+def get_geo_accession_soft(accession: str, targ: str='all', view: str= "brief") -> str:
     """Open a connection to get the GEO SOFT for an accession
 
     Parameters
@@ -180,18 +185,15 @@ def get_geo_accession_soft(accession, targ='all', view="brief"):
     url = (
         "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?targ={}&acc={}&form=text&view={}"
         .format(targ, accession, view))
-    attempt = 0
-    while attempt < 10:
-        attempt += 1
-        try:
-            resp = requests.get(url)
-            return StringIO(resp.text)
-            break
-        except Exception as err:
-            print("Received error from server %s" % err)
-            print("Attempt %i of 10" % attempt)
-            import time
-            time.sleep(1 * attempt)
+    
+    @retry(stop=stop_after_attempt(10))
+    def _perform_get(url: str) -> str:
+        resp = httpx.get(url)
+        resp.raise_for_status()
+        return resp.text
+
+    res = _perform_get(url)
+    return res
 
 
 def _split_on_first_equal(line, val='='):
@@ -554,8 +556,8 @@ def geo_entity_iterator(geo: str, targ: str = 'self', view: str = 'brief'):
     entity = []
     accession = None
     in_table = False
-    fh = get_geo_accession_soft(geo, targ=targ, view=view)
-    for line in fh:
+    text = get_geo_accession_soft(geo, targ=targ, view=view)
+    for line in StringIO(text):
         try:
             if (isinstance(line, bytes)):
                 line = line.decode()
@@ -597,7 +599,7 @@ def gse_to_json(gse):
         The GSE accession to convert
     """
     res = []
-    for z in geo_entity_iterator(get_geo_accession_soft(gse)):
+    for z in geo_entity_iterator(gse):
         res.append(z.json())
     return ("\n".join(res))
 

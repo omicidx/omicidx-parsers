@@ -218,14 +218,6 @@ python-versions = "*"
 pycparser = "*"
 
 [[package]]
-name = "chardet"
-version = "4.0.0"
-description = "Universal encoding detector for Python 2 and 3"
-category = "main"
-optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
-
-[[package]]
 name = "charset-normalizer"
 version = "2.0.12"
 description = "The Real First Universal Charset Detector. Open, modern and actively maintained alternative to Chardet."
@@ -289,14 +281,6 @@ description = "Get the currently executing AST node of a frame, and other inform
 category = "dev"
 optional = false
 python-versions = "*"
-
-[[package]]
-name = "fastobo"
-version = "0.11.1"
-description = "Faultless AST for Open Biomedical Ontologies in Python."
-category = "main"
-optional = false
-python-versions = ">=3.6"
 
 [[package]]
 name = "frozenlist"
@@ -576,21 +560,6 @@ optional = false
 python-versions = "*"
 
 [[package]]
-name = "networkx"
-version = "2.6.3"
-description = "Python package for creating and manipulating graphs and networks"
-category = "main"
-optional = false
-python-versions = ">=3.7"
-
-[package.extras]
-default = ["numpy (>=1.19)", "scipy (>=1.5,!=1.6.1)", "matplotlib (>=3.3)", "pandas (>=1.1)"]
-developer = ["black (==21.5b1)", "pre-commit (>=2.12)"]
-doc = ["sphinx (>=4.0,<5.0)", "pydata-sphinx-theme (>=0.6,<1.0)", "sphinx-gallery (>=0.9,<1.0)", "numpydoc (>=1.1)", "pillow (>=8.2)", "nb2plots (>=0.6)", "texext (>=0.6.6)"]
-extra = ["lxml (>=4.5)", "pygraphviz (>=1.7)", "pydot (>=1.4.1)"]
-test = ["pytest (>=6.2)", "pytest-cov (>=2.12)", "codecov (>=2.1)"]
-
-[[package]]
 name = "numpy"
 version = "1.21.1"
 description = "NumPy is the fundamental package for array computing with Python."
@@ -712,20 +681,6 @@ python-versions = ">=3.6.2"
 
 [package.dependencies]
 wcwidth = "*"
-
-[[package]]
-name = "pronto"
-version = "2.4.4"
-description = "Python frontend to ontologies."
-category = "main"
-optional = false
-python-versions = ">=3.6"
-
-[package.dependencies]
-chardet = ">=3.0,<5.0"
-fastobo = ">=0.11.1,<0.12.0"
-networkx = ">=2.3,<3.0"
-python-dateutil = ">=2.8,<3.0"
 
 [[package]]
 name = "ptyprocess"
@@ -1281,7 +1236,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<4.0"
-content-hash = "d47e5196815fa231ee3ad8d267f22cd397921e02b6e1a2ddd5b50308ab241ca3"
+content-hash = "d03523247ce6231e82732b7a02429c7266de6b3f9b30337dcc51031cea7d63cb"
 
 [metadata.files]
 aiohttp = [
@@ -1519,10 +1474,6 @@ cffi = [
     {file = "cffi-1.15.0-cp39-cp39-win_amd64.whl", hash = "sha256:3773c4d81e6e818df2efbc7dd77325ca0dcb688116050fb2b3011218eda36139"},
     {file = "cffi-1.15.0.tar.gz", hash = "sha256:920f0d66a896c2d99f0adbb391f990a84091179542c205fa53ce5787aff87954"},
 ]
-chardet = [
-    {file = "chardet-4.0.0-py2.py3-none-any.whl", hash = "sha256:f864054d66fd9118f2e67044ac8981a54775ec5b67aed0441892edb553d21da5"},
-    {file = "chardet-4.0.0.tar.gz", hash = "sha256:0d6f53a15db4120f2b08c94f11e7d93d2c911ee118b6b30a04ec3ee8310179fa"},
-]
 charset-normalizer = [
     {file = "charset-normalizer-2.0.12.tar.gz", hash = "sha256:2857e29ff0d34db842cd7ca3230549d1a697f96ee6d3fb071cfa6c7393832597"},
     {file = "charset_normalizer-2.0.12-py3-none-any.whl", hash = "sha256:6881edbebdb17b39b4eaaa821b438bf6eddffb4468cf344f09f89def34a8b1df"},
@@ -1589,29 +1540,6 @@ docutils = [
 executing = [
     {file = "executing-0.8.2-py2.py3-none-any.whl", hash = "sha256:32fc6077b103bd19e6494a72682d66d5763cf20a106d5aa7c5ccbea4e47b0df7"},
     {file = "executing-0.8.2.tar.gz", hash = "sha256:c23bf42e9a7b9b212f185b1b2c3c91feb895963378887bb10e64a2e612ec0023"},
-]
-fastobo = [
-    {file = "fastobo-0.11.1-cp310-cp310-macosx_10_15_x86_64.whl", hash = "sha256:80879ce45dfe4457959301b37563b2073bd19f265c9395f5ae99f2eac16f7739"},
-    {file = "fastobo-0.11.1-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:1aaf6aee2d2e2660d6c3eb88ef0d03353e51d7342323e5dae62814cb5e0ca712"},
-    {file = "fastobo-0.11.1-cp310-cp310-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:93aa0a3760315de43d6f770d990be2933aa63cb6d425adb25f20413223937c2a"},
-    {file = "fastobo-0.11.1-cp36-cp36m-macosx_10_14_x86_64.whl", hash = "sha256:d647a215e9add293636c37a4df3f708d4e85cf87bbaf8f19cd0c5e1c79f51060"},
-    {file = "fastobo-0.11.1-cp36-cp36m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:b60fb668178eb07b3952c8a9dea34597c1a019c33d93674dfcbc732d8dcbe7e3"},
-    {file = "fastobo-0.11.1-cp36-cp36m-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:130e30d2f20833fd181fb9439404f6f90e7d0ace582a0af11a2d93f5a91c72d4"},
-    {file = "fastobo-0.11.1-cp36-cp36m-win_amd64.whl", hash = "sha256:7aa23b8bec6cc89ba383a9535637076d2cfc8e420d3ea41d6ce4be412250a766"},
-    {file = "fastobo-0.11.1-cp37-cp37m-macosx_10_14_x86_64.whl", hash = "sha256:cf8f3594e11c3a8e84c4cbf064a2cb02a8601f6a22406ae5607181552cd30fa2"},
-    {file = "fastobo-0.11.1-cp37-cp37m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:2e2d6de2a8a2d1416e81a48a966433947145f1186c201eeb5362e80b005afb14"},
-    {file = "fastobo-0.11.1-cp37-cp37m-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:a368470a46f8cacf1e75e65aa26c566ba2f60040973357cdb6552c4c077e7e4c"},
-    {file = "fastobo-0.11.1-cp37-cp37m-win_amd64.whl", hash = "sha256:2c45bb2cf3eae700d2e92a6280b06ac580b116e6cc3e295074844a24a87b5257"},
-    {file = "fastobo-0.11.1-cp38-cp38-macosx_10_14_x86_64.whl", hash = "sha256:159850e7cee0f63b6223ec111c3077c5d73e98ba741d50240bf548630e4e4eae"},
-    {file = "fastobo-0.11.1-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:e71ed4af0acb217c7bb39c322f69cfe0b05cbc603bf1c55ffbb9e1a434dd2f00"},
-    {file = "fastobo-0.11.1-cp38-cp38-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:6bd12171b5244a943c37d03d34161a2ced262be8f425e964108114f1c86a0ec0"},
-    {file = "fastobo-0.11.1-cp38-cp38-win_amd64.whl", hash = "sha256:466318add3732d95b8c94433f67364d69a102e6e0c03fea92e675a12666802b8"},
-    {file = "fastobo-0.11.1-cp39-cp39-macosx_10_15_x86_64.whl", hash = "sha256:be54672b8b022705a5d9038fb0a4af61dd213061dbec15ad979a6ee4254118a9"},
-    {file = "fastobo-0.11.1-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:2cd444acffff0d96754a7fb0d1b41b6c914ec2af297baaf7e833a7ed9423f6a8"},
-    {file = "fastobo-0.11.1-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:01e5d950d7588f8ddf2d3d966f917e9a4b6639ed6c404a5946c07fcc56224dd3"},
-    {file = "fastobo-0.11.1-cp39-cp39-win_amd64.whl", hash = "sha256:a16e0ebc728f940423abac0648e49d0b3d79922822739b929a3ac47a60949798"},
-    {file = "fastobo-0.11.1-pp37-pypy37_pp73-macosx_10_9_x86_64.whl", hash = "sha256:0d91e412186afb9e8090fc21ae664fb9165e6c06d5c223a5cb55c1103e5d9fe9"},
-    {file = "fastobo-0.11.1.tar.gz", hash = "sha256:4f71dcca4d841496816bba873d6070b6a414cac385a561747e900c740b762ef3"},
 ]
 frozenlist = [
     {file = "frozenlist-1.3.0-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:d2257aaba9660f78c7b1d8fea963b68f3feffb1a9d5d05a18401ca9eb3e8d0a3"},
@@ -1887,10 +1815,6 @@ mypy-extensions = [
     {file = "mypy_extensions-0.4.3-py2.py3-none-any.whl", hash = "sha256:090fedd75945a69ae91ce1303b5824f428daf5a028d2f6ab8a299250a846f15d"},
     {file = "mypy_extensions-0.4.3.tar.gz", hash = "sha256:2d82818f5bb3e369420cb3c4060a7970edba416647068eb4c5343488a6c604a8"},
 ]
-networkx = [
-    {file = "networkx-2.6.3-py3-none-any.whl", hash = "sha256:80b6b89c77d1dfb64a4c7854981b60aeea6360ac02c6d4e4913319e0a313abef"},
-    {file = "networkx-2.6.3.tar.gz", hash = "sha256:c0946ed31d71f1b732b5aaa6da5a0388a345019af232ce2f49c766e2d6795c51"},
-]
 numpy = [
     {file = "numpy-1.21.1-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:38e8648f9449a549a7dfe8d8755a5979b45b3538520d1e735637ef28e8c2dc50"},
     {file = "numpy-1.21.1-cp37-cp37m-manylinux_2_12_i686.manylinux2010_i686.whl", hash = "sha256:fd7d7409fa643a91d0a05c7554dd68aa9c9bb16e186f6ccfe40d6e003156e33a"},
@@ -1983,10 +1907,6 @@ pluggy = [
 prompt-toolkit = [
     {file = "prompt_toolkit-3.0.28-py3-none-any.whl", hash = "sha256:30129d870dcb0b3b6a53efdc9d0a83ea96162ffd28ffe077e94215b233dc670c"},
     {file = "prompt_toolkit-3.0.28.tar.gz", hash = "sha256:9f1cd16b1e86c2968f2519d7fb31dd9d669916f515612c269d14e9ed52b51650"},
-]
-pronto = [
-    {file = "pronto-2.4.4-py2.py3-none-any.whl", hash = "sha256:100acbb557d795efafbc83d3d1eca692489446b8b99b069aa30c432e64afe934"},
-    {file = "pronto-2.4.4.tar.gz", hash = "sha256:17285b99ac374162aee29a6631cbb32e8b3969db55befa1bb2e01aedc8872e70"},
 ]
 ptyprocess = [
     {file = "ptyprocess-0.7.0-py2.py3-none-any.whl", hash = "sha256:4b41f3967fce3af57cc7e94b888626c18bf37a083e3651ca8feeb66d492fef35"},

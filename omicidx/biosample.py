@@ -13,6 +13,7 @@ import xml.etree.ElementTree as ET
 from xml.etree.ElementTree import Element
 import gzip
 import json
+import typing
 import logging
 import click
 import subprocess
@@ -39,16 +40,14 @@ class BioSampleParser(object):
     """Parse a BioSample xml file.
 
     Implemented as an iterator"""
-    def __init__(self, fname):
-        """Init
+    def __init__(self, fh: typing.IO):
+        """Initialize a new parser
 
-        Handles .gz as well as plain text"""
-        self.fhandle = None
-        if (fname.endswith('gz')):
-            self.fhandle = gzip.open(fname)
-        else:
-            self.fhandle = open(fname)
-        self.context = ET.iterparse(self.fhandle, events=("start", "end"))
+        Args:
+            fh (typing.IO): An open file-like object containing Biosample XML records.
+        """        
+        self.fhandle = fh
+        self.context = ET.iterparse(self.fhandle, events=("end",))
         event, self.root = next(self.context)
 
     def __iter__(self):
@@ -56,7 +55,7 @@ class BioSampleParser(object):
 
     def __next__(self):
         for event, elem in self.context:
-            if event == "end" and elem.tag == "BioSample":
+            if elem.tag == "BioSample":
                 bios = BioSample()
                 bios['is_reference'] = None
                 for k, v in elem.items():
@@ -104,20 +103,23 @@ class BioSampleParser(object):
                 #res = es.index(index="bioes", doc_type='biosample', id=bios['id'], body=bios)
                 elem.clear()
                 return bios
+        raise StopIteration
 
 
-from pydantic import BaseModel
-from typing import List
 
 
-class BioProject(BaseModel):
-    name: str
-    title: str
-    description: str = None
-    pubs: List[dict]
+
 
 
 def parse_bioproject_xml_element(element: Element) -> dict:
+    """Parse a BioProject xml element
+
+    Args:
+        element (Element): An lxml.etree.Element
+
+    Returns:
+        dict: A BioProject dict.
+    """    
     projtop = element.find('./Project')
     d2 = {}
     d2['title'] = projtop.findtext('./Project/ProjectDescr/Title')
@@ -146,20 +148,18 @@ def parse_bioproject_xml_element(element: Element) -> dict:
     d2['external_links'] = ext_links
     return d2
 
-class BioProjectParser(object):
+class BioProjectParser(typing.Iterable):
     """Parse a BioProject xml file.
 
     Implemented as an iterator"""
-    def __init__(self, fname):
-        """Init
+    def __init__(self, fh: typing.IO):
+        """Initialize a BioProjectParser
 
-        Handles .gz as well as plain text"""
-        self.fhandle = None
-        if (fname.endswith('gz')):
-            self.fhandle = gzip.open(fname)
-        else:
-            self.fhandle = open(fname)
-        self.context = ET.iterparse(self.fhandle, events=("start", "end"))
+        Args:
+            fh (typing.IO): An open file-like object containing BioProject records.
+        """
+        self.fhandle = fh
+        self.context = ET.iterparse(self.fhandle, events=("end",))
         event, self.root = next(self.context)
 
     def __iter__(self):
@@ -167,7 +167,7 @@ class BioProjectParser(object):
 
     def __next__(self):
         for event, elem in self.context:
-            if event == "end" and elem.tag == "Package":
+            if elem.tag == "Package":
                 return parse_bioproject_xml_element(elem)
 
                 # bios = BioProject()

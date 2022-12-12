@@ -4,7 +4,7 @@ to = {format = "setuppy", path = "setup.py"}
 
 [tool.poetry]
 name = "omicidx"
-version = "1.2.4"
+version = "1.5.2"
 readme = "README.md"
 description = """The OmicIDX project collects, reprocesses, and then republishes metadata from multiple public genomics repositories. Included are the NCBI SRA, Biosample, and GEO databases. Publication is via the cloud data warehouse platform Bigquery, a set of performant search and retrieval APIs, and a set of json-format files for easy incorporation into other projects."""
 authors = ["Sean Davis <seandavi@gmail.com>"]
@@ -18,12 +18,10 @@ pydantic = "*"
 requests = "^2.22"
 Click = "*"
 sd_cloud_utils = "*"
-biopython = "1.75"
-sphinx_click = "^2.3.2"
 aiohttp = "^3.6.2"
 tenacity = "^8.0.1"
 pendulum = "^2.1.2"
-httpx = "^0.22.0"
+httpx = "*"
 trio = "^0.19.0"
 
 [tool.poetry.dev-dependencies]
@@ -34,8 +32,12 @@ pytest-sugar = "^0.9.2"
 pytest-cov = "^2.8.1"
 yapf = "^0.28.0"
 pydoc-markdown = "^2.0"
-sphinx = "^3.0.4"
+sphinx = "^5.1.0"
 ipython = "^8.0.1"
+black = "^22.6.0"
+sphinx-click = "^4.3.0"
+sphinx-material = {git = "https://github.com/bashtage/sphinx-material", rev = "main"}
+sphinx-autodoc-typehints = "^1.19.2"
 
 [tool.poetry.scripts]
 omicidx_tool = 'omicidx.scripts.geo:cli'

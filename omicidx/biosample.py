@@ -4,8 +4,9 @@ Implemented as an iterator
 
 
 >>> import omicidx.biosample as b
->>> for bios in b.BioSampleParser('biosample_set.xml.gz'):
->>>     print(bios.as_json())
+>>> for bios in b.BioSampleParser(gzip.open('biosample_set.xml.gz', 'rb')):
+>>>     print(bios.json())
+>>>     print(bios.dict())
 """
 
 import os.path
@@ -18,28 +19,75 @@ import logging
 import click
 import subprocess
 import re
+import pydantic
+import datetime
 
 
-class BioSample(dict):
-    """BioSample class"""
+class IdRecs(pydantic.BaseModel):
+    db: typing.Optional[str]
+    label: typing.Optional[str]
+    id: typing.Optional[str]
 
-    def __init__(self):
-        self.update()
 
-    def as_json(self, indent=None):
-        return json.dumps(self)
+class AttrRecs(pydantic.BaseModel):
+    attribute_name: typing.Optional[str]
+    display_name: typing.Optional[str]
+    harmonized_name: typing.Optional[str]
+    value: typing.Optional[str]
+    unit: typing.Optional[str]
 
-    def __str__(self):
-        return "{0}".format(self["title"])
 
-    def __repr__(self):
-        return "BioSample <id={0} title={1}>".format(self["id"], self["title"])
+class BioSample(pydantic.BaseModel):
+    accession: str
+    id: str
+    title: typing.Optional[str]
+    description: typing.Optional[str]
+    taxonomy_name: str
+    taxon_id: int
+    attribute_recs: list[AttrRecs]
+    attributes: list[str]
+    model: typing.Optional[str]
+    id_recs: list[IdRecs]
+    ids: list[str]
+    sra_sample: typing.Optional[str]
+    dbgap: typing.Optional[str]
+    gsm: typing.Optional[str]
+    publication_date: datetime.datetime
+    last_update: datetime.datetime
+    submission_date: datetime.datetime
+    access: typing.Optional[str]
+
+
+class SimplePublication(pydantic.BaseModel):
+    db: typing.Optional[str]
+    id: typing.Optional[str]
+    pubdate: typing.Optional[datetime.datetime]
+
+
+class ExternalLink(pydantic.BaseModel):
+    url: typing.Optional[str]
+    label: typing.Optional[str]
+    category: typing.Optional[str]
+
+
+class BioProject(pydantic.BaseModel):
+    data_types: list[str] = []
+    description: typing.Optional[str]
+    accession: str
+    name: typing.Optional[str]
+    publications: list[SimplePublication] = []
+    title: typing.Optional[str]
+    external_links: list[ExternalLink] = []
 
 
 class BioSampleParser(object):
     """Parse a BioSample xml file.
 
-    Implemented as an iterator"""
+    This is a generator that yields BioSample objects.
+    The BioSample objects are pydantic models.
+    Access to fields is via dot notation.
+    Access to the underlying dict is via the dict() method.
+    JSON serialization is via the json() method."""
 
     def __init__(self, fh: typing.IO):
         """Initialize a new parser
@@ -57,7 +105,7 @@ class BioSampleParser(object):
     def __next__(self):
         for event, elem in self.context:
             if elem.tag == "BioSample":
-                bios = BioSample()
+                bios = dict()
                 bios["is_reference"] = None
                 for k, v in elem.items():
                     bios[k] = v
@@ -102,7 +150,7 @@ class BioSampleParser(object):
                 # print(json.dumps(bios))
                 # res = es.index(index="bioes", doc_type='biosample', id=bios['id'], body=bios)
                 elem.clear()
-                return bios
+                return BioSample(**bios)
         raise StopIteration
 
 
@@ -117,12 +165,11 @@ def parse_bioproject_xml_element(element: Element) -> dict:
     """
     projtop = element.find("./Project")
     d2 = {}
-    d2['title'] = projtop.findtext('./Project/ProjectDescr/Title')
-    d2['description'] = projtop.findtext(
-        './Project/ProjectDescr/Description')
-    d2['name'] = projtop.findtext('./Project/ProjectDescr/Name')
-    archive_id = projtop.find('./Project/ProjectID/ArchiveID')
-    d2['accession'] = archive_id.attrib['accession']
+    d2["title"] = projtop.findtext("./Project/ProjectDescr/Title")
+    d2["description"] = projtop.findtext("./Project/ProjectDescr/Description")
+    d2["name"] = projtop.findtext("./Project/ProjectDescr/Name")
+    archive_id = projtop.find("./Project/ProjectID/ArchiveID")
+    d2["accession"] = archive_id.attrib["accession"]
     pubs = []
     for pub in projtop.findall(".//Publication"):
         pubs.append(
@@ -152,7 +199,12 @@ def parse_bioproject_xml_element(element: Element) -> dict:
 
 class BioProjectParser(typing.Iterable):
     """Parse a BioProject xml file.
-    Implemented as an iterator"""
+
+    This is a generator that yields BioProject objects.
+    The BioProject object is a pydantic model. Access the fields using dot notation.
+    Access the raw data using the .dict() method.
+    Access json using the .json() method."""
+
     def __init__(self, fh: typing.IO):
         """Initialize a BioProjectParser
 
@@ -171,6 +223,6 @@ class BioProjectParser(typing.Iterable):
             if elem.tag == "Package":
                 results = parse_bioproject_xml_element(elem)
                 elem.clear()
-                return results
+                return BioProject(**results)
 
         raise StopIteration

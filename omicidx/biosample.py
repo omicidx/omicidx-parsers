@@ -83,13 +83,12 @@ class BioProject(pydantic.BaseModel):
 class BioSampleParser(object):
     """Parse a BioSample xml file.
 
-    This is a generator that yields BioSample objects.
-    The BioSample objects are pydantic models.
-    Access to fields is via dot notation.
-    Access to the underlying dict is via the dict() method.
-    JSON serialization is via the json() method."""
+    This is a generator that yields dict records.
+    If you want to validate the records, set validate_with_schema to True
+    and the generator will pass the records through pydantic models.
+    """
 
-    def __init__(self, fh: typing.IO):
+    def __init__(self, fh: typing.IO, validate_with_schema: bool = False):
         """Initialize a new parser
 
         Args:
@@ -97,6 +96,7 @@ class BioSampleParser(object):
         """
         self.fhandle = fh
         self.context = ET.iterparse(self.fhandle, events=("end",))
+        self.validate_with_schema = validate_with_schema
         event, self.root = next(self.context)
 
     def __iter__(self):
@@ -150,7 +150,13 @@ class BioSampleParser(object):
                 # print(json.dumps(bios))
                 # res = es.index(index="bioes", doc_type='biosample', id=bios['id'], body=bios)
                 elem.clear()
-                return BioSample(**bios)
+
+                # allow this behavior to be turned off
+                # as performance is better without validation
+                if self.validate_with_schema:
+                    return BioSample(**bios)
+                else:
+                    return bios
         raise StopIteration
 
 
@@ -200,12 +206,14 @@ def parse_bioproject_xml_element(element: Element) -> dict:
 class BioProjectParser(typing.Iterable):
     """Parse a BioProject xml file.
 
-    This is a generator that yields BioProject objects.
-    The BioProject object is a pydantic model. Access the fields using dot notation.
-    Access the raw data using the .dict() method.
-    Access json using the .json() method."""
+    If you want to validate the records, set validate_with_schema to True
+    and the generator will pass the records through pydantic models, although
+    this will be slower (by about 5x).
 
-    def __init__(self, fh: typing.IO):
+    The return values are simple dicts.
+    """
+
+    def __init__(self, fh: typing.IO, validate_with_schema: bool = False):
         """Initialize a BioProjectParser
 
         Args:
@@ -213,6 +221,7 @@ class BioProjectParser(typing.Iterable):
         """
         self.fhandle = fh
         self.context = ET.iterparse(self.fhandle, events=("end",))
+        self.validate_with_schema = validate_with_schema
         event, self.root = next(self.context)
 
     def __iter__(self):
@@ -223,6 +232,9 @@ class BioProjectParser(typing.Iterable):
             if elem.tag == "Package":
                 results = parse_bioproject_xml_element(elem)
                 elem.clear()
-                return BioProject(**results)
+                if self.validate_with_schema:
+                    return BioProject(**results).dict()
+                else:
+                    return results
 
         raise StopIteration

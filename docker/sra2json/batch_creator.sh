@@ -1,2 +1,0 @@
-aws batch register-job-definition --job-definition-name sra_example --parameters ncbi_directory=ABC --type container --container-properties '{        "image": "seandavi/omicidx","jobRoleArn": "arn:aws:iam::377200973048:role/batchWithS3Privileges",        "vcpus": 2,        "memory": 8000,        "command": [            "./sra_directory_to_s3.sh",            "Ref::ncbi_directory"        ],        "volumes": [],        "environment": [],        "mountPoints": [],        "ulimits": []    }'
-

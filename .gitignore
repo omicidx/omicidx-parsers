@@ -31,3 +31,4 @@ alembic/
 .coverage
 .venv
 .env
+.vscode/settings.json

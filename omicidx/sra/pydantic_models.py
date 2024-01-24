@@ -1,40 +1,38 @@
-import pydantic
-from pydantic import BaseModel
-import json
+from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 from typing import List, Dict, Optional
 
 
 class Attribute(BaseModel):
-    tag: str = None
-    value: str = None
+    tag: Optional[str] = None
+    value: Optional[str] = None
 
 
 class Xref(BaseModel):
-    db: str = None
-    id: str = None
+    db: Optional[str] = None
+    id: Optional[str] = None
 
 
 class Identifier(BaseModel):
-    namespace: str = None
-    id: str = None
+    namespace: Optional[str] = None
+    id: Optional[str] = None
 
 
 class FileAlternative(BaseModel):
-    url: str = None
-    free_egress: str = None
-    access_type: str = None
-    org: str = None
+    url: Optional[str] = None
+    free_egress: Optional[str] = None
+    access_type: Optional[str] = None
+    org: Optional[str] = None
 
 
 class FileSet(BaseModel):
     cluster: str = "public"
-    filename: str = None
-    url: str = None
+    filename: Optional[str] = None
+    url: Optional[str] = None
     size: int = 0
     date: datetime = None
-    md5: str = None
-    sratoolkit: str = '1'
+    md5: Optional[str] = None
+    sratoolkit: str = "1"
     alternatives: List[FileAlternative]
 
 
@@ -43,23 +41,24 @@ class BaseQualityCount(BaseModel):
     count: int = 0
 
 
-class BaseQualities(List[BaseQualityCount]):
+class BaseQualities(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
     pass
 
 
 class TaxCountEntry(BaseModel):
-    rank: str = None
-    name: str = None
-    parent: int = None
+    rank: Optional[str] = None
+    name: Optional[str] = None
+    parent: Optional[int] = None
     total_count: int = 0
     self_count: int = 0
     tax_id: int
 
 
 class TaxCountAnalysis(BaseModel):
-    nspot_analyze: int = None
-    total_spots: int = None
-    mapped_spots: int = None
+    nspot_analyze: Optional[int] = None
+    total_spots: Optional[int] = None
+    mapped_spots: Optional[int] = None
     tax_counts: List[TaxCountEntry] = None
 
 
@@ -70,7 +69,7 @@ class RunRead(BaseModel):
     sd_length: float = 0.0
 
 
-class BaseCounts(List[Dict[str, int]]):
+class BaseCounts(BaseModel):  # (List[Dict[str, int]]):
     pass
 
 
@@ -83,10 +82,10 @@ class LiveList(BaseModel):
 
 
 class SraRun(LiveList, BaseModel):
-    alias: str = None
+    alias: Optional[str] = None
     run_date: datetime = None
-    run_center: str = None
-    center_name: str = None
+    run_center: Optional[str] = None
+    center_name: Optional[str] = None
     accession: str
     total_spots: int = 0
     total_bases: int = 0
@@ -107,16 +106,16 @@ class SraRun(LiveList, BaseModel):
 
 
 class SraStudy(LiveList, BaseModel):
-    abstract: str = None
-    BioProject: str = None
-    Geo: str = None
+    abstract: Optional[str] = None
+    BioProject: Optional[str] = None
+    Geo: Optional[str] = None
     accession: str
-    alias: str = None
-    center_name: str = None
-    broker_name: str = None
-    description: str = None
-    study_type: str = None
-    title: str = None
+    alias: Optional[str] = None
+    center_name: Optional[str] = None
+    broker_name: Optional[str] = None
+    description: Optional[str] = None
+    study_type: Optional[str] = None
+    title: Optional[str] = None
     identifiers: List[Identifier] = None
     attributes: List[Attribute] = None
     pubmed_ids: List[int] = None
@@ -125,37 +124,37 @@ class SraStudy(LiveList, BaseModel):
 class SraExperiment(LiveList, BaseModel):
     accession: str
     attributes: List[Attribute] = None
-    alias: str = None
-    center_name: str = None
-    design: str = None
-    description: str = None
+    alias: Optional[str] = None
+    center_name: Optional[str] = None
+    design: Optional[str] = None
+    description: Optional[str] = None
     identifiers: List[Identifier] = None
-    instrument_model: str = None
-    library_name: str = None
-    library_construction_protocol: str = None
-    library_layout_orientation: str = None
+    instrument_model: Optional[str] = None
+    library_name: Optional[str] = None
+    library_construction_protocol: Optional[str] = None
+    library_layout_orientation: Optional[str] = None
     library_layout_length: float = None
     library_layout_sdev: float = None
-    library_strategy: str = None
-    library_source: str = None
-    library_selection: str = None
-    library_layout: str = None
+    library_strategy: Optional[str] = None
+    library_source: Optional[str] = None
+    library_selection: Optional[str] = None
+    library_layout: Optional[str] = None
     xrefs: List[Xref] = None
-    platform: str = None
-    sample_accession: str = None
-    study_accession: str = None
-    title: str = None
+    platform: Optional[str] = None
+    sample_accession: Optional[str] = None
+    study_accession: Optional[str] = None
+    title: Optional[str] = None
 
 
 class SraSample(LiveList, BaseModel):
     accession: str
-    geo: str = None
-    BioSample: str = None
-    title: str = None
-    alias: str = None
-    organism: str = None
-    taxon_id: int = None
-    description: str = None
+    geo: Optional[str] = None
+    BioSample: Optional[str] = None
+    title: Optional[str] = None
+    alias: Optional[str] = None
+    organism: Optional[str] = None
+    taxon_id: Optional[int] = None
+    description: Optional[str] = None
     identifiers: List[Identifier] = None
     attributes: List[Attribute] = None
     xrefs: List[Xref] = None

@@ -52,9 +52,9 @@ class BioSample(pydantic.BaseModel):
     sra_sample: typing.Optional[str]
     dbgap: typing.Optional[str]
     gsm: typing.Optional[str]
-    publication_date: datetime.datetime
-    last_update: datetime.datetime
-    submission_date: datetime.datetime
+    publication_date: typing.Optional[datetime.datetime]
+    last_update: typing.Optional[datetime.datetime]
+    submission_date: typing.Optional[datetime.datetime]
     access: typing.Optional[str]
 
 
@@ -169,7 +169,7 @@ def parse_bioproject_xml_element(element: Element) -> dict:
     Returns:
         dict: A BioProject dict.
     """
-    projtop = element.find("./Project")
+    projtop: Element = element.find("./Project")
     d2 = {}
     d2["title"] = projtop.findtext("./Project/ProjectDescr/Title")
     d2["description"] = projtop.findtext("./Project/ProjectDescr/Description")

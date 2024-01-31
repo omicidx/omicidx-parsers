@@ -187,9 +187,9 @@ def get_geo_accession_soft(
         targ, accession, view
     )
 
-    @retry(
-        wait=wait_exponential(multiplier=1, min=10, max=60), stop=stop_after_attempt(30)
-    )
+    # @retry(
+    #     wait=wait_exponential(multiplier=1, min=10, max=60), stop=stop_after_attempt(30)
+    # )
     def _perform_get(url: str) -> str:
         resp = httpx.get(url, timeout=120)
         resp.raise_for_status()

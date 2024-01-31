@@ -327,7 +327,7 @@ def _create_contact_from_parsed(d):
                 v = None
             if k == "contact_name":
                 v = _split_geo_name(v)
-            if k == "contact_web_link"
+            if k == "contact_web_link":
                 if v is not None and type(v) == str and len(v):
                     if not str(v).startswith("http"):
                         v = "http://" + str(v)
@@ -367,11 +367,12 @@ def _parse_single_entity_soft(entity_txt):
             except:
                 d2[i] = []
     # change "geo_accesion = [...]" to "accession = ..."
-    try:
-        d2["accession"] = d2["accession"][0]
-    except KeyError:
+    if "geo_accession" in d2:
         d2["accession"] = d2["geo_accession"][0]
-        del d2["geo_accession"]
+    elif "accession" in d2:
+        d2["accession"] = d2["accession"][0]
+    else:
+        d2["accession"] = "UNKNOWN"  # type: ignore
     if "description =" in d2:
         del d2["description ="]
     for k in [

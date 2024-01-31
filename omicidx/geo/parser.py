@@ -25,6 +25,7 @@ from urllib.error import HTTPError  # for Python 3
 import omicidx.geo.pydantic_models as pydantic_models
 
 logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("omicidx")
 
 ETYP = ["GSE", "GSM", "GPL", "GDS"]
 
@@ -560,7 +561,9 @@ def geo_entity_iterator(geo: str, targ: str = "self", view: str = "brief"):
     entity = []
     accession = None
     in_table = False
+    logger.info(f"Getting GEO entities for {geo}")
     text = get_geo_accession_soft(geo, targ=targ, view=view)
+    logger.info(f"Got GEO entities for {geo}")
     for line in StringIO(text):
         try:
             if isinstance(line, bytes):
@@ -586,6 +589,7 @@ def geo_entity_iterator(geo: str, targ: str = "self", view: str = "brief"):
 
         if line.startswith("^"):
             if accession is not None:
+                logger.info(f".. parsing found {accession}")
                 yield (_parse_single_entity_soft(entity))
             accession = _split_on_first_equal(line)[1]
             entity = []

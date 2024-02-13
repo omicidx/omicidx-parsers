@@ -739,7 +739,6 @@ class SRARunRecord(SRAXMLRecord):
         self.data = parse_run(self.xml)
 
 
-
 def sra_object_generator(fh):
     """Iterate over objects in an SRA meta_XXX_set xml file
 
@@ -762,4 +761,3 @@ def sra_object_generator(fh):
         if (element.tag.lower() in validClasses) and (event == "end"):
             yield parsers.get(element.tag.title().lower())(element)
             element.clear()
-

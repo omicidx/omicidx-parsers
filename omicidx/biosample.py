@@ -9,15 +9,9 @@ Implemented as an iterator
 >>>     print(bios.dict())
 """
 
-import os.path
 import xml.etree.ElementTree as ET
 from xml.etree.ElementTree import Element
-import gzip
-import json
 import typing
-import logging
-import click
-import subprocess
 import re
 import pydantic
 import datetime
@@ -70,6 +64,12 @@ class ExternalLink(pydantic.BaseModel):
     category: typing.Optional[str]
 
 
+class LocusTag(pydantic.BaseModel):
+    biosample_id: typing.Optional[str]
+    assembly_id: typing.Optional[str]
+    value: str
+
+
 class BioProject(pydantic.BaseModel):
     data_types: list[str] = []
     description: typing.Optional[str]
@@ -78,6 +78,8 @@ class BioProject(pydantic.BaseModel):
     publications: list[SimplePublication] = []
     title: typing.Optional[str]
     external_links: list[ExternalLink] = []
+    release_date: typing.Optional[str]
+    locus_tags: list[LocusTag] = []
 
 
 class BioSampleParser(object):
@@ -198,6 +200,16 @@ def parse_bioproject_xml_element(element: Element) -> dict:
     data_types = []
     for datatype in projtop.findall(".//ProjectDataTypeSet"):
         data_types.append(datatype.findtext("./DataType"))
+    d2["locus_tags"] = []
+    for locustag in projtop.findall(".//LocusTagPrefix"):
+        d2["locus_tags"].append(
+            {
+                "biosample_id": locustag.get("biosample_id", None),
+                "assembly_id": locustag.get("assembly_id", None),
+                "value": locustag.text,
+            }
+        )
+    d2["release_date"] = projtop.findtext("./Project/ProjectDescr/ProjectReleaseDate")
     d2["data_types"] = data_types
     d2["external_links"] = ext_links
     return d2

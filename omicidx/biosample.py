@@ -145,7 +145,7 @@ class BioSampleParser(object):
                     bios["attribute_recs"].append(attrec)
                     try:
                         bios["attributes"].append(attrec["harmonized_name"])
-                    except:
+                    except Exception:
                         bios["attributes"].append(attrec["attribute_name"])
 
                 bios["model"] = elem.findtext(".//Model")
@@ -171,20 +171,20 @@ def parse_bioproject_xml_element(element: Element) -> dict:
     Returns:
         dict: A BioProject dict.
     """
-    projtop: Element = element.find("./Project")
+    projtop: Element = element.find("./Project")  # type: ignore
     d2 = {}
     d2["title"] = projtop.findtext("./Project/ProjectDescr/Title")
     d2["description"] = projtop.findtext("./Project/ProjectDescr/Description")
     d2["name"] = projtop.findtext("./Project/ProjectDescr/Name")
     archive_id = projtop.find("./Project/ProjectID/ArchiveID")
-    d2["accession"] = archive_id.attrib["accession"]
+    d2["accession"] = archive_id.attrib["accession"]  # type: ignore
     pubs = []
     for pub in projtop.findall(".//Publication"):
         pubs.append(
             {
                 "pubdate": pub.get("date", None),
                 "id": pub.get("id", None),
-                "db": re.sub("^e", "", pub.findtext("./DbType").replace("^e", "", 1)),
+                "db": re.sub("^e", "", pub.findtext("./DbType").replace("^e", "", 1)),  # type: ignore
             }
         )
     d2["publications"] = pubs

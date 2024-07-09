@@ -3,7 +3,6 @@ def test_parse_valid_package_element():
     from omicidx.biosample import (
         BioProjectParser,
     )
-    import xml.etree.ElementTree as ET
     from io import StringIO
 
     # Mock XML content
